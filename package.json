@@ -1,0 +1,12 @@
+{
+  "name": "ArbBotDataProvider",
+  "version": "1.0.0",
+  "description": "Data provider for arbitrage bot.",
+  "main": "index.js",
+  "author": "jekatigr",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5"
+  }
+}
