@@ -3,6 +3,8 @@ const request = require('request-promise-native');
 const Market = require('./models/Market');
 const Ticker = require('./models/Ticker');
 const OrderBook = require('./models/OrderBook');
+const Trades = require('./models/Trades');
+const Trade = require('./models/Trade');
 
 const PUBLIC_API_URL = 'https://api.tidex.com/api/3';
 const PRIVATE_API_URL = ' https://api.tidex.com/tapi';
@@ -134,7 +136,7 @@ module.exports = class TidexApi {
             if (limit > 2000) {
                 throw new Error('Max limit for orderbook is 2000.');
             }
-            queryString += `?limit=${limit}`
+            queryString += `?limit=${limit}`;
         }
 
         const source = await get('depth', queryString);
@@ -152,5 +154,53 @@ module.exports = class TidexApi {
         }
 
         return orderBooks;
+    }
+
+    /**
+     * Возвращает последние сделки к указанным торговым парам.
+     * @param limit количество сделок в результате, максимиум 2000, по-умолчанию 150.
+     * @param symbols Массив валютных пар, например: [
+     *      ETH/BTC,
+     *      BTC/WEUR
+     * ].
+     * Если параметр опущен, возвращаются все последние по всем доступным парам.
+     * @returns Массив сделок
+     */
+    async getTrades({ limit, symbols = [] } = { symbols: [] }) {
+        let queryString = await this._getQueryString(symbols);
+
+        if (limit) {
+            if (limit > 2000) {
+                throw new Error('Max limit for trades is 2000.');
+            }
+            queryString += `?limit=${limit}`;
+        }
+
+        const source = await get('trades', queryString);
+
+        const trades = [];
+        for (const key of Object.keys(source)) {
+            const t = source[key];
+            const symbol = key.split('_');
+
+            const tradesArray = [];
+
+            t.forEach(tr => {
+                tradesArray.push(new Trade({
+                    operation: tr.type === "ask" ? 'sell' : 'buy',
+                    amount: tr.amount,
+                    price: tr.price,
+                    timestamp: tr.timestamp
+                }));
+            });
+
+            trades.push(new Trades({
+                base: symbol[0].toUpperCase(),
+                quote: symbol[1].toUpperCase(),
+                trades: tradesArray
+            }));
+        }
+
+        return trades;
     }
 };
