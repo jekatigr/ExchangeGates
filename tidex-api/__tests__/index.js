@@ -26,6 +26,13 @@ describe('Tidex API', () => {
     });
 
     describe('fetch tickers', () => {
+        it('should not load markets before fetch if symbols provided', async () => {
+            api.markets = undefined;
+            expect(api.markets).toBeUndefined();
+            const tickers = await api.getTickers([ 'BCH/ETH' ]);
+            expect(api.markets).toBeUndefined();
+        });
+
         it('should load markets before fetch', async () => {
             api.markets = undefined;
             expect(api.markets).toBeUndefined();
@@ -53,6 +60,13 @@ describe('Tidex API', () => {
     });
 
     describe('fetch orderbooks', () => {
+        it('should not load markets before fetch if symbols provided', async () => {
+            api.markets = undefined;
+            expect(api.markets).toBeUndefined();
+            const tickers = await api.getOrderBooks({ symbols: [ 'BCH/ETH' ] });
+            expect(api.markets).toBeUndefined();
+        });
+
         it('should load markets before fetch', async () => {
             api.markets = undefined;
             expect(api.markets).toBeUndefined();
