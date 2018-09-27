@@ -2,6 +2,7 @@ const request = require('request-promise-native');
 
 const Market = require('./models/Market');
 const Ticker = require('./models/Ticker');
+const OrderBook = require('./models/OrderBook');
 
 const PUBLIC_API_URL = 'https://api.tidex.com/api/3';
 const PRIVATE_API_URL = ' https://api.tidex.com/tapi';
@@ -39,38 +40,44 @@ module.exports = class TidexApi {
         this.markets = undefined;
     }
 
-    async loadMarkets() {
-        const res = await get('info');
-
-        const { pairs } = res;
-
-        const markets = [];
-
-        for (const key of Object.keys(pairs)) {
-            const m = pairs[key];
-            if (m.hidden !== 1) {
-                const symbol = key.split('_');
-                markets.push(new Market({
-                    base: symbol[0].toUpperCase(),
-                    quote: symbol[1].toUpperCase(),
-                    precision: m.decimal_places,
-                    fee: m.fee,
-                    minPrice: m.min_price,
-                    minAmount: m.min_amount,
-                    maxPrice: m.max_price,
-                    maxAmount: m.max_amount,
-                    minTotal: m.min_total
-                }));
-            }
+    async _getQueryString(symbols = []) {
+        let toConvert = symbols;
+        if (toConvert.length === 0) {
+            let markets = await this.getMarkets();
+            toConvert = markets.map(m => `${m.base}/${m.quote}`);
         }
+        toConvert = toConvert.map(s => convertSymbolToTidexPairString(s));
 
-        this.markets = markets;
-        return markets;
+        return toConvert.join('-');
     }
 
     async getMarkets() {
         if (!this.markets) {
-            return await this.loadMarkets();
+            const res = await get('info');
+
+            const { pairs } = res;
+
+            const markets = [];
+
+            for (const key of Object.keys(pairs)) {
+                const m = pairs[key];
+                if (m.hidden !== 1) {
+                    const symbol = key.split('_');
+                    markets.push(new Market({
+                        base: symbol[0].toUpperCase(),
+                        quote: symbol[1].toUpperCase(),
+                        precision: m.decimal_places,
+                        fee: m.fee,
+                        minPrice: m.min_price,
+                        minAmount: m.min_amount,
+                        maxPrice: m.max_price,
+                        maxAmount: m.max_amount,
+                        minTotal: m.min_total
+                    }));
+                }
+            }
+
+            this.markets = markets;
         }
         return this.markets;
     }
@@ -85,14 +92,7 @@ module.exports = class TidexApi {
      * @returns Массив тикеров.
      */
     async getTickers(symbols = []) {
-        let toConvert = symbols;
-        if (toConvert.length === 0) {
-            let markets = await this.getMarkets();
-            toConvert = markets.map(m => `${m.base}/${m.quote}`);
-        }
-        toConvert = toConvert.map(s => convertSymbolToTidexPairString(s));
-
-        const queryString = toConvert.join('-');
+        const queryString = await this._getQueryString(symbols);
 
         const source = await get('ticker', queryString);
 
@@ -115,5 +115,33 @@ module.exports = class TidexApi {
         }
 
         return tickers;
+    }
+
+    /**
+     * Возвращает ордербуки к указанным торговым парам.
+     * @param symbols Массив валютных пар, например: [
+     *      ETH/BTC,
+     *      BTC/WEUR
+     * ].
+     * Если параметр опущен, возвращаются все ордербуки по всем доступным парам.
+     * @returns Массив ордербуков, где asks и bids - массивы массивов, в каждом из которых [0] - price, [1] - цена
+     */
+    async getOrderBooks(symbols = []) {
+        const queryString = await this._getQueryString(symbols);
+        const source = await get('depth', queryString);
+
+        const orderBooks = [];
+        for (const key of Object.keys(source)) {
+            const o = source[key];
+            const symbol = key.split('_');
+            orderBooks.push(new OrderBook({
+                base: symbol[0].toUpperCase(),
+                quote: symbol[1].toUpperCase(),
+                asks: o.asks,
+                bids: o.bids
+            }));
+        }
+
+        return orderBooks;
     }
 };
