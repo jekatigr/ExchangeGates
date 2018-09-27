@@ -119,6 +119,7 @@ module.exports = class TidexApi {
 
     /**
      * Возвращает ордербуки к указанным торговым парам.
+     * @param limit количество ордеров в ордербуке, максимиум 2000, по-умолчанию 150.
      * @param symbols Массив валютных пар, например: [
      *      ETH/BTC,
      *      BTC/WEUR
@@ -126,8 +127,16 @@ module.exports = class TidexApi {
      * Если параметр опущен, возвращаются все ордербуки по всем доступным парам.
      * @returns Массив ордербуков, где asks и bids - массивы массивов, в каждом из которых [0] - price, [1] - цена
      */
-    async getOrderBooks(symbols = []) {
-        const queryString = await this._getQueryString(symbols);
+    async getOrderBooks({ limit, symbols = [] } = { symbols: [] }) {
+        let queryString = await this._getQueryString(symbols);
+
+        if (limit) {
+            if (limit > 2000) {
+                throw new Error('Max limit for orderbook is 2000.');
+            }
+            queryString += `?limit=${limit}`
+        }
+
         const source = await get('depth', queryString);
 
         const orderBooks = [];
