@@ -4,7 +4,7 @@ const api = new TidexApi();
 
 (async () => {
 
-    const res = await api.getTrades(/*['BTC/USDT']*/);
+    const res = await api.getAccountInfo(/*['BTC/USDT']*/);
     console.log(res);
 
 })();

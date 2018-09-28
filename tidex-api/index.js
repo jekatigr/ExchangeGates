@@ -1,10 +1,14 @@
 const request = require('request-promise-native');
+const crypto = require("crypto");
+const querystring = require('querystring');
 
 const Market = require('./models/Market');
 const Ticker = require('./models/Ticker');
 const OrderBook = require('./models/OrderBook');
 const Trades = require('./models/Trades');
 const Trade = require('./models/Trade');
+const AccountInfo = require('./models/AccountInfo');
+const Balance = require('./models/Balance');
 
 const PUBLIC_API_URL = 'https://api.tidex.com/api/3';
 const PRIVATE_API_URL = ' https://api.tidex.com/tapi';
@@ -12,7 +16,6 @@ const PRIVATE_API_URL = ' https://api.tidex.com/tapi';
 const get = async (method, queryString = '') => {
     try {
         return await request({
-            method: 'GET',
             url: `${PUBLIC_API_URL}/${method}/${queryString}`,
             headers: {
                 Connection: 'keep-alive'
@@ -24,6 +27,11 @@ const get = async (method, queryString = '') => {
         console.log(`Exception for '${method}' method request, params: ${JSON.stringify(params)}, ex: ${ex}`);
     }
 };
+
+function sign(key, str) {
+    const hmac = crypto.createHmac("sha512", key);
+    return hmac.update(new Buffer(str, 'utf-8')).digest("hex");
+}
 
 /**
  *
@@ -40,6 +48,33 @@ module.exports = class TidexApi {
         this.apiSecret = apiSecret;
 
         this.markets = undefined;
+    }
+
+    async privateRequest(method, params = {}) {
+        try {
+            const body = {
+                ...params,
+                method,
+                nonce: params.nonce || 1
+            };
+
+            const body_converted = querystring.stringify(body);
+            const signed = sign(this.apiSecret, body_converted);
+            const res = await request({
+                method: 'POST',
+                url: `${PRIVATE_API_URL}`,
+                headers: {
+                    Connection: 'keep-alive',
+                    Key: this.apiKey,
+                    Sign: signed
+                },
+                gzip: true,
+                body: body_converted
+            });
+            return JSON.parse(res);
+        } catch (ex) {
+            console.log(`Exception for private method '${method}' request, params: ${JSON.stringify(params)}, ex: ${ex}`);
+        }
     }
 
     async _getQueryString(symbols = []) {
@@ -202,5 +237,35 @@ module.exports = class TidexApi {
         }
 
         return trades;
+    }
+
+    /**
+     * Возвращает инфо по аккаунту, балансы не распределяются на free и used, указывается только total.
+     * @returns AccountInfo
+     */
+    async getAccountInfo() {
+        const res = await this.privateRequest('getInfo');
+
+        if (res.success) {
+            const funds = res.return.funds;
+            const balances = [];
+
+            for (const key of Object.keys(funds)) {
+                if (funds[key] > 0) {
+                    balances.push(new Balance({
+                        currency: key.toUpperCase(),
+                        total: funds[key]
+                    }));
+                }
+            }
+
+            return new AccountInfo({
+                balances,
+                openOrdersCount: res.return.open_orders,
+                rights: res.return.rights
+            });
+        } else {
+            throw new Error(`Error from exchange, error: '${res.error}'`);
+        }
     }
 };
