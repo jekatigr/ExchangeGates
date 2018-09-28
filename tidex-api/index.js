@@ -9,6 +9,7 @@ const Trades = require('./models/Trades');
 const Trade = require('./models/Trade');
 const AccountInfo = require('./models/AccountInfo');
 const Balance = require('./models/Balance');
+const Order = require('./models/Order');
 
 const PUBLIC_API_URL = 'https://api.tidex.com/api/3';
 const PRIVATE_API_URL = ' https://api.tidex.com/tapi';
@@ -296,6 +297,43 @@ module.exports = class TidexApi {
                 openOrdersCount: res.return.open_orders,
                 rights: res.return.rights
             });
+        } else {
+            throw new Error(`Error from exchange, error: '${res.error}'`);
+        }
+    }
+
+    /**
+     * Возвращает массив открытых ордеров.
+     * @param symbol валютная пара, например: 'ETH/BTC'.
+     * Если параметр опущен, возвращаются все активные ордера.
+     * @returns Массив с элементами типа Order.
+     */
+    async getActiveOrders(symbol) {
+        let params;
+        if (symbol) {
+            params = { pair: convertSymbolToTidexPairString(symbol) }
+        }
+        const res = await this.privateRequest('ActiveOrders', params);
+
+        if (res.success) {
+            const orders = res.return;
+            const activeOrders = [];
+
+            for (const key of Object.keys(orders)) {
+                const { pair, type, amount, rate, timestamp_created } = orders[key];
+                const symbol = pair.split('_');
+                activeOrders.push(new Order({
+                    id: +key,
+                    base: symbol[0].toUpperCase(),
+                    quote: symbol[1].toUpperCase(),
+                    operation: type,
+                    amount,
+                    price: rate,
+                    created: timestamp_created
+                }));
+            }
+
+            return activeOrders;
         } else {
             throw new Error(`Error from exchange, error: '${res.error}'`);
         }
