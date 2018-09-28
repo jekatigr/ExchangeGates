@@ -268,4 +268,36 @@ module.exports = class TidexApi {
             throw new Error(`Error from exchange, error: '${res.error}'`);
         }
     }
+
+    /**
+     * Возвращает инфо по аккаунту, балансы распределяются на free и used.
+     * @returns AccountInfo
+     */
+    async getAccountInfoExtended() {
+        const res = await this.privateRequest('getInfoExt');
+
+        if (res.success) {
+            const funds = res.return.funds;
+            const balances = [];
+
+            for (const key of Object.keys(funds)) {
+                const { value, inOrders } = funds[key];
+                if (value > 0 || inOrders > 0) {
+                    balances.push(new Balance({
+                        currency: key.toUpperCase(),
+                        free: value,
+                        used: inOrders
+                    }));
+                }
+            }
+
+            return new AccountInfo({
+                balances,
+                openOrdersCount: res.return.open_orders,
+                rights: res.return.rights
+            });
+        } else {
+            throw new Error(`Error from exchange, error: '${res.error}'`);
+        }
+    }
 };
