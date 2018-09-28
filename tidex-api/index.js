@@ -342,7 +342,6 @@ module.exports = class TidexApi {
 
     /**
      * Возвращает информацию об ордеру.
-     * Если параметр опущен, возвращаются все активные ордера.
      * @param orderId id ордера.
      * @returns Order.
      */
@@ -377,6 +376,36 @@ module.exports = class TidexApi {
                 created: timestamp_created,
                 status: statusStr
             });
+        } else {
+            throw new Error(`Error from exchange, error: '${res.error}'`);
+        }
+    }
+
+    /**
+     * Отмена ордера.
+     * @param orderId id ордера.
+     * @returns array of Balance objects updated after order cancellation
+     */
+    async cancelOrder(orderId) {
+        if (!orderId) {
+            throw new Error('Order id is required for cancelOrder method.');
+        }
+        const res = await this.privateRequest('CancelOrder', { order_id: orderId });
+
+        if (res.success) {
+            const funds = res.return.funds;
+            const balances = [];
+
+            for (const key of Object.keys(funds)) {
+                if (funds[key] > 0) {
+                    balances.push(new Balance({
+                        currency: key.toUpperCase(),
+                        total: funds[key]
+                    }));
+                }
+            }
+
+            return balances;
         } else {
             throw new Error(`Error from exchange, error: '${res.error}'`);
         }
