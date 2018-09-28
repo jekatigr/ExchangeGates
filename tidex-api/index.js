@@ -329,11 +329,54 @@ module.exports = class TidexApi {
                     operation: type,
                     amount,
                     price: rate,
-                    created: timestamp_created
+                    created: timestamp_created,
+                    status: 'active'
                 }));
             }
 
             return activeOrders;
+        } else {
+            throw new Error(`Error from exchange, error: '${res.error}'`);
+        }
+    }
+
+    /**
+     * Возвращает информацию об ордеру.
+     * Если параметр опущен, возвращаются все активные ордера.
+     * @param orderId id ордера.
+     * @returns Order.
+     */
+    async getOrder(orderId) {
+        if (!orderId) {
+            throw new Error('Order id is required for getOrder method.');
+        }
+        const res = await this.privateRequest('OrderInfo', { order_id: orderId });
+
+        if (res.success) {
+            const orderRaw = res.return;
+            const [ id ] = Object.keys(orderRaw);
+            const { pair, type, start_amount, amount, rate, timestamp_created, status } = orderRaw[id];
+
+            let statusStr;
+            switch (status) {
+                case 0: { statusStr = 'active'; break; }
+                case 1: { statusStr = 'closed'; break; }
+                case 2: { statusStr = 'cancelled'; break; }
+                case 3: { statusStr = 'cancelled_partially'; break; }
+            }
+
+            const symbol = pair.split('_');
+            return new Order({
+                id: +id,
+                base: symbol[0].toUpperCase(),
+                quote: symbol[1].toUpperCase(),
+                operation: type,
+                amount: start_amount,
+                remain: amount,
+                price: rate,
+                created: timestamp_created,
+                status: statusStr
+            });
         } else {
             throw new Error(`Error from exchange, error: '${res.error}'`);
         }
