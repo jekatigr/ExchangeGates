@@ -6,8 +6,7 @@
   "author": "jekatigr",
   "license": "UNLICENSED",
   "dependencies": {
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.5"
+    "node-tidex-api": "./../node-tidex-api"
   },
   "devDependencies": {
     "jest": "^23.6.0"
