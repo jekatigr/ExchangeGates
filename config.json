@@ -1,0 +1,9 @@
+{
+    "mainCurrency": "USDT",
+    "currencies": [
+        "BTC",
+        "USDT",
+        "ETH",
+        "LTC"
+    ]
+}
