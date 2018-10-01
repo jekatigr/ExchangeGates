@@ -1,10 +1,10 @@
-const TidexApi = require('./tidex-api');
+const WebSocketImpl = require('./src/WebSocketImpl');
 
-const api = new TidexApi();
+const { API_KEY, API_SECRET } = process.env;
 
-(async () => {
+if (!API_KEY || !API_SECRET) {
+    console.error('API_KEY and API_SECRET should be specified in env variables. Shutting down...');
+    process.exit(1);
+}
 
-    const res = await api.getAccountInfo(/*['BTC/USDT']*/);
-    console.log(res);
-
-})();
+WebSocketImpl.start();
