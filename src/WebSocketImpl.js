@@ -24,7 +24,7 @@ const onClientConnect = (ws) => {
 
     runOrderBookNotifier(ws);
 
-    sendMessage(ws, { event: "connected", timestamp: +(new Date()) })
+    sendMessage(ws, undefined, 'connected');
 };
 
 const onClientMessage = async (ws, message) => {
@@ -32,28 +32,42 @@ const onClientMessage = async (ws, message) => {
         let parsed = JSON.parse(message);
 
         if (!parsed.action) {
-            sendError(ws, 'Request should include "action" field.');
+            sendError(ws, 'Request should include "action" field.', 'action');
             return;
         }
 
         if (!COMMANDS.includes(parsed.action)) {
-            sendError(ws, 'Such action isn\'t supported.');
+            sendError(ws, 'Such action isn\'t supported.', 'action', parsed.action);
             return;
         }
 
         await processAction(ws, parsed.action);
     } catch (ex) {
         console.error(`Exception while parse client's message, received: ${message}`);
-        sendError(ws, 'Incorrect message format.');
+        sendError(ws, 'Incorrect message format.', 'action');
     }
 };
 
-const sendError = (ws, error) => {
-    ws.send(JSON.stringify({ success: false, error }));
+const sendError = (ws, error, event, action) => {
+    const body = {
+        success: false,
+        timestamp: +(new Date()),
+        event,
+        action,
+        error
+    };
+    ws.send(JSON.stringify(body));
 };
 
-const sendMessage = (ws, message) => {
-    ws.send(JSON.stringify({ success: true, result: message }));
+const sendMessage = (ws, data, event, action) => {
+    const body = {
+        success: true,
+        timestamp: +(new Date()),
+        event,
+        action,
+        data
+    };
+    ws.send(JSON.stringify(body));
 };
 
 const processAction = async (ws, action) => {
@@ -70,16 +84,17 @@ const processAction = async (ws, action) => {
     }
 
     if (result) {
-        sendMessage(ws, result);
+        sendMessage(ws, result, 'action', action);
     }
 };
 
 const runOrderBookNotifier = async (ws) => {
     while (ws.readyState === 1) {
         const updatedOrderBooks = await TidexApiService.getUpdatedOrderBooks();
-        if (updatedOrderBooks) {
-            ws.send(JSON.stringify({event: "orderbooks", data: updatedOrderBooks}));
+        if (updatedOrderBooks && updatedOrderBooks.length > 0) {
+            sendMessage(ws, updatedOrderBooks, 'orderbooks');
         }
+        await timeout(100);
     }
 };
 
