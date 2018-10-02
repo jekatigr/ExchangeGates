@@ -6,7 +6,8 @@ const { WS_PORT = 2345 } = process.env;
 
 const COMMANDS = [
     'getBalances',
-    'getMarkets'
+    'getMarkets',
+    'getTriangles'
 ];
 
 let wss;
@@ -79,6 +80,10 @@ const processAction = async (ws, action) => {
         }
         case 'getBalances': {
             result = await TidexApiService.getBalances();
+            break;
+        }
+        case 'getTriangles': {
+            result = await TidexApiService.getTriangles();
             break;
         }
     }

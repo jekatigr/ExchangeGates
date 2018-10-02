@@ -20,38 +20,9 @@ const getBalances = async () => {
     return balances;
 };
 
-/**
- * Возвращает символы, которые нужно будет отслеживать в треугольниках.
- * @returns {Promise<Array>}
- */
-const getActualSymbols = async () => {
-    if (!actualSymbols) {
-        const config = getConfig();
-        const {currencies} = config;
-        const markets = await api.getMarkets();
-
-        const pairs = [];
-        actualSymbols = [];
-        for (const c1 of currencies) {
-            for (const c2 of currencies) {
-                if (c1 !== c2
-                    && !pairs.some(e => (e[0] === c1 && e[1] === c2 || e[1] === c1 && e[0] === c2))
-                    && markets.some(m => (m.base === c1 && m.quote === c2 || m.base === c2 && m.quote === c1))
-                ) {
-                    pairs.push([c1, c2]);
-                    let [market] = markets.filter(m => (m.base === c1 && m.quote === c2 || m.base === c2 && m.quote === c1));
-                    actualSymbols.push(`${market.base}/${market.quote}`);
-                }
-            }
-        }
-    }
-    return actualSymbols;
-};
-
 const getOrderBooks = async () => {
     let symbols = await getActualSymbols();
-    const orderBooks = await api.getOrderBooks({ limit: 1, symbols });
-    return orderBooks;
+    return await api.getOrderBooks({ limit: 1, symbols });
 };
 
 const getUpdatedOrderBooks = async () => {
@@ -106,8 +77,77 @@ const filterChangedOrderBooks = (allOrderBooks) => {
     return result;
 };
 
+/**
+ * Возвращает символы, которые нужно будет отслеживать в треугольниках.
+ * @returns {Promise<Array>}
+ */
+const getActualSymbols = async () => {
+    if (!actualSymbols) {
+        const config = getConfig();
+        const {currencies} = config;
+        const markets = await api.getMarkets();
+
+        actualSymbols = [];
+        for (const m of markets) {
+            const baseIndex = currencies.findIndex(c => c === m.base);
+            const quoteIndex = currencies.findIndex(c => c === m.quote);
+            if (baseIndex !== -1 && quoteIndex !== -1) {
+                actualSymbols.push(`${m.base}/${m.quote}`);
+            }
+        }
+
+    }
+    return actualSymbols;
+};
+
+const getTriangles = async () => {
+    const config = getConfig();
+    const { currencies } = config;
+
+    //создаем матрицу смежности
+    const matrix = new Array(currencies.length);
+    for (let i = 0; i < currencies.length; i++) {
+        matrix[i] = new Array(currencies.length);
+        for(let j = 0; j < currencies.length; j++) {
+            matrix[i][j] = 0;
+        }
+    }
+
+    const markets = await api.getMarkets();
+
+    for (const m of markets) {
+        const baseIndex = currencies.findIndex(c => c === m.base);
+        const quoteIndex = currencies.findIndex(c => c === m.quote);
+        if (baseIndex !== -1 && quoteIndex !== -1) {
+            matrix[baseIndex][quoteIndex] = 1;
+            matrix[quoteIndex][baseIndex] = 1;
+        }
+    }
+
+    const triangles = [];
+
+    for (let a = 0; a < currencies.length; a++) {
+        for (let b = a + 1; b < currencies.length; b++) {
+            if (matrix[a][b] === 0) continue;
+            for(let c = b + 1; c < currencies.length; c++) {
+                if (matrix[b][c] === 1 && matrix[a][c] === 1) {
+                    triangles.push([currencies[a], currencies[b], currencies[c]]);
+                    triangles.push([currencies[a], currencies[c], currencies[b]]);
+                    triangles.push([currencies[b], currencies[a], currencies[c]]);
+                    triangles.push([currencies[b], currencies[c], currencies[a]]);
+                    triangles.push([currencies[c], currencies[a], currencies[b]]);
+                    triangles.push([currencies[c], currencies[b], currencies[a]]);
+                }
+            }
+        }
+    }
+
+    return triangles;
+};
+
 module.exports = {
     getMarkets,
     getBalances,
-    getUpdatedOrderBooks
+    getUpdatedOrderBooks,
+    getTriangles
 };
