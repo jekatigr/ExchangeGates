@@ -12,12 +12,20 @@ let actualSymbols;
 let orderBooksCache;
 
 const getMarkets = async () => {
-    return await api.getMarkets();
+    try {
+        return await api.getMarkets();
+    } catch (ex) {
+        console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
+    }
 };
 
 const getBalances = async () => {
-    const { balances } = await api.getAccountInfoExtended();
-    return balances;
+    try {
+        const { balances } = await api.getAccountInfoExtended();
+        return balances;
+    } catch (ex) {
+        console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+    }
 };
 
 const getOrderBooks = async () => {
@@ -26,16 +34,18 @@ const getOrderBooks = async () => {
 };
 
 const getUpdatedOrderBooks = async () => {
-    let allOrderBooks = await getOrderBooks();
-    let result;
-    if (orderBooksCache) {
-        result = filterChangedOrderBooks(allOrderBooks);
-    } else {
-        result = allOrderBooks;
+    let result = [];
+    try {
+        let allOrderBooks = await getOrderBooks();
+        if (orderBooksCache) {
+            result = filterChangedOrderBooks(allOrderBooks);
+        } else {
+            result = allOrderBooks;
+        }
+        orderBooksCache = allOrderBooks;
+    } catch (ex) {
+        console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
     }
-
-    orderBooksCache = allOrderBooks;
-
     return result;
 };
 
@@ -101,48 +111,52 @@ const getActualSymbols = async () => {
 };
 
 const getTriangles = async () => {
-    const config = getConfig();
-    const { currencies } = config;
+    try {
+        const config = getConfig();
+        const {currencies} = config;
 
-    //создаем матрицу смежности
-    const matrix = new Array(currencies.length);
-    for (let i = 0; i < currencies.length; i++) {
-        matrix[i] = new Array(currencies.length);
-        for(let j = 0; j < currencies.length; j++) {
-            matrix[i][j] = 0;
+        //создаем матрицу смежности
+        const matrix = new Array(currencies.length);
+        for (let i = 0; i < currencies.length; i++) {
+            matrix[i] = new Array(currencies.length);
+            for (let j = 0; j < currencies.length; j++) {
+                matrix[i][j] = 0;
+            }
         }
-    }
 
-    const markets = await api.getMarkets();
+        const markets = await api.getMarkets();
 
-    for (const m of markets) {
-        const baseIndex = currencies.findIndex(c => c === m.base);
-        const quoteIndex = currencies.findIndex(c => c === m.quote);
-        if (baseIndex !== -1 && quoteIndex !== -1) {
-            matrix[baseIndex][quoteIndex] = 1;
-            matrix[quoteIndex][baseIndex] = 1;
+        for (const m of markets) {
+            const baseIndex = currencies.findIndex(c => c === m.base);
+            const quoteIndex = currencies.findIndex(c => c === m.quote);
+            if (baseIndex !== -1 && quoteIndex !== -1) {
+                matrix[baseIndex][quoteIndex] = 1;
+                matrix[quoteIndex][baseIndex] = 1;
+            }
         }
-    }
 
-    const triangles = [];
+        const triangles = [];
 
-    for (let a = 0; a < currencies.length; a++) {
-        for (let b = a + 1; b < currencies.length; b++) {
-            if (matrix[a][b] === 0) continue;
-            for(let c = b + 1; c < currencies.length; c++) {
-                if (matrix[b][c] === 1 && matrix[a][c] === 1) {
-                    triangles.push([currencies[a], currencies[b], currencies[c]]);
-                    triangles.push([currencies[a], currencies[c], currencies[b]]);
-                    triangles.push([currencies[b], currencies[a], currencies[c]]);
-                    triangles.push([currencies[b], currencies[c], currencies[a]]);
-                    triangles.push([currencies[c], currencies[a], currencies[b]]);
-                    triangles.push([currencies[c], currencies[b], currencies[a]]);
+        for (let a = 0; a < currencies.length; a++) {
+            for (let b = a + 1; b < currencies.length; b++) {
+                if (matrix[a][b] === 0) continue;
+                for (let c = b + 1; c < currencies.length; c++) {
+                    if (matrix[b][c] === 1 && matrix[a][c] === 1) {
+                        triangles.push([currencies[a], currencies[b], currencies[c]]);
+                        triangles.push([currencies[a], currencies[c], currencies[b]]);
+                        triangles.push([currencies[b], currencies[a], currencies[c]]);
+                        triangles.push([currencies[b], currencies[c], currencies[a]]);
+                        triangles.push([currencies[c], currencies[a], currencies[b]]);
+                        triangles.push([currencies[c], currencies[b], currencies[a]]);
+                    }
                 }
             }
         }
-    }
 
-    return triangles;
+        return triangles;
+    } catch (ex) {
+        console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
+    }
 };
 
 module.exports = {

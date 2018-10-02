@@ -4,7 +4,7 @@ const { timeout } = require('./utils');
 
 const { WS_PORT = 2345 } = process.env;
 
-const COMMANDS = [
+const ACTIONS = [
     'getBalances',
     'getMarkets',
     'getTriangles'
@@ -37,7 +37,7 @@ const onClientMessage = async (ws, message) => {
             return;
         }
 
-        if (!COMMANDS.includes(parsed.action)) {
+        if (!ACTIONS.includes(parsed.action)) {
             sendError(ws, 'Such action isn\'t supported.', 'action', parsed.action);
             return;
         }
