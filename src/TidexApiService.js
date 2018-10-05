@@ -20,10 +20,22 @@ const getMarkets = async () => {
     }
 };
 
+/**
+ * Фильрует балансы в соответствии с файлом конфига.
+ */
+const filterBalances = (balances = []) => {
+    const config = getConfig();
+    const { currencies } = config;
+    return balances.filter(b => currencies.includes(b.currency));
+};
+
 const getBalances = async () => {
     try {
         const { balances } = await api.getAccountInfoExtended();
-        return balances;
+
+        const balancesFiltered = filterBalances(balances);
+
+        return balancesFiltered;
     } catch (ex) {
         console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
         throw new Error(`Exception while fetching balances, ex: ${ex}`);
