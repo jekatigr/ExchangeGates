@@ -73,19 +73,24 @@ const sendMessage = (ws, data, event, action) => {
 
 const processAction = async (ws, action) => {
     let result;
-    switch (action) {
-        case 'getMarkets': {
-            result = await TidexApiService.getMarkets();
-            break;
+    try {
+        switch (action) {
+            case 'getMarkets': {
+                result = await TidexApiService.getMarkets();
+                break;
+            }
+            case 'getBalances': {
+                result = await TidexApiService.getBalances();
+                break;
+            }
+            case 'getTriangles': {
+                result = await TidexApiService.getTriangles();
+                break;
+            }
         }
-        case 'getBalances': {
-            result = await TidexApiService.getBalances();
-            break;
-        }
-        case 'getTriangles': {
-            result = await TidexApiService.getTriangles();
-            break;
-        }
+    } catch (ex) {
+        sendError(ws, ex, 'action', action);
+        return;
     }
 
     if (result) {
@@ -95,9 +100,13 @@ const processAction = async (ws, action) => {
 
 const runOrderBookNotifier = async (ws) => {
     while (ws.readyState === 1) {
-        const updatedOrderBooks = await TidexApiService.getUpdatedOrderBooks();
-        if (updatedOrderBooks && updatedOrderBooks.length > 0) {
-            sendMessage(ws, updatedOrderBooks, 'orderbooks');
+        try {
+            const updatedOrderBooks = await TidexApiService.getUpdatedOrderBooks();
+            if (updatedOrderBooks && updatedOrderBooks.length > 0) {
+                sendMessage(ws, updatedOrderBooks, 'orderbooks');
+            }
+        } catch (ex) {
+            sendError(ws, ex, 'orderbooks');
         }
         await timeout(100);
     }

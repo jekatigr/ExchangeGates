@@ -16,6 +16,7 @@ const getMarkets = async () => {
         return await api.getMarkets();
     } catch (ex) {
         console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
+        throw new Error(`Exception while fetching markets, ex: ${ex}`);
     }
 };
 
@@ -25,6 +26,7 @@ const getBalances = async () => {
         return balances;
     } catch (ex) {
         console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+        throw new Error(`Exception while fetching balances, ex: ${ex}`);
     }
 };
 
@@ -45,6 +47,7 @@ const getUpdatedOrderBooks = async () => {
         orderBooksCache = allOrderBooks;
     } catch (ex) {
         console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+        throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
     }
     return result;
 };
@@ -156,6 +159,7 @@ const getTriangles = async () => {
         return triangles;
     } catch (ex) {
         console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
+        throw new Error(`Exception while fetching triangles, ex: ${ex}`);
     }
 };
 
