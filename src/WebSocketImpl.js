@@ -29,6 +29,7 @@ const onClientConnect = (ws) => {
     ws.on('message', onClientMessage.bind(this, ws));
 
     sendMessage(ws, undefined, 'connected');
+    sendMessage(ws, ACTIONS, 'availableActions');
 };
 
 const onClientMessage = async (ws, message) => {
