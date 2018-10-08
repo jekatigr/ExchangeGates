@@ -108,6 +108,8 @@ const runOrderBookNotifier = async (ws) => {
         } catch (ex) {
             if (ws.readyState === 1) {
                 sendError(ws, ex, 'orderbooks');
+            } else {
+                console.log(`Got error, but ws was closed, ex: ${ex}`);
             }
         }
         await timeout(100);
