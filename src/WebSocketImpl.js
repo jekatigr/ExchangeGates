@@ -5,12 +5,15 @@ const { timeout } = require('./utils');
 const { WS_PORT = 2345 } = process.env;
 
 const ACTIONS = [
+    'runOrderbooksNotifier',
+    'stopOrderbooksNotifier',
     'getBalances',
     'getMarkets',
     'getTriangles'
 ];
 
 let wss;
+let notifierRunning = false;
 
 const start = () => {
     wss = new WebSocket.Server({ port: WS_PORT }, () => {
@@ -21,9 +24,9 @@ const start = () => {
 };
 
 const onClientConnect = (ws) => {
-    ws.on('message', onClientMessage.bind(this, ws));
+    notifierRunning = false;
 
-    runOrderBookNotifier(ws);
+    ws.on('message', onClientMessage.bind(this, ws));
 
     sendMessage(ws, undefined, 'connected');
 };
@@ -87,6 +90,17 @@ const processAction = async (ws, action) => {
                 result = await TidexApiService.getTriangles();
                 break;
             }
+            case 'runOrderbooksNotifier': {
+                if (!notifierRunning) {
+                    notifierRunning = true;
+                    runOrderBookNotifier(ws);
+                }
+                break;
+            }
+            case 'stopOrderbooksNotifier': {
+                notifierRunning = false;
+                break;
+            }
         }
     } catch (ex) {
         sendError(ws, ex, 'action', action);
@@ -99,10 +113,17 @@ const processAction = async (ws, action) => {
 };
 
 const runOrderBookNotifier = async (ws) => {
-    while (ws.readyState === 1) {
+    let firstFetch = true;
+    while (notifierRunning && ws.readyState === 1) {
         try {
-            const updatedOrderBooks = await TidexApiService.getUpdatedOrderBooks();
-            if (updatedOrderBooks && updatedOrderBooks.length > 0 && ws.readyState === 1) {
+            const updatedOrderBooks = await TidexApiService.getUpdatedOrderBooks(firstFetch);
+            firstFetch = false;
+            if (
+                notifierRunning
+                && updatedOrderBooks
+                && updatedOrderBooks.length > 0
+                && ws.readyState === 1
+            ) {
                 sendMessage(ws, updatedOrderBooks, 'orderbooks');
             }
         } catch (ex) {

@@ -47,11 +47,11 @@ const getOrderBooks = async () => {
     return await api.getOrderBooks({ limit: 1, symbols });
 };
 
-const getUpdatedOrderBooks = async () => {
+const getUpdatedOrderBooks = async (all = false) => {
     let result = [];
     try {
         let allOrderBooks = await getOrderBooks();
-        if (orderBooksCache) {
+        if (!all && orderBooksCache) {
             result = filterChangedOrderBooks(allOrderBooks);
         } else {
             result = allOrderBooks;
@@ -109,7 +109,7 @@ const filterChangedOrderBooks = (allOrderBooks) => {
 const getActualSymbols = async () => {
     if (!actualSymbols) {
         const config = getConfig();
-        const {currencies} = config;
+        const { currencies } = config;
         const markets = await api.getMarkets();
 
         actualSymbols = [];
