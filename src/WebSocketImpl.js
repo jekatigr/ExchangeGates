@@ -102,11 +102,13 @@ const runOrderBookNotifier = async (ws) => {
     while (ws.readyState === 1) {
         try {
             const updatedOrderBooks = await TidexApiService.getUpdatedOrderBooks();
-            if (updatedOrderBooks && updatedOrderBooks.length > 0) {
+            if (updatedOrderBooks && updatedOrderBooks.length > 0 && ws.readyState === 1) {
                 sendMessage(ws, updatedOrderBooks, 'orderbooks');
             }
         } catch (ex) {
-            sendError(ws, ex, 'orderbooks');
+            if (ws.readyState === 1) {
+                sendError(ws, ex, 'orderbooks');
+            }
         }
         await timeout(100);
     }
