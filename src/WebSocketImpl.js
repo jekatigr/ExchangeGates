@@ -12,134 +12,133 @@ const ACTIONS = [
     'getTriangles'
 ];
 
-let wss;
-let notifierRunning = false;
-
-const start = () => {
-    wss = new WebSocket.Server({ port: WS_PORT }, () => {
-        console.log(`WS server started on :${WS_PORT}`);
-    });
-
-    wss.on('connection',  onClientConnect);
-};
-
-const onClientConnect = (ws) => {
-    notifierRunning = false;
-
-    ws.on('message', onClientMessage.bind(this, ws));
-
-    sendMessage(ws, undefined, 'connected');
-    sendMessage(ws, ACTIONS, 'availableActions');
-};
-
-const onClientMessage = async (ws, message) => {
-    try {
-        let parsed = JSON.parse(message);
-
-        if (!parsed.action) {
-            sendError(ws, 'Request should include "action" field.', 'action');
-            return;
-        }
-
-        if (!ACTIONS.includes(parsed.action)) {
-            sendError(ws, 'Such action isn\'t supported.', 'action', parsed.action);
-            return;
-        }
-
-        await processAction(ws, parsed.action);
-    } catch (ex) {
-        console.error(`Exception while parse client's message, received: ${message}`);
-        sendError(ws, 'Incorrect message format.', 'action');
-    }
-};
-
-const sendError = (ws, error, event, action) => {
-    const body = {
-        success: false,
-        timestamp: +(new Date()),
-        event,
-        action,
-        error
+module.exports = class WebSocketImpl {
+    static sendMessage(ws, data, event, action) {
+        const body = {
+            success: true,
+            timestamp: +(new Date()),
+            event,
+            action,
+            data
+        };
+        ws.send(JSON.stringify(body));
     };
-    ws.send(JSON.stringify(body));
-};
 
-const sendMessage = (ws, data, event, action) => {
-    const body = {
-        success: true,
-        timestamp: +(new Date()),
-        event,
-        action,
-        data
+    static sendError(ws, error, event, action) {
+        const body = {
+            success: false,
+            timestamp: +(new Date()),
+            event,
+            action,
+            error
+        };
+        ws.send(JSON.stringify(body));
     };
-    ws.send(JSON.stringify(body));
-};
 
-const processAction = async (ws, action) => {
-    let result;
-    try {
-        switch (action) {
-            case 'getMarkets': {
-                result = await TidexApiService.getMarkets();
-                break;
-            }
-            case 'getBalances': {
-                result = await TidexApiService.getBalances();
-                break;
-            }
-            case 'getTriangles': {
-                result = await TidexApiService.getTriangles();
-                break;
-            }
-            case 'runOrderbooksNotifier': {
-                if (!notifierRunning) {
-                    notifierRunning = true;
-                    runOrderBookNotifier(ws);
-                }
-                break;
-            }
-            case 'stopOrderbooksNotifier': {
-                notifierRunning = false;
-                break;
-            }
-        }
-    } catch (ex) {
-        sendError(ws, ex, 'action', action);
-        return;
+    constructor() {
+        this.notifierRunning = false;
+
+        this.service = new TidexApiService();
+
+        this.wss = new WebSocket.Server({ port: WS_PORT }, () => {
+            console.log(`WS server started on :${WS_PORT}`);
+        });
+
+        this.wss.on('connection', this.onClientConnect.bind(this));
     }
 
-    if (result) {
-        sendMessage(ws, result, 'action', action);
-    }
-};
+    async onClientConnect(ws) {
+        this.notifierRunning = false;
 
-const runOrderBookNotifier = async (ws) => {
-    let firstFetch = true;
-    while (notifierRunning && ws.readyState === 1) {
+        ws.on('message', this.onClientMessage.bind(this, ws));
+
+        WebSocketImpl.sendMessage(ws, undefined, 'connected');
+        WebSocketImpl.sendMessage(ws, ACTIONS, 'availableActions');
+    };
+
+    async onClientMessage(ws, message) {
         try {
-            const updatedOrderBooks = await TidexApiService.getUpdatedOrderBooks(firstFetch);
-            firstFetch = false;
-            if (
-                notifierRunning
-                && updatedOrderBooks
-                && updatedOrderBooks.length > 0
-                && ws.readyState === 1
-            ) {
-                sendMessage(ws, updatedOrderBooks, 'orderbooks');
+            let parsed = JSON.parse(message);
+
+            if (!parsed.action) {
+                WebSocketImpl.sendError(ws, 'Request should include "action" field.', 'action');
+                return;
+            }
+
+            if (!ACTIONS.includes(parsed.action)) {
+                WebSocketImpl.sendError(ws, 'Such action isn\'t supported.', 'action', parsed.action);
+                return;
+            }
+
+            await this.processAction(ws, parsed.action);
+        } catch (ex) {
+            console.error(`Exception while parse client's message, received: ${message}`);
+            WebSocketImpl.sendError(ws, 'Incorrect message format.', 'action');
+        }
+    };
+
+    async processAction(ws, action) {
+        let result;
+        try {
+            switch (action) {
+                case 'getMarkets': {
+                    result = await this.service.getMarkets();
+                    break;
+                }
+                case 'getBalances': {
+                    result = await this.service.getBalances();
+                    break;
+                }
+                case 'getTriangles': {
+                    result = await this.service.getTriangles();
+                    break;
+                }
+                case 'runOrderbooksNotifier': {
+                    if (!this.notifierRunning) {
+                        this.notifierRunning = true;
+                        this.runOrderBookNotifier(ws);
+                    }
+                    break;
+                }
+                case 'stopOrderbooksNotifier': {
+                    this.notifierRunning = false;
+                    break;
+                }
             }
         } catch (ex) {
-            if (ws.readyState === 1) {
-                sendError(ws, ex, 'orderbooks');
-            } else {
-                console.log(`Got error, but ws was closed, ex: ${ex}`);
-            }
+            WebSocketImpl.sendError(ws, ex, 'action', action);
+            return;
         }
-        await timeout(100);
-    }
-};
 
-module.exports = {
-    start
+        if (result) {
+            WebSocketImpl.sendMessage(ws, result, 'action', action);
+        }
+    };
+
+    async runOrderBookNotifier(ws) {
+        let firstFetch = true;
+        while (this.notifierRunning && ws.readyState === 1) {
+            try {
+                const updatedOrderBooks = await this.service.getUpdatedOrderBooks(firstFetch);
+                firstFetch = false;
+                if (
+                    this.notifierRunning
+                    && updatedOrderBooks
+                    && updatedOrderBooks.length > 0
+                    && ws.readyState === 1
+                ) {
+                    WebSocketImpl.sendMessage(ws, updatedOrderBooks, 'orderbooks');
+                }
+            } catch (ex) {
+                if (ws.readyState === 1) {
+                    WebSocketImpl.sendError(ws, ex, 'orderbooks');
+                } else {
+                    console.log(`Got error when ws was closed, ex: ${ex}`);
+                }
+            }
+            await timeout(100);
+        }
+    };
 };
 
 

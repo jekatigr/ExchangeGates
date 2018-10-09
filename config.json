@@ -1,4 +1,6 @@
 {
+    "apiKey": "",
+    "apiSecret": "",
     "mainCurrency": "USDT",
     "currencies": [
         "BTC",

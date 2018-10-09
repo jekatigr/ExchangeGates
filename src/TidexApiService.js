@@ -1,25 +1,6 @@
 const TidexApi = require('node-tidex-api');
 const { getConfig } = require('./ConfigLoader');
 
-const { API_KEY, API_SECRET } = process.env;
-
-const api = new TidexApi({
-    apiKey: API_KEY,
-    apiSecret: API_SECRET
-});
-
-let actualSymbols;
-let orderBooksCache;
-
-const getMarkets = async () => {
-    try {
-        return await api.getMarkets();
-    } catch (ex) {
-        console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
-        throw new Error(`Exception while fetching markets, ex: ${ex}`);
-    }
-};
-
 /**
  * Фильрует балансы в соответствии с файлом конфига.
  */
@@ -29,46 +10,11 @@ const filterBalances = (balances = []) => {
     return balances.filter(b => currencies.includes(b.currency));
 };
 
-const getBalances = async () => {
-    try {
-        const { balances } = await api.getAccountInfoExtended();
-
-        const balancesFiltered = filterBalances(balances);
-
-        return balancesFiltered;
-    } catch (ex) {
-        console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
-        throw new Error(`Exception while fetching balances, ex: ${ex}`);
-    }
-};
-
-const getOrderBooks = async () => {
-    let symbols = await getActualSymbols();
-    return await api.getOrderBooks({ limit: 1, symbols });
-};
-
-const getUpdatedOrderBooks = async (all = false) => {
-    let result = [];
-    try {
-        let allOrderBooks = await getOrderBooks();
-        if (!all && orderBooksCache) {
-            result = filterChangedOrderBooks(allOrderBooks);
-        } else {
-            result = allOrderBooks;
-        }
-        orderBooksCache = allOrderBooks;
-    } catch (ex) {
-        console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-        throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
-    }
-    return result;
-};
-
 /**
  * Возвращает только обновленные ордербуки.
  * @param allOrderBooks
  */
-const filterChangedOrderBooks = (allOrderBooks) => {
+const filterChangedOrderBooks = (allOrderBooks, orderBooksCache) => {
     let result = [];
     allOrderBooks.forEach(orderBook => {
         const [ cached ] = orderBooksCache.filter(c => c.base === orderBook.base && c.quote === orderBook.quote);
@@ -102,82 +48,133 @@ const filterChangedOrderBooks = (allOrderBooks) => {
     return result;
 };
 
-/**
- * Возвращает символы, которые нужно будет отслеживать в треугольниках.
- * @returns {Promise<Array>}
- */
-const getActualSymbols = async () => {
-    if (!actualSymbols) {
+module.exports = class TidexApiService {
+    constructor() {
         const config = getConfig();
-        const { currencies } = config;
-        const markets = await api.getMarkets();
+        const { apiKey, apiSecret } = config;
 
-        actualSymbols = [];
-        for (const m of markets) {
-            const baseIndex = currencies.findIndex(c => c === m.base);
-            const quoteIndex = currencies.findIndex(c => c === m.quote);
-            if (baseIndex !== -1 && quoteIndex !== -1) {
-                actualSymbols.push(`${m.base}/${m.quote}`);
-            }
-        }
+        this.api = new TidexApi({
+            apiKey,
+            apiSecret
+        });
 
+        this.actualSymbols = undefined;
+        this.orderBooksCache = undefined;
     }
-    return actualSymbols;
-};
 
-const getTriangles = async () => {
-    try {
-        const config = getConfig();
-        const {currencies} = config;
-
-        //создаем матрицу смежности
-        const matrix = new Array(currencies.length);
-        for (let i = 0; i < currencies.length; i++) {
-            matrix[i] = new Array(currencies.length);
-            for (let j = 0; j < currencies.length; j++) {
-                matrix[i][j] = 0;
-            }
+    async getMarkets() {
+        try {
+            return await this.api.getMarkets();
+        } catch (ex) {
+            console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching markets, ex: ${ex}`);
         }
+    };
 
-        const markets = await api.getMarkets();
+    async getBalances() {
+        try {
+            const { balances } = await this.api.getAccountInfoExtended();
 
-        for (const m of markets) {
-            const baseIndex = currencies.findIndex(c => c === m.base);
-            const quoteIndex = currencies.findIndex(c => c === m.quote);
-            if (baseIndex !== -1 && quoteIndex !== -1) {
-                matrix[baseIndex][quoteIndex] = 1;
-                matrix[quoteIndex][baseIndex] = 1;
-            }
+            const balancesFiltered = filterBalances(balances);
+
+            return balancesFiltered;
+        } catch (ex) {
+            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching balances, ex: ${ex}`);
         }
+    };
 
-        const triangles = [];
+    async getOrderBooks() {
+        let symbols = await this.getActualSymbols();
+        return await this.api.getOrderBooks({ limit: 1, symbols });
+    };
 
-        for (let a = 0; a < currencies.length; a++) {
-            for (let b = a + 1; b < currencies.length; b++) {
-                if (matrix[a][b] === 0) continue;
-                for (let c = b + 1; c < currencies.length; c++) {
-                    if (matrix[b][c] === 1 && matrix[a][c] === 1) {
-                        triangles.push([currencies[a], currencies[b], currencies[c]]);
-                        triangles.push([currencies[a], currencies[c], currencies[b]]);
-                        triangles.push([currencies[b], currencies[a], currencies[c]]);
-                        triangles.push([currencies[b], currencies[c], currencies[a]]);
-                        triangles.push([currencies[c], currencies[a], currencies[b]]);
-                        triangles.push([currencies[c], currencies[b], currencies[a]]);
-                    }
+    async getUpdatedOrderBooks(all = false) {
+        let result = [];
+        try {
+            let allOrderBooks = await this.getOrderBooks();
+            if (!all && this.orderBooksCache) {
+                result = filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
+            } else {
+                result = allOrderBooks;
+            }
+            this.orderBooksCache = allOrderBooks;
+        } catch (ex) {
+            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+        }
+        return result;
+    };
+
+    /**
+     * Возвращает символы, которые нужно будет отслеживать в треугольниках.
+     * @returns {Promise<Array>}
+     */
+    async getActualSymbols() {
+        if (!this.actualSymbols) {
+            const config = getConfig();
+            const { currencies } = config;
+            const markets = await this.api.getMarkets();
+
+            this.actualSymbols = [];
+            for (const m of markets) {
+                const baseIndex = currencies.findIndex(c => c === m.base);
+                const quoteIndex = currencies.findIndex(c => c === m.quote);
+                if (baseIndex !== -1 && quoteIndex !== -1) {
+                    this.actualSymbols.push(`${m.base}/${m.quote}`);
                 }
             }
         }
+        return this.actualSymbols;
+    };
 
-        return triangles;
-    } catch (ex) {
-        console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
-        throw new Error(`Exception while fetching triangles, ex: ${ex}`);
-    }
-};
+    async getTriangles() {
+        try {
+            const config = getConfig();
+            const { currencies } = config;
 
-module.exports = {
-    getMarkets,
-    getBalances,
-    getUpdatedOrderBooks,
-    getTriangles
+            //создаем матрицу смежности
+            const matrix = new Array(currencies.length);
+            for (let i = 0; i < currencies.length; i++) {
+                matrix[i] = new Array(currencies.length);
+                for (let j = 0; j < currencies.length; j++) {
+                    matrix[i][j] = 0;
+                }
+            }
+
+            const markets = await this.api.getMarkets();
+
+            for (const m of markets) {
+                const baseIndex = currencies.findIndex(c => c === m.base);
+                const quoteIndex = currencies.findIndex(c => c === m.quote);
+                if (baseIndex !== -1 && quoteIndex !== -1) {
+                    matrix[baseIndex][quoteIndex] = 1;
+                    matrix[quoteIndex][baseIndex] = 1;
+                }
+            }
+
+            const triangles = [];
+
+            for (let a = 0; a < currencies.length; a++) {
+                for (let b = a + 1; b < currencies.length; b++) {
+                    if (matrix[a][b] === 0) continue;
+                    for (let c = b + 1; c < currencies.length; c++) {
+                        if (matrix[b][c] === 1 && matrix[a][c] === 1) {
+                            triangles.push([currencies[a], currencies[b], currencies[c]]);
+                            triangles.push([currencies[a], currencies[c], currencies[b]]);
+                            triangles.push([currencies[b], currencies[a], currencies[c]]);
+                            triangles.push([currencies[b], currencies[c], currencies[a]]);
+                            triangles.push([currencies[c], currencies[a], currencies[b]]);
+                            triangles.push([currencies[c], currencies[b], currencies[a]]);
+                        }
+                    }
+                }
+            }
+
+            return triangles;
+        } catch (ex) {
+            console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching triangles, ex: ${ex}`);
+        }
+    };
 };

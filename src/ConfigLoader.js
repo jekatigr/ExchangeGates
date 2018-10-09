@@ -41,14 +41,28 @@ async function loadConfig(path) {
     if (!configObj.mainCurrency || configObj.mainCurrency === '') {
         return {
             success: false,
-            error: "config.json doesn't have 'mainCurrency'"
+            error: "Config file doesn't have 'mainCurrency'"
         };
     }
 
     if (!configObj.currencies || configObj.currencies.length === 0) {
         return {
             success: false,
-            error: "config.json doesn't have 'currencies'"
+            error: "Config file doesn't have 'currencies'"
+        };
+    }
+
+    if (!configObj.apiKey || configObj.apiKey === '') {
+        return {
+            success: false,
+            error: "Config file doesn't have 'apiKey'"
+        };
+    }
+
+    if (!configObj.apiSecret || configObj.apiSecret === '') {
+        return {
+            success: false,
+            error: "Config file doesn't have 'apiSecret'"
         };
     }
 
