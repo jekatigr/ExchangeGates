@@ -48,6 +48,31 @@ const filterChangedOrderBooks = (allOrderBooks, orderBooksCache) => {
     return result;
 };
 
+/**
+ * Конвертация asks и bids ордербуков из формата [[price, amount],...] в формат {[price]: amount, ...}
+ */
+const convertOrderbooks = (orderbooks = []) => {
+    return orderbooks.map(o => {
+        const { asks = [], bids = [] } = o;
+
+        let newAsks = {};
+        asks.forEach(a => {
+            newAsks[a[0]] = a[1];
+        });
+
+        let newBids = {};
+        bids.forEach(b => {
+            newBids[b[0]] = b[1];
+        });
+
+        return {
+            ...o,
+            asks: newAsks,
+            bids: newBids
+        }
+    });
+};
+
 module.exports = class TidexApiService {
     constructor() {
         const config = getConfig();
@@ -103,7 +128,7 @@ module.exports = class TidexApiService {
             console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
         }
-        return result;
+        return convertOrderbooks(result);
     };
 
     /**
