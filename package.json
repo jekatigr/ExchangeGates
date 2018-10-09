@@ -1,13 +1,13 @@
 {
   "name": "ArbBotDataProvider",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Data provider for arbitrage bot.",
   "main": "index.js",
   "author": "jekatigr",
   "license": "UNLICENSED",
   "dependencies": {
     "cross-env": "^5.2.0",
-    "node-tidex-api": "^0.1.2",
+    "node-tidex-api": "^1.0.0",
     "ws": "^6.1.0"
   },
   "devDependencies": {

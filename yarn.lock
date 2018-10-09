@@ -2801,10 +2801,10 @@ node-pre-gyp@^0.10.0:
     semver "^5.3.0"
     tar "^4"
 
-node-tidex-api@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/node-tidex-api/-/node-tidex-api-0.1.2.tgz#3586fbce38801ea3f00bc894ffa447ea92598d48"
-  integrity sha512-8T8x+NXvVjro3UYjL0TexzWyA6xrAKsHftXfwbV6hqtGrscGSjvjbfjEF7gRw58/lKNVibUDd3G9ZE6eUEewOw==
+node-tidex-api@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/node-tidex-api/-/node-tidex-api-1.0.0.tgz#c4dafe52f76e616d5b10d2fee0c51281daa5b417"
+  integrity sha512-ZjZPwGa90nRDm3NTzPJZgvI1he0zGndmMe8Tj6u00mtsUzRZFz+rqilkZT+no09NVNjPrywAZs/rnjwVcOOv9g==
   dependencies:
     request "^2.88.0"
     request-promise-native "^1.0.5"

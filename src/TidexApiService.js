@@ -12,7 +12,8 @@ const filterBalances = (balances = []) => {
 
 /**
  * Возвращает только обновленные ордербуки.
- * @param allOrderBooks
+ * @param allOrderBooks новые ордербуки
+ * @param orderBooksCache существующие ордербуки в кэше
  */
 const filterChangedOrderBooks = (allOrderBooks, orderBooksCache) => {
     const result = [];
@@ -28,13 +29,13 @@ const filterChangedOrderBooks = (allOrderBooks, orderBooksCache) => {
             } else { // длина массиво асков и бидов одинакова
                 let changed = false;
                 for (let i = 0; i < asks.length && !changed; i++) {
-                    if (asks[i][0] !== cachedAsks[i][0] || asks[i][1] !== cachedAsks[i][1]) {
+                    if (asks[i].price !== cachedAsks[i].price || asks[i].amount !== cachedAsks[i].amount) {
                         changed = true;
                     }
                 }
 
                 for (let i = 0; i < bids.length && !changed; i++) {
-                    if (bids[i][0] !== cachedBids[i][0] || bids[i][1] !== cachedBids[i][1]) {
+                    if (bids[i].price !== cachedBids[i].price || bids[i].amount !== cachedBids[i].amount) {
                         changed = true;
                     }
                 }
@@ -47,33 +48,6 @@ const filterChangedOrderBooks = (allOrderBooks, orderBooksCache) => {
     });
     return result;
 };
-
-/**
- * Конвертация asks и bids ордербуков из формата [[price, amount],...] в формат {[price]: amount, ...}
- */
-const convertOrderbooks = (orderbooks = []) => (
-    orderbooks.map((o) => {
-        const { asks = [], bids = [] } = o;
-
-        const newAsks = {};
-        asks.forEach((a) => {
-            const [ price, amount ] = a;
-            newAsks[price] = amount;
-        });
-
-        const newBids = {};
-        bids.forEach((b) => {
-            const [ price, amount ] = b;
-            newBids[price] = amount;
-        });
-
-        return {
-            ...o,
-            asks: newAsks,
-            bids: newBids
-        };
-    })
-);
 
 module.exports = class TidexApiService {
     constructor() {
@@ -130,7 +104,7 @@ module.exports = class TidexApiService {
             console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
         }
-        return convertOrderbooks(result);
+        return result;
     }
 
     /**
