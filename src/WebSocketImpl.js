@@ -106,7 +106,7 @@ module.exports = class WebSocketImpl {
                 }
             }
         } catch (ex) {
-            WebSocketImpl.sendError(ws, ex, 'action', action);
+            WebSocketImpl.sendError(ws, ex.message, 'action', action);
             return;
         }
 
@@ -131,7 +131,7 @@ module.exports = class WebSocketImpl {
                 }
             } catch (ex) {
                 if (ws.readyState === 1) {
-                    WebSocketImpl.sendError(ws, ex, 'orderbooks');
+                    WebSocketImpl.sendError(ws, ex.message, 'orderbooks');
                 } else {
                     console.log(`Got error when ws was closed, ex: ${ex}`);
                 }
