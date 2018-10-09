@@ -22,7 +22,7 @@ module.exports = class WebSocketImpl {
             data
         };
         ws.send(JSON.stringify(body));
-    };
+    }
 
     static sendError(ws, error, event, action) {
         const body = {
@@ -33,7 +33,7 @@ module.exports = class WebSocketImpl {
             error
         };
         ws.send(JSON.stringify(body));
-    };
+    }
 
     constructor() {
         this.notifierRunning = false;
@@ -54,19 +54,14 @@ module.exports = class WebSocketImpl {
 
         WebSocketImpl.sendMessage(ws, undefined, 'connected');
         WebSocketImpl.sendMessage(ws, ACTIONS, 'availableActions');
-    };
+    }
 
     async onClientMessage(ws, message) {
         try {
-            let parsed = JSON.parse(message);
+            const parsed = JSON.parse(message);
 
             if (!parsed.action) {
                 WebSocketImpl.sendError(ws, 'Request should include "action" field.', 'action');
-                return;
-            }
-
-            if (!ACTIONS.includes(parsed.action)) {
-                WebSocketImpl.sendError(ws, 'Such action isn\'t supported.', 'action', parsed.action);
                 return;
             }
 
@@ -75,7 +70,7 @@ module.exports = class WebSocketImpl {
             console.error(`Exception while parse client's message, received: ${message}`);
             WebSocketImpl.sendError(ws, 'Incorrect message format.', 'action');
         }
-    };
+    }
 
     async processAction(ws, action) {
         let result;
@@ -104,6 +99,10 @@ module.exports = class WebSocketImpl {
                     this.notifierRunning = false;
                     break;
                 }
+                default: {
+                    WebSocketImpl.sendError(ws, 'Such action isn\'t supported.', 'action', action);
+                    return;
+                }
             }
         } catch (ex) {
             WebSocketImpl.sendError(ws, ex.message, 'action', action);
@@ -113,10 +112,11 @@ module.exports = class WebSocketImpl {
         if (result) {
             WebSocketImpl.sendMessage(ws, result, 'action', action);
         }
-    };
+    }
 
     async runOrderBookNotifier(ws) {
         let firstFetch = true;
+        /* eslint-disable no-await-in-loop */
         while (this.notifierRunning && ws.readyState === 1) {
             try {
                 const updatedOrderBooks = await this.service.getUpdatedOrderBooks(firstFetch);
@@ -138,7 +138,6 @@ module.exports = class WebSocketImpl {
             }
             await timeout(100);
         }
-    };
+        /* eslint-enable no-await-in-loop */
+    }
 };
-
-

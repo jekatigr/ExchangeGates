@@ -11,10 +11,14 @@
     "ws": "^6.1.0"
   },
   "devDependencies": {
+    "eslint": "^5.6.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
     "jest": "^23.6.0"
   },
   "scripts": {
     "start": "cross-env WS_PORT=2345 node index.js",
-    "test": "jest"
+    "test": "jest",
+    "lint": "./node_modules/.bin/eslint ./"
   }
 }

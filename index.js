@@ -13,6 +13,7 @@ const start = async () => {
         console.error(`Config file "${CONFIG_FILE_PATH}" was loaded.`);
     }
 
+    // eslint-disable-next-line no-new
     new WebSocketImpl();
 };
 

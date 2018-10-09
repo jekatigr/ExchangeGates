@@ -19,7 +19,7 @@ function getFileContent(path) {
 }
 
 async function loadConfig(path) {
-    let fileContent, configObj, res;
+    let fileContent, configObj;
     try {
         fileContent = await getFileContent(path);
     } catch (e) {
