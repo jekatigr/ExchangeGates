@@ -1,6 +1,9 @@
 module.exports = {
-    "extends": "airbnb-base",
-    "rules": {
+    extends: [
+        "airbnb-base",
+        "plugin:jest/recommended"
+    ],
+    rules: {
         "linebreak-style": 0,
         "indent": ["error", 4, {
             "SwitchCase": 1
@@ -43,5 +46,13 @@ module.exports = {
                 message: '`with` is disallowed in strict mode because it makes code impossible to predict and optimize.',
             }
         ],
-    }
+    },
+    plugins: [
+        'import',
+        'jest'
+    ],
+    env: {
+        node: true,
+        'jest/globals': true
+    },
 };

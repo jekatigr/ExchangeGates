@@ -108,7 +108,7 @@ module.exports = class TidexApiService {
     }
 
     /**
-     * Возвращает символы, которые нужно будет отслеживать в треугольниках.
+     * Возвращает символы, которые нужно будет отслеживать в ордербуках.
      * @returns {Promise<Array>}
      */
     async getActualSymbols() {

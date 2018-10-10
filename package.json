@@ -14,11 +14,13 @@
     "eslint": "^5.6.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^21.24.1",
     "jest": "^23.6.0"
   },
   "scripts": {
     "start": "cross-env WS_PORT=2345 node index.js",
+    "lint": "./node_modules/.bin/eslint ./",
     "test": "jest",
-    "lint": "./node_modules/.bin/eslint ./"
+    "coverage": "jest --collectCoverageFrom=./**.js --coverage ./"
   }
 }
