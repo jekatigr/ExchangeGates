@@ -82,15 +82,19 @@ module.exports = class TidexApiService {
         }
     }
 
-    async getOrderBooks() {
-        const symbols = await this.getActualSymbols();
-        return this.api.getOrderBooks({ limit: 1, symbols });
+    async getOrderBooks(symbols = []) {
+        let symbolsArr = symbols;
+        if (symbolsArr.length === 0) {
+            const markets = await this.api.getMarkets();
+            symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
+        }
+        return this.api.getOrderBooks({ limit: 1, symbols: symbolsArr });
     }
 
-    async getUpdatedOrderBooks(all = false) {
+    async getUpdatedOrderBooks(symbols = [], all = false) {
         let result = [];
         try {
-            const allOrderBooks = await this.getOrderBooks();
+            const allOrderBooks = await this.getOrderBooks(symbols);
             if (!all && this.orderBooksCache) {
                 result = filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
             } else {
@@ -102,28 +106,6 @@ module.exports = class TidexApiService {
             throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
         }
         return result;
-    }
-
-    /**
-     * Возвращает символы, которые нужно будет отслеживать в ордербуках.
-     * @returns {Promise<Array>}
-     */
-    async getActualSymbols() {
-        if (!this.actualSymbols) {
-            const config = getConfig();
-            const { currencies } = config;
-            const markets = await this.api.getMarkets();
-
-            this.actualSymbols = [];
-            for (const m of markets) {
-                const baseIndex = currencies.findIndex(c => c === m.base);
-                const quoteIndex = currencies.findIndex(c => c === m.quote);
-                if (baseIndex !== -1 && quoteIndex !== -1) {
-                    this.actualSymbols.push(`${m.base}/${m.quote}`);
-                }
-            }
-        }
-        return this.actualSymbols;
     }
 
     async getTriangles() {

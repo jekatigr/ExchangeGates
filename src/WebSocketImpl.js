@@ -91,7 +91,7 @@ module.exports = class WebSocketImpl {
                 case 'runOrderbooksNotifier': {
                     if (!this.notifierRunning) {
                         this.notifierRunning = true;
-                        this.runOrderBookNotifier(ws);
+                        this.runOrderBookNotifier(ws, params);
                     }
                     break;
                 }
@@ -114,12 +114,12 @@ module.exports = class WebSocketImpl {
         }
     }
 
-    async runOrderBookNotifier(ws) {
+    async runOrderBookNotifier(ws, symbols = []) {
         let firstFetch = true;
         /* eslint-disable no-await-in-loop */
         while (this.notifierRunning && ws.readyState === 1) {
             try {
-                const updatedOrderBooks = await this.service.getUpdatedOrderBooks(firstFetch);
+                const updatedOrderBooks = await this.service.getUpdatedOrderBooks(symbols, firstFetch);
                 firstFetch = false;
                 if (
                     this.notifierRunning
