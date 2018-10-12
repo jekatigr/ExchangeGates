@@ -1,14 +1,7 @@
 const TidexApi = require('node-tidex-api');
+const fillBalancesWithMainAmount = require('./BalancesUtil');
+const AdjacencyMatrixUtil = require('./AdjacencyMatrixUtil');
 const { getConfig } = require('./ConfigLoader');
-
-/**
- * Фильрует балансы в соответствии с файлом конфига.
- */
-const filterBalances = (balances = []) => {
-    const config = getConfig();
-    const { currencies } = config;
-    return balances.filter(b => currencies.includes(b.currency));
-};
 
 /**
  * Возвращает только обновленные ордербуки.
@@ -72,13 +65,17 @@ module.exports = class TidexApiService {
         }
     }
 
-    async getBalances() {
+    async getBalances(currencies = []) {
         try {
+            const { mainCurrency } = getConfig();
             const { balances } = await this.api.getAccountInfoExtended();
+            const tickers = await this.api.getTickers() || [];
 
-            const balancesFiltered = filterBalances(balances);
+            const balancesFiltered = (currencies.length > 0)
+                ? balances.filter(b => currencies.includes(b.currency))
+                : balances;
 
-            return balancesFiltered;
+            return fillBalancesWithMainAmount(balancesFiltered, tickers, mainCurrency);
         } catch (ex) {
             console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching balances, ex: ${ex}`);
@@ -134,25 +131,10 @@ module.exports = class TidexApiService {
             const config = getConfig();
             const { currencies } = config;
 
-            // создаем матрицу смежности
-            const matrix = new Array(currencies.length);
-            for (let i = 0; i < currencies.length; i++) {
-                matrix[i] = new Array(currencies.length);
-                for (let j = 0; j < currencies.length; j++) {
-                    matrix[i][j] = 0;
-                }
-            }
-
             const markets = await this.api.getMarkets();
 
-            for (const m of markets) {
-                const baseIndex = currencies.findIndex(c => c === m.base);
-                const quoteIndex = currencies.findIndex(c => c === m.quote);
-                if (baseIndex !== -1 && quoteIndex !== -1) {
-                    matrix[baseIndex][quoteIndex] = 1;
-                    matrix[quoteIndex][baseIndex] = 1;
-                }
-            }
+            // создаем матрицу смежности
+            const matrix = AdjacencyMatrixUtil.fillAdjacencyMatrixForCurrencies(markets, currencies);
 
             const triangles = [];
 

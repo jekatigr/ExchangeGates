@@ -65,14 +65,14 @@ module.exports = class WebSocketImpl {
                 return;
             }
 
-            await this.processAction(ws, parsed.action);
+            await this.processAction(ws, parsed.action, parsed.params);
         } catch (ex) {
             console.error(`Exception while parse client's message, received: ${message}`);
             WebSocketImpl.sendError(ws, 'Incorrect message format.', 'action');
         }
     }
 
-    async processAction(ws, action) {
+    async processAction(ws, action, params) {
         let result;
         try {
             switch (action) {
@@ -81,7 +81,7 @@ module.exports = class WebSocketImpl {
                     break;
                 }
                 case 'getBalances': {
-                    result = await this.service.getBalances();
+                    result = await this.service.getBalances(params);
                     break;
                 }
                 case 'getTriangles': {
