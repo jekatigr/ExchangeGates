@@ -1,24 +1,17 @@
 const WebSocket = require('ws');
 const TidexApiService = require('./TidexApiService');
 const { timeout } = require('./utils');
+const { CONNECTED, AVAILABLE_ACTIONS, ACTION, ORDERBOOKS } = require('./Events');
+const {
+    GET_ORDERBOOKS,
+    RUN_ORDERBOOKS_NOTIFIER,
+    STOP_ORDERBOOKS_NOTIFIER,
+    GET_BALANCES,
+    GET_MARKETS,
+    GET_TRIANGLES
+} = require('./Actions');
 
-const { WS_PORT = 2345 } = process.env;
-
-const ACTIONS = {
-    GET_ORDERBOOKS: 'getOrderBooks',
-    RUN_ORDERBOOKS_NOTIFIER: 'runOrderbooksNotifier',
-    STOP_ORDERBOOKS_NOTIFIER: 'stopOrderbooksNotifier',
-    GET_BALANCES: 'getBalances',
-    GET_MARKETS: 'getMarkets',
-    GET_TRIANGLES: 'getTriangles'
-};
-
-const EVENTS = {
-    CONNECTED: 'connected',
-    AVAILABLE_ACTIONS: 'availableActions',
-    ACTION: 'action',
-    ORDERBOOKS: 'orderbooks'
-};
+const { WS_PORT = 2345, TEST } = process.env;
 
 module.exports = class WebSocketImpl {
     static sendMessage(ws, data, event, action) {
@@ -60,8 +53,15 @@ module.exports = class WebSocketImpl {
 
         ws.on('message', this.onClientMessage.bind(this, ws));
 
-        WebSocketImpl.sendMessage(ws, undefined, EVENTS.CONNECTED);
-        WebSocketImpl.sendMessage(ws, Object.values(ACTIONS), EVENTS.AVAILABLE_ACTIONS);
+        WebSocketImpl.sendMessage(ws, undefined, CONNECTED);
+        WebSocketImpl.sendMessage(ws, Object.values({
+            GET_ORDERBOOKS,
+            RUN_ORDERBOOKS_NOTIFIER,
+            STOP_ORDERBOOKS_NOTIFIER,
+            GET_BALANCES,
+            GET_MARKETS,
+            GET_TRIANGLES
+        }), AVAILABLE_ACTIONS);
     }
 
     async onClientMessage(ws, message) {
@@ -69,14 +69,14 @@ module.exports = class WebSocketImpl {
             const parsed = JSON.parse(message);
 
             if (!parsed.action) {
-                WebSocketImpl.sendError(ws, 'Request should include "action" field.', EVENTS.ACTION);
+                WebSocketImpl.sendError(ws, 'Request should include "action" field.', ACTION);
                 return;
             }
 
             await this.processAction(ws, parsed.action, parsed.params);
         } catch (ex) {
             console.error(`Exception while parse client's message, received: ${message}`);
-            WebSocketImpl.sendError(ws, 'Incorrect message format.', EVENTS.ACTION);
+            WebSocketImpl.sendError(ws, 'Incorrect message format.', ACTION);
         }
     }
 
@@ -84,45 +84,45 @@ module.exports = class WebSocketImpl {
         let result;
         try {
             switch (action) {
-                case ACTIONS.GET_MARKETS: {
+                case GET_MARKETS: {
                     result = await this.service.getMarkets();
                     break;
                 }
-                case ACTIONS.GET_BALANCES: {
+                case GET_BALANCES: {
                     result = await this.service.getBalances(params);
                     break;
                 }
-                case ACTIONS.GET_TRIANGLES: {
+                case GET_TRIANGLES: {
                     result = await this.service.getTriangles();
                     break;
                 }
-                case ACTIONS.RUN_ORDERBOOKS_NOTIFIER: {
+                case RUN_ORDERBOOKS_NOTIFIER: {
                     if (!this.notifierRunning) {
                         this.notifierRunning = true;
                         this.runOrderBookNotifier(ws, params);
                     }
                     break;
                 }
-                case ACTIONS.STOP_ORDERBOOKS_NOTIFIER: {
+                case STOP_ORDERBOOKS_NOTIFIER: {
                     this.notifierRunning = false;
                     break;
                 }
-                case ACTIONS.GET_ORDERBOOKS: {
+                case GET_ORDERBOOKS: {
                     result = await this.service.getOrderBooks(params);
                     break;
                 }
                 default: {
-                    WebSocketImpl.sendError(ws, 'Such action isn\'t supported.', EVENTS.ACTION, action);
+                    WebSocketImpl.sendError(ws, 'Such action isn\'t supported.', ACTION, action);
                     return;
                 }
             }
         } catch (ex) {
-            WebSocketImpl.sendError(ws, ex.message, EVENTS.ACTION, action);
+            WebSocketImpl.sendError(ws, ex.message, ACTION, action);
             return;
         }
 
         if (result) {
-            WebSocketImpl.sendMessage(ws, result, EVENTS.ACTION, action);
+            WebSocketImpl.sendMessage(ws, result, ACTION, action);
         }
     }
 
@@ -139,11 +139,11 @@ module.exports = class WebSocketImpl {
                     && updatedOrderBooks.length > 0
                     && ws.readyState === 1
                 ) {
-                    WebSocketImpl.sendMessage(ws, updatedOrderBooks, EVENTS.ORDERBOOKS);
+                    WebSocketImpl.sendMessage(ws, updatedOrderBooks, ORDERBOOKS);
                 }
             } catch (ex) {
                 if (ws.readyState === 1) {
-                    WebSocketImpl.sendError(ws, ex.message, EVENTS.ORDERBOOKS);
+                    WebSocketImpl.sendError(ws, ex.message, ORDERBOOKS);
                 } else {
                     console.log(`Got error when ws was closed, ex: ${ex}`);
                 }

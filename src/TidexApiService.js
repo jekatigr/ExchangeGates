@@ -52,7 +52,6 @@ module.exports = class TidexApiService {
             apiSecret
         });
 
-        this.actualSymbols = undefined;
         this.orderBooksCache = undefined;
     }
 
