@@ -44,7 +44,7 @@ module.exports = class WebSocketImpl {
         this.service = new TidexApiService();
 
         if (!TEST) {
-            this.wss = new WebSocket.Server({port: WS_PORT}, () => {
+            this.wss = new WebSocket.Server({ port: WS_PORT }, () => {
                 console.log(`WS server started on :${WS_PORT}`);
             });
 

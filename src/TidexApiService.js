@@ -81,14 +81,14 @@ module.exports = class TidexApiService {
         }
     }
 
-    async getOrderBooks({ symbols = [], limit = 1} = {}) {
-        try{
+    async getOrderBooks({ symbols = [], limit = 1 } = {}) {
+        try {
             let symbolsArr = symbols;
             if (symbolsArr.length === 0) {
                 const markets = await this.api.getMarkets();
                 symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
             }
-            return this.api.getOrderBooks({ limit: limit, symbols: symbolsArr });
+            return this.api.getOrderBooks({ limit, symbols: symbolsArr });
         } catch (ex) {
             console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
