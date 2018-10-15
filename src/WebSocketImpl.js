@@ -4,13 +4,13 @@ const { timeout } = require('./utils');
 
 const { WS_PORT = 2345 } = process.env;
 
-const ACTIONS = [
-    'runOrderbooksNotifier',
-    'stopOrderbooksNotifier',
-    'getBalances',
-    'getMarkets',
-    'getTriangles'
-];
+const ACTIONS = {
+    RUN_ORDERBOOKS_NOTIFIER: 'runOrderbooksNotifier',
+    STOP_ORDERBOOKS_NOTIFIER: 'stopOrderbooksNotifier',
+    GET_BALANCES: 'getBalances',
+    GET_MARKETS: 'getMarkets',
+    GET_TRIANGLES: 'getTriangles'
+};
 
 module.exports = class WebSocketImpl {
     static sendMessage(ws, data, event, action) {
@@ -53,7 +53,7 @@ module.exports = class WebSocketImpl {
         ws.on('message', this.onClientMessage.bind(this, ws));
 
         WebSocketImpl.sendMessage(ws, undefined, 'connected');
-        WebSocketImpl.sendMessage(ws, ACTIONS, 'availableActions');
+        WebSocketImpl.sendMessage(ws, Object.values(ACTIONS), 'availableActions');
     }
 
     async onClientMessage(ws, message) {
@@ -76,26 +76,26 @@ module.exports = class WebSocketImpl {
         let result;
         try {
             switch (action) {
-                case 'getMarkets': {
+                case ACTIONS.GET_MARKETS: {
                     result = await this.service.getMarkets();
                     break;
                 }
-                case 'getBalances': {
+                case ACTIONS.GET_BALANCES: {
                     result = await this.service.getBalances(params);
                     break;
                 }
-                case 'getTriangles': {
+                case ACTIONS.GET_TRIANGLES: {
                     result = await this.service.getTriangles();
                     break;
                 }
-                case 'runOrderbooksNotifier': {
+                case ACTIONS.RUN_ORDERBOOKS_NOTIFIER: {
                     if (!this.notifierRunning) {
                         this.notifierRunning = true;
                         this.runOrderBookNotifier(ws, params);
                     }
                     break;
                 }
-                case 'stopOrderbooksNotifier': {
+                case ACTIONS.STOP_ORDERBOOKS_NOTIFIER: {
                     this.notifierRunning = false;
                     break;
                 }
