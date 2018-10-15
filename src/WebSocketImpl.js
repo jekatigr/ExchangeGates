@@ -14,10 +14,11 @@ const {
 const { WS_PORT = 2345, TEST } = process.env;
 
 module.exports = class WebSocketImpl {
-    static sendMessage(ws, data, event, action) {
+    static sendMessage(ws, timestampStart, timestampEnd, data, event, action) {
         const body = {
             success: true,
-            timestamp: +(new Date()),
+            timestampStart,
+            timestampEnd,
             event,
             action,
             data
@@ -25,10 +26,11 @@ module.exports = class WebSocketImpl {
         ws.send(JSON.stringify(body));
     }
 
-    static sendError(ws, error, event, action) {
+    static sendError(ws, timestampStart, timestampEnd, error, event, action) {
         const body = {
             success: false,
-            timestamp: +(new Date()),
+            timestampStart,
+            timestampEnd,
             event,
             action,
             error
@@ -55,8 +57,8 @@ module.exports = class WebSocketImpl {
 
         ws.on('message', this.onClientMessage.bind(this, ws));
 
-        WebSocketImpl.sendMessage(ws, undefined, CONNECTED);
-        WebSocketImpl.sendMessage(ws, Object.values({
+        WebSocketImpl.sendMessage(ws, +new Date(), +new Date(), undefined, CONNECTED);
+        WebSocketImpl.sendMessage(ws, +new Date(), +new Date(), Object.values({
             GET_ORDERBOOKS,
             RUN_ORDERBOOKS_NOTIFIER,
             STOP_ORDERBOOKS_NOTIFIER,
@@ -67,23 +69,25 @@ module.exports = class WebSocketImpl {
     }
 
     async onClientMessage(ws, message) {
+        const start = +new Date();
         try {
             const parsed = JSON.parse(message);
 
             if (!parsed.action) {
-                WebSocketImpl.sendError(ws, 'Request should include "action" field.', ACTION);
+                WebSocketImpl.sendError(ws, start, +new Date(), 'Request should include "action" field.', ACTION);
                 return;
             }
 
             await this.processAction(ws, parsed.action, parsed.params);
         } catch (ex) {
             console.error(`Exception while parse client's message, received: ${message}`);
-            WebSocketImpl.sendError(ws, 'Incorrect message format.', ACTION);
+            WebSocketImpl.sendError(ws, start, +new Date(), 'Incorrect message format.', ACTION);
         }
     }
 
     async processAction(ws, action, params) {
         let result;
+        const start = +new Date();
         try {
             switch (action) {
                 case GET_MARKETS: {
@@ -114,17 +118,17 @@ module.exports = class WebSocketImpl {
                     break;
                 }
                 default: {
-                    WebSocketImpl.sendError(ws, 'Such action isn\'t supported.', ACTION, action);
+                    WebSocketImpl.sendError(ws, start, +new Date(), 'Such action isn\'t supported.', ACTION, action);
                     return;
                 }
             }
         } catch (ex) {
-            WebSocketImpl.sendError(ws, ex.message, ACTION, action);
+            WebSocketImpl.sendError(ws, start, +new Date(), ex.message, ACTION, action);
             return;
         }
 
         if (result) {
-            WebSocketImpl.sendMessage(ws, result, ACTION, action);
+            WebSocketImpl.sendMessage(ws, start, +new Date(), result, ACTION, action);
         }
     }
 
@@ -132,6 +136,7 @@ module.exports = class WebSocketImpl {
         let firstFetch = true;
         /* eslint-disable no-await-in-loop */
         while (this.notifierRunning && ws.readyState === 1) {
+            const start = +new Date();
             try {
                 const updatedOrderBooks = await this.service.getUpdatedOrderBooks(firstFetch, { symbols, limit });
                 firstFetch = false;
@@ -141,11 +146,11 @@ module.exports = class WebSocketImpl {
                     && updatedOrderBooks.length > 0
                     && ws.readyState === 1
                 ) {
-                    WebSocketImpl.sendMessage(ws, updatedOrderBooks, ORDERBOOKS);
+                    WebSocketImpl.sendMessage(ws, start, +new Date(), updatedOrderBooks, ORDERBOOKS);
                 }
             } catch (ex) {
                 if (ws.readyState === 1) {
-                    WebSocketImpl.sendError(ws, ex.message, ORDERBOOKS);
+                    WebSocketImpl.sendError(ws, start, +new Date(), ex.message, ORDERBOOKS);
                 } else {
                     console.log(`Got error when ws was closed, ex: ${ex}`);
                 }
