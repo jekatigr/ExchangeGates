@@ -5,6 +5,7 @@ const { timeout } = require('./utils');
 const { WS_PORT = 2345 } = process.env;
 
 const ACTIONS = {
+    GET_ORDERBOOKS: 'getOrderBooks',
     RUN_ORDERBOOKS_NOTIFIER: 'runOrderbooksNotifier',
     STOP_ORDERBOOKS_NOTIFIER: 'stopOrderbooksNotifier',
     GET_BALANCES: 'getBalances',
@@ -104,6 +105,10 @@ module.exports = class WebSocketImpl {
                 }
                 case ACTIONS.STOP_ORDERBOOKS_NOTIFIER: {
                     this.notifierRunning = false;
+                    break;
+                }
+                case ACTIONS.GET_ORDERBOOKS: {
+                    result = await this.service.getOrderBooks(params);
                     break;
                 }
                 default: {

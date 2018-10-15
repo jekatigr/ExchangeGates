@@ -83,17 +83,22 @@ module.exports = class TidexApiService {
     }
 
     async getOrderBooks(symbols = []) {
-        let symbolsArr = symbols;
-        if (symbolsArr.length === 0) {
-            const markets = await this.api.getMarkets();
-            symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
+        try{
+            let symbolsArr = symbols;
+            if (symbolsArr.length === 0) {
+                const markets = await this.api.getMarkets();
+                symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
+            }
+            return this.api.getOrderBooks({ limit: 1, symbols: symbolsArr });
+        } catch (ex) {
+            console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
         }
-        return this.api.getOrderBooks({ limit: 1, symbols: symbolsArr });
     }
 
     async getUpdatedOrderBooks(symbols = [], all = false) {
-        let result = [];
         try {
+            let result = [];
             const allOrderBooks = await this.getOrderBooks(symbols);
             if (!all && this.orderBooksCache) {
                 result = filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
@@ -101,11 +106,11 @@ module.exports = class TidexApiService {
                 result = allOrderBooks;
             }
             this.orderBooksCache = allOrderBooks;
+            return result;
         } catch (ex) {
             console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
         }
-        return result;
     }
 
     async getTriangles() {
