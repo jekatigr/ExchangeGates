@@ -128,12 +128,12 @@ module.exports = class WebSocketImpl {
         }
     }
 
-    async runOrderBookNotifier(ws, symbols = []) {
+    async runOrderBookNotifier(ws, { symbols = [], limit = 1 } = {}) {
         let firstFetch = true;
         /* eslint-disable no-await-in-loop */
         while (this.notifierRunning && ws.readyState === 1) {
             try {
-                const updatedOrderBooks = await this.service.getUpdatedOrderBooks(symbols, firstFetch);
+                const updatedOrderBooks = await this.service.getUpdatedOrderBooks(firstFetch, { symbols, limit });
                 firstFetch = false;
                 if (
                     this.notifierRunning

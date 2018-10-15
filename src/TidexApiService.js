@@ -95,10 +95,10 @@ module.exports = class TidexApiService {
         }
     }
 
-    async getUpdatedOrderBooks(symbols = [], all = false) {
+    async getUpdatedOrderBooks(all = false, { symbols = [], limit = 1 }) {
         try {
             let result = [];
-            const allOrderBooks = await this.getOrderBooks(symbols);
+            const allOrderBooks = await this.getOrderBooks({ symbols, limit });
             if (!all && this.orderBooksCache) {
                 result = filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
             } else {
