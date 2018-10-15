@@ -41,11 +41,13 @@ module.exports = class WebSocketImpl {
 
         this.service = new TidexApiService();
 
-        this.wss = new WebSocket.Server({ port: WS_PORT }, () => {
-            console.log(`WS server started on :${WS_PORT}`);
-        });
+        if (!TEST) {
+            this.wss = new WebSocket.Server({port: WS_PORT}, () => {
+                console.log(`WS server started on :${WS_PORT}`);
+            });
 
-        this.wss.on('connection', this.onClientConnect.bind(this));
+            this.wss.on('connection', this.onClientConnect.bind(this));
+        }
     }
 
     async onClientConnect(ws) {
