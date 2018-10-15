@@ -12,6 +12,13 @@ const ACTIONS = {
     GET_TRIANGLES: 'getTriangles'
 };
 
+const EVENTS = {
+    CONNECTED: 'connected',
+    AVAILABLE_ACTIONS: 'availableActions',
+    ACTION: 'action',
+    ORDERBOOKS: 'orderbooks'
+};
+
 module.exports = class WebSocketImpl {
     static sendMessage(ws, data, event, action) {
         const body = {
@@ -52,8 +59,8 @@ module.exports = class WebSocketImpl {
 
         ws.on('message', this.onClientMessage.bind(this, ws));
 
-        WebSocketImpl.sendMessage(ws, undefined, 'connected');
-        WebSocketImpl.sendMessage(ws, Object.values(ACTIONS), 'availableActions');
+        WebSocketImpl.sendMessage(ws, undefined, EVENTS.CONNECTED);
+        WebSocketImpl.sendMessage(ws, Object.values(ACTIONS), EVENTS.AVAILABLE_ACTIONS);
     }
 
     async onClientMessage(ws, message) {
@@ -61,14 +68,14 @@ module.exports = class WebSocketImpl {
             const parsed = JSON.parse(message);
 
             if (!parsed.action) {
-                WebSocketImpl.sendError(ws, 'Request should include "action" field.', 'action');
+                WebSocketImpl.sendError(ws, 'Request should include "action" field.', EVENTS.ACTION);
                 return;
             }
 
             await this.processAction(ws, parsed.action, parsed.params);
         } catch (ex) {
             console.error(`Exception while parse client's message, received: ${message}`);
-            WebSocketImpl.sendError(ws, 'Incorrect message format.', 'action');
+            WebSocketImpl.sendError(ws, 'Incorrect message format.', EVENTS.ACTION);
         }
     }
 
@@ -100,17 +107,17 @@ module.exports = class WebSocketImpl {
                     break;
                 }
                 default: {
-                    WebSocketImpl.sendError(ws, 'Such action isn\'t supported.', 'action', action);
+                    WebSocketImpl.sendError(ws, 'Such action isn\'t supported.', EVENTS.ACTION, action);
                     return;
                 }
             }
         } catch (ex) {
-            WebSocketImpl.sendError(ws, ex.message, 'action', action);
+            WebSocketImpl.sendError(ws, ex.message, EVENTS.ACTION, action);
             return;
         }
 
         if (result) {
-            WebSocketImpl.sendMessage(ws, result, 'action', action);
+            WebSocketImpl.sendMessage(ws, result, EVENTS.ACTION, action);
         }
     }
 
@@ -127,11 +134,11 @@ module.exports = class WebSocketImpl {
                     && updatedOrderBooks.length > 0
                     && ws.readyState === 1
                 ) {
-                    WebSocketImpl.sendMessage(ws, updatedOrderBooks, 'orderbooks');
+                    WebSocketImpl.sendMessage(ws, updatedOrderBooks, EVENTS.ORDERBOOKS);
                 }
             } catch (ex) {
                 if (ws.readyState === 1) {
-                    WebSocketImpl.sendError(ws, ex.message, 'orderbooks');
+                    WebSocketImpl.sendError(ws, ex.message, EVENTS.ORDERBOOKS);
                 } else {
                     console.log(`Got error when ws was closed, ex: ${ex}`);
                 }
