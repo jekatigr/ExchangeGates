@@ -1,0 +1,98 @@
+Структура запросов/ответов.
+
+Все запросы в вебсокет должны приходить в формате объекта json вида: { action: "<метод>", params: <параметры> }.
+Доступные методы:
+	- getOrderBooks
+		Параметры. Опционально. Объект параметров может содержать:
+		1. symbols. Опционально. Параметр: массив строк символов, пример: { action: "getOrderBooks", params: { symbols: ['BTC/USDT', 'REM/ETH'] } }. Если не указан - возвращаются все ордербуки.
+		2. limit. Опционально. Параметр: глубина стакана, пример: { action: "getOrderBooks", params: { limit: 20 } }. По-умолчанию - "1".
+	- runOrderbooksNotifier
+		Параметры. Опционально. Объект параметров может содержать:
+		1. symbols. Опционально. Параметр: массив строк символов, пример: { action: "runOrderbooksNotifier", params: { symbols: ['BTC/USDT', 'REM/ETH'] } }. Если не указан - возвращаются все ордербуки.
+		2. limit. Опционально. Параметр: глубина стакана, пример: { action: "runOrderbooksNotifier", params: { limit: 20 } }. По-умолчанию - "1".
+	- stopOrderbooksNotifier
+	- getBalances
+		Параметры:
+		1. Опционально. Параметр: массив строк-символов, пример: { action: "getBalances", params: ['BTC/USDT', 'REM/ETH'] }. Если не указан - возвращаются все балансы.
+	- getMarkets
+	- getTriangles
+ 
+ 
+Формат сообщений от сервера.
+
+Все сообщения от ws-сервера приходят в json-объекте.
+Формат ответа: 
+{
+	success: true или false
+	event: строка, содержащая имя события. Например, при отправке команды с клиента event будет равен 'action'
+	action: строка с названием метода. Поле возвращается в ответе только в случае, когда был запрошен метод с клиента
+	data: объект с данными, либо строка содержащая описание ошибки (когда success = false)
+	timestampStart: время начала работы над событием,
+	timestampEnd: время окончания работы над событием
+}
+
+Возможные вариаты event'ов:
+ - orderbooks
+ - action
+ - connected
+ - availableActions
+
+Примеры:
+
+1. Оповещение об изменившихся позициях в стакане:
+{
+	success: true,
+	timestampStart: 12345677875,
+	timestampEnd: 12345678875,
+	event: 'orderbooks',
+	data: [
+		{
+			base: 'ETH',
+			quote: 'BTC',
+			ask: {
+				price: 0.034,
+				amount: 1.22
+			},
+			bid: {
+				price: 0.031,
+				amount: 0.5
+			}
+		},
+		{
+			base: 'BTC',
+			quote: 'USDT',
+			ask: {
+				price: 6500,
+				amount: 0.4
+			},
+			bid: {
+				price: 6480,
+				amount: 1.5
+			}
+		}
+	]
+}
+
+2. Клиент запрашивает актуальные треугольники:
+Запрос: { "action": "getTriangles" }
+Ответ: 
+{
+	success: true,
+	timestampStart: 12345677875,
+	timestampEnd: 12345678875,
+	event: 'action',
+	action: 'getTriangles',
+	data: [[ 'BTC', 'USDT', 'ETH' ], [ 'ETH', 'BTC', 'USD' ]]
+}
+
+3. Клиент запрашивает актуальные треугольники, происходит ошибка обновления данных с биржи:
+Запрос: { "action": "getTriangles" }
+Ответ: 
+{
+	success: false,
+	timestampStart: 12345677875,
+	timestampEnd: 12345678875,
+	event: 'action',
+	action: 'getTriangles',
+	data: 'Error while fetching data from exchange'
+}
