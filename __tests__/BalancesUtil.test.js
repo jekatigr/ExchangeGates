@@ -1,20 +1,22 @@
+const Big = require('big.js');
+
 const Balance = require('node-tidex-api/models/Balance');
 const Ticker = require('node-tidex-api/models/Ticker');
 
 const fillBalancesWithMainAmount = require('../src/BalancesUtil');
 
 describe('fillMainAmountInBalances', () => {
-    const REMBalance = new Balance({ currency: 'REM', free: 0, used: 0, total: 10 });
-    const ETHBalance = new Balance({ currency: 'ETH', free: 0, used: 0, total: 10 });
-    const USDTBalance = new Balance({ currency: 'USDT', free: 0, used: 0, total: 10 });
-    const BTCBalance = new Balance({ currency: 'BTC', free: 0, used: 0, total: 10 });
-    const AOIBalance = new Balance({ currency: 'AOI', free: 0, used: 0, total: 10 });
+    const REMBalance = new Balance({ currency: 'REM', free: 0, used: 0, total: 10.001 });
+    const ETHBalance = new Balance({ currency: 'ETH', free: 0, used: 0, total: 10.001 });
+    const USDTBalance = new Balance({ currency: 'USDT', free: 0, used: 0, total: 10.001 });
+    const BTCBalance = new Balance({ currency: 'BTC', free: 0, used: 0, total: 10.001 });
+    const AOIBalance = new Balance({ currency: 'AOI', free: 0, used: 0, total: 10.001 });
 
-    const REMBTC = new Ticker({ base: 'REM', quote: 'BTC', ask: 5, bid: 7 });
-    const BTCUSDT = new Ticker({ base: 'BTC', quote: 'USDT', ask: 5, bid: 7 });
-    const ETHUSDT = new Ticker({ base: 'ETH', quote: 'USDT', ask: 5, bid: 7 });
-    const BTCETH = new Ticker({ base: 'BTC', quote: 'ETH', ask: 5, bid: 7 });
-    const BTCAOI = new Ticker({ base: 'BTC', quote: 'AOI', ask: 5, bid: 7 });
+    const REMBTC = new Ticker({ base: 'REM', quote: 'BTC', ask: 5.002, bid: 7.002 });
+    const BTCUSDT = new Ticker({ base: 'BTC', quote: 'USDT', ask: 5.002, bid: 7.002 });
+    const ETHUSDT = new Ticker({ base: 'ETH', quote: 'USDT', ask: 5.002, bid: 7.002 });
+    const BTCETH = new Ticker({ base: 'BTC', quote: 'ETH', ask: 5.002, bid: 7.002 });
+    const BTCAOI = new Ticker({ base: 'BTC', quote: 'AOI', ask: 5.002, bid: 7.002 });
 
     it('should fill one balance (2 steps, all bids)', () => {
         const balances = [REMBalance];
@@ -22,7 +24,7 @@ describe('fillMainAmountInBalances', () => {
 
         const result = fillBalancesWithMainAmount(balances, tickers, 'USDT');
 
-        const mainAmount = REMBalance.total * REMBTC.bid * BTCUSDT.bid;
+        const mainAmount = +Big(REMBalance.total).times(REMBTC.bid).times(BTCUSDT.bid);
         const expected = [{
             ...REMBalance,
             mainAmount
@@ -31,13 +33,28 @@ describe('fillMainAmountInBalances', () => {
         expect(result).toEqual(expected);
     });
 
-    it('should fill one balance (2 steps, bid and ask)', () => {
+    it('should fill one balance (2 steps, ask and bid)', () => {
         const balances = [ETHBalance];
         const tickers = [ BTCETH, BTCUSDT ];
 
         const result = fillBalancesWithMainAmount(balances, tickers, 'USDT');
 
-        const mainAmount = (ETHBalance.total / BTCETH.ask) * BTCUSDT.bid;
+        const mainAmount = +(Big(ETHBalance.total).div(BTCETH.ask)).times(BTCUSDT.bid);
+        const expected = [{
+            ...ETHBalance,
+            mainAmount
+        }];
+
+        expect(result).toEqual(expected);
+    });
+
+    it('should fill one balance (2 steps, bid and ask)', () => {
+        const balances = [ETHBalance];
+        const tickers = [ ETHUSDT, BTCUSDT ];
+
+        const result = fillBalancesWithMainAmount(balances, tickers, 'BTC');
+
+        const mainAmount = +(Big(ETHBalance.total).times(BTCETH.bid)).div(BTCUSDT.ask);
         const expected = [{
             ...ETHBalance,
             mainAmount
@@ -66,7 +83,7 @@ describe('fillMainAmountInBalances', () => {
 
         const result = fillBalancesWithMainAmount(balances, tickers, 'USDT');
 
-        const mainAmount = BTCBalance.total * BTCUSDT.bid;
+        const mainAmount = +Big(BTCBalance.total).times(BTCUSDT.bid);
         const expected = [{
             ...BTCBalance,
             mainAmount
@@ -81,13 +98,13 @@ describe('fillMainAmountInBalances', () => {
 
         const result = fillBalancesWithMainAmount(balances, tickers, 'USDT');
 
-        let mainAmount = REMBalance.total * REMBTC.bid * BTCETH.bid * ETHUSDT.bid;
+        let mainAmount = +Big(REMBalance.total).times(REMBTC.bid).times(BTCETH.bid).times(ETHUSDT.bid);
         const expected = [{
             ...REMBalance,
             mainAmount
         }];
 
-        mainAmount = (AOIBalance.total / BTCAOI.ask) * BTCETH.bid * ETHUSDT.bid;
+        mainAmount = +(Big(AOIBalance.total).div(BTCAOI.ask)).times(BTCETH.bid).times(ETHUSDT.bid);
         expected.push({
             ...AOIBalance,
             mainAmount

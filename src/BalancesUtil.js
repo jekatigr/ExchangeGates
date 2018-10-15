@@ -1,3 +1,4 @@
+const Big = require('big.js');
 const AdjacencyMatrixUtil = require('./AdjacencyMatrixUtil');
 const { bfs } = require('./utils');
 
@@ -51,6 +52,7 @@ class BalancesUtil {
      * @param currency Начальная валюта в балансе, которую нужно пересчитать в главную валюту.
      * @param tickers
      * @param pairs
+     * @param amount
      * @returns {undefined}
      */
     static calcMainAmount(tickers, pairs, currency, amount) {
@@ -59,7 +61,7 @@ class BalancesUtil {
             return pairs.some(([ f, s ]) => (f === base && s === quote) || (f === quote && s === base));
         });
 
-        let currentAmount = amount;
+        let currentPrice = Big(0);
         let currentCurrency = currency;
         for (const pair of pairs) {
             const [ first, second ] = pair;
@@ -68,15 +70,23 @@ class BalancesUtil {
             ));
 
             if (ticker.base === currentCurrency) {
-                currentAmount *= ticker.bid;
+                if (!currentPrice.eq(0)) {
+                    currentPrice = currentPrice.times(ticker.bid);
+                } else {
+                    currentPrice = Big(ticker.bid);
+                }
                 currentCurrency = ticker.quote;
             } else if (ticker.quote === currentCurrency) {
-                currentAmount /= ticker.ask;
+                if (!currentPrice.eq(0)) {
+                    currentPrice = currentPrice.div(ticker.ask);
+                } else {
+                    currentPrice = Big(1).div(ticker.ask);
+                }
                 currentCurrency = ticker.base;
             }
         }
 
-        return currentAmount;
+        return +(currentPrice.times(amount));
     }
 }
 
