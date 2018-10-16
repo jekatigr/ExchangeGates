@@ -8,7 +8,8 @@ const {
     STOP_ORDERBOOKS_NOTIFIER,
     GET_BALANCES,
     GET_MARKETS,
-    GET_TRIANGLES
+    GET_TRIANGLES,
+    GET_PRICES
 } = require('./Actions');
 
 const { WS_PORT = 2345, TEST } = process.env;
@@ -64,7 +65,8 @@ module.exports = class WebSocketImpl {
             STOP_ORDERBOOKS_NOTIFIER,
             GET_BALANCES,
             GET_MARKETS,
-            GET_TRIANGLES
+            GET_TRIANGLES,
+            GET_PRICES
         }), AVAILABLE_ACTIONS);
     }
 
@@ -115,6 +117,10 @@ module.exports = class WebSocketImpl {
                 }
                 case GET_ORDERBOOKS: {
                     result = await this.service.getOrderBooks(params);
+                    break;
+                }
+                case GET_PRICES: {
+                    result = await this.service.getPrices(params);
                     break;
                 }
                 default: {

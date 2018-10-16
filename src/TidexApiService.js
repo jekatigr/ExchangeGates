@@ -1,5 +1,6 @@
 const TidexApi = require('node-tidex-api');
 const fillBalancesWithMainAmount = require('./BalancesUtil');
+const { getPrices } = require('./PriceUtil');
 const AdjacencyMatrixUtil = require('./AdjacencyMatrixUtil');
 const { getConfig } = require('./ConfigLoader');
 
@@ -145,6 +146,18 @@ module.exports = class TidexApiService {
         } catch (ex) {
             console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching triangles, ex: ${ex}`);
+        }
+    }
+
+    async getPrices(currencies = []) {
+        try {
+            const { mainCurrency } = getConfig();
+            const tickers = await this.api.getTickers() || [];
+
+            return getPrices(tickers, currencies, mainCurrency);
+        } catch (ex) {
+            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching prices, ex: ${ex}`);
         }
     }
 };

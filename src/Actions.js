@@ -4,5 +4,6 @@ module.exports = {
     STOP_ORDERBOOKS_NOTIFIER: 'stopOrderbooksNotifier',
     GET_BALANCES: 'getBalances',
     GET_MARKETS: 'getMarkets',
-    GET_TRIANGLES: 'getTriangles'
+    GET_TRIANGLES: 'getTriangles',
+    GET_PRICES: 'getPrices'
 };
