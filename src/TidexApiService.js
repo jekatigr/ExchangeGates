@@ -197,6 +197,7 @@ module.exports = class TidexApiService {
         }
 
         const result = [];
+        /* eslint-disable no-await-in-loop */
         for (const orderId of ids) {
             try {
                 await this.api.cancelOrder(orderId);
@@ -206,6 +207,7 @@ module.exports = class TidexApiService {
                 result.push({ id: orderId, success: false, error: ex.message });
             }
         }
+        /* eslint-enable no-await-in-loop */
         return result;
     }
 

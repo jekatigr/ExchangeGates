@@ -1,6 +1,6 @@
 {
   "name": "ArbBotDataProvider",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Data provider for arbitrage bot.",
   "main": "index.js",
   "author": "jekatigr",
@@ -12,10 +12,10 @@
     "ws": "^6.1.0"
   },
   "devDependencies": {
-    "eslint": "^5.6.1",
+    "eslint": "^5.7.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jest": "^21.24.1",
+    "eslint-plugin-jest": "^21.25.1",
     "jest": "^23.6.0"
   },
   "scripts": {

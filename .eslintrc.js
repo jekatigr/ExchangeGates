@@ -21,7 +21,8 @@ module.exports = {
         }],
         "max-len": ["error", {
             "code": 120,
-            "ignoreStrings": true
+            "ignoreStrings": true,
+            "ignoreTemplateLiterals": true
         }],
         "object-curly-newline": ["error", {"consistent": true}],
         "no-console": 0,
