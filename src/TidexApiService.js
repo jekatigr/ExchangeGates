@@ -208,4 +208,13 @@ module.exports = class TidexApiService {
         }
         return result;
     }
+
+    async getActiveOrders(symbol) {
+        try {
+            return await this.api.getActiveOrders(symbol);
+        } catch (ex) {
+            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
+        }
+    }
 };

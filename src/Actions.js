@@ -7,5 +7,6 @@ module.exports = {
     GET_TRIANGLES: 'getTriangles',
     GET_PRICES: 'getPrices',
     CREATE_ORDER: 'createOrder',
-    CANCEL_ORDERS: 'cancelOrders'
+    CANCEL_ORDERS: 'cancelOrders',
+    GET_ACTIVE_ORDERS: 'getActiveOrders'
 };
