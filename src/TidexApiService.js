@@ -189,4 +189,23 @@ module.exports = class TidexApiService {
             throw new Error(`Exception while creating order, ex: ${ex}`);
         }
     }
+
+    async cancelOrders(ids = []) {
+        if (ids.length === 0) {
+            console.log('Exception while canceling orders, params missing');
+            throw new Error('Exception while canceling orders, params missing');
+        }
+
+        const result = [];
+        for (const orderId of ids) {
+            try {
+                await this.api.cancelOrder(orderId);
+                result.push({ id: orderId, success: true });
+            } catch (ex) {
+                console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+                result.push({ id: orderId, success: false, error: ex.message });
+            }
+        }
+        return result;
+    }
 };

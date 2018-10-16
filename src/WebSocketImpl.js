@@ -10,7 +10,8 @@ const {
     GET_MARKETS,
     GET_TRIANGLES,
     GET_PRICES,
-    CREATE_ORDER
+    CREATE_ORDER,
+    CANCEL_ORDERS
 } = require('./Actions');
 
 const { WS_PORT = 2345, TEST } = process.env;
@@ -68,7 +69,8 @@ module.exports = class WebSocketImpl {
             GET_MARKETS,
             GET_TRIANGLES,
             GET_PRICES,
-            CREATE_ORDER
+            CREATE_ORDER,
+            CANCEL_ORDERS
         }), AVAILABLE_ACTIONS);
     }
 
@@ -127,6 +129,10 @@ module.exports = class WebSocketImpl {
                 }
                 case CREATE_ORDER: {
                     result = await this.service.createOrder(params);
+                    break;
+                }
+                case CANCEL_ORDERS: {
+                    result = await this.service.cancelOrders(params);
                     break;
                 }
                 default: {
