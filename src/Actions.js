@@ -5,5 +5,6 @@ module.exports = {
     GET_BALANCES: 'getBalances',
     GET_MARKETS: 'getMarkets',
     GET_TRIANGLES: 'getTriangles',
-    GET_PRICES: 'getPrices'
+    GET_PRICES: 'getPrices',
+    CREATE_ORDER: 'createOrder'
 };

@@ -160,4 +160,33 @@ module.exports = class TidexApiService {
             throw new Error(`Exception while fetching prices, ex: ${ex}`);
         }
     }
+
+    async createOrder(params = {}) {
+        const { symbol, operation, price, amount, cancelAfter } = params;
+
+        if (!symbol || !operation || !price || !amount) {
+            console.log('Exception while creating order, params missing');
+            throw new Error('Exception while creating order, params missing');
+        }
+
+        try {
+            const order = await this.api.limitOrder(symbol, price, amount, operation);
+
+            if (cancelAfter && cancelAfter > 0 && order.status !== 'closed') {
+                setTimeout(async () => {
+                    try {
+                        await this.api.cancelOrder(order.id);
+                        console.log(`Order (id: ${order.id}) cancelled.`);
+                    } catch (ex) {
+                        console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                    }
+                }, cancelAfter);
+            }
+
+            return order;
+        } catch (ex) {
+            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while creating order, ex: ${ex}`);
+        }
+    }
 };
