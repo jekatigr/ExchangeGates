@@ -219,4 +219,25 @@ module.exports = class TidexApiService {
             throw new Error(`Exception while fetching active orders, ex: ${ex}`);
         }
     }
+
+    async getOrders(ids) {
+        if (ids.length === 0) {
+            console.log('Exception while getting orders, params missing');
+            throw new Error('Exception while getting orders, params missing');
+        }
+
+        const result = [];
+        /* eslint-disable no-await-in-loop */
+        for (const orderId of ids) {
+            try {
+                let order = await this.api.getOrder(orderId);
+                result.push({ ...order, success: true });
+            } catch (ex) {
+                console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
+                result.push({ id: orderId, success: false, error: ex.message });
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        return result;
+    }
 };

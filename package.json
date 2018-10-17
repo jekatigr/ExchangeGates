@@ -1,6 +1,6 @@
 {
   "name": "ArbBotDataProvider",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Data provider for arbitrage bot.",
   "main": "index.js",
   "author": "jekatigr",

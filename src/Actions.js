@@ -8,5 +8,6 @@ module.exports = {
     GET_PRICES: 'getPrices',
     CREATE_ORDER: 'createOrder',
     CANCEL_ORDERS: 'cancelOrders',
+    GET_ORDERS: 'getOrders',
     GET_ACTIVE_ORDERS: 'getActiveOrders'
 };
