@@ -2870,10 +2870,10 @@ node-pre-gyp@^0.10.0:
     semver "^5.3.0"
     tar "^4"
 
-node-tidex-api@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/node-tidex-api/-/node-tidex-api-1.0.0.tgz#c4dafe52f76e616d5b10d2fee0c51281daa5b417"
-  integrity sha512-ZjZPwGa90nRDm3NTzPJZgvI1he0zGndmMe8Tj6u00mtsUzRZFz+rqilkZT+no09NVNjPrywAZs/rnjwVcOOv9g==
+node-tidex-api@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/node-tidex-api/-/node-tidex-api-1.1.0.tgz#ecc861ab3d5cfa04c37336f52122c7560b4e0866"
+  integrity sha512-KdWjkU0BSb7cMtP9txQqZwEI5onk3lOi6zYk58iVIdWvWFscruDHJbFBHndRLZw0wTIK7ToXFnVNzyhlvyDbyQ==
   dependencies:
     request "^2.88.0"
     request-promise-native "^1.0.5"

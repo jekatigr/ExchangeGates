@@ -46,7 +46,10 @@ const filterChangedOrderBooks = (allOrderBooks, orderBooksCache) => {
 module.exports = class TidexApiService {
     constructor() {
         const config = getConfig();
-        const { apiKey, apiSecret } = config;
+        const { apiKey, apiSecret, ipArray } = config;
+
+        this.ipArray = ipArray;
+        this.currentIpIndex = -1;
 
         this.api = new TidexApi({
             apiKey,
@@ -56,9 +59,22 @@ module.exports = class TidexApiService {
         this.orderBooksCache = undefined;
     }
 
+    getNextIp() {
+        if (this.ipArray && this.ipArray.length > 0) {
+            this.currentIpIndex += 1;
+
+            if (this.currentIpIndex >= this.ipArray.length) {
+                this.currentIpIndex = 0;
+            }
+            return this.ipArray[this.currentIpIndex];
+        }
+
+        return undefined;
+    }
+
     async getMarkets() {
         try {
-            return await this.api.getMarkets();
+            return await this.api.getMarkets({ localAddress: this.getNextIp() });
         } catch (ex) {
             console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
@@ -68,8 +84,8 @@ module.exports = class TidexApiService {
     async getBalances(currencies = []) {
         try {
             const { mainCurrency } = getConfig();
-            const { balances } = await this.api.getAccountInfoExtended();
-            const tickers = await this.api.getTickers() || [];
+            const { balances } = await this.api.getAccountInfoExtended({ localAddress: this.getNextIp() });
+            const tickers = await this.api.getTickers(undefined, { localAddress: this.getNextIp() }) || [];
 
             const balancesFiltered = (currencies.length > 0)
                 ? balances.filter(b => currencies.includes(b.currency))
@@ -86,10 +102,10 @@ module.exports = class TidexApiService {
         try {
             let symbolsArr = symbols;
             if (symbolsArr.length === 0) {
-                const markets = await this.api.getMarkets();
+                const markets = await this.api.getMarkets({ localAddress: this.getNextIp() });
                 symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
             }
-            return this.api.getOrderBooks({ limit, symbols: symbolsArr });
+            return this.api.getOrderBooks({ limit, symbols: symbolsArr }, { localAddress: this.getNextIp() });
         } catch (ex) {
             console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
@@ -118,7 +134,7 @@ module.exports = class TidexApiService {
             const config = getConfig();
             const { currencies } = config;
 
-            const markets = await this.api.getMarkets();
+            const markets = await this.api.getMarkets({ localAddress: this.getNextIp() });
 
             // создаем матрицу смежности
             const matrix = AdjacencyMatrixUtil.fillAdjacencyMatrixForCurrencies(markets, currencies);
@@ -152,7 +168,7 @@ module.exports = class TidexApiService {
     async getPrices(currencies = []) {
         try {
             const { mainCurrency } = getConfig();
-            const tickers = await this.api.getTickers() || [];
+            const tickers = await this.api.getTickers(undefined, { localAddress: this.getNextIp() }) || [];
 
             return getPrices(tickers, currencies, mainCurrency);
         } catch (ex) {
@@ -170,12 +186,18 @@ module.exports = class TidexApiService {
         }
 
         try {
-            const order = await this.api.limitOrder(symbol, price, amount, operation);
+            const order = await this.api.limitOrder(
+                symbol,
+                price,
+                amount,
+                operation,
+                { localAddress: this.getNextIp() }
+            );
 
             if (cancelAfter && cancelAfter > 0 && order.status !== 'closed') {
                 setTimeout(async () => {
                     try {
-                        await this.api.cancelOrder(order.id);
+                        await this.api.cancelOrder(order.id, { localAddress: this.getNextIp() });
                         console.log(`Order (id: ${order.id}) cancelled.`);
                     } catch (ex) {
                         console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
@@ -200,7 +222,7 @@ module.exports = class TidexApiService {
         /* eslint-disable no-await-in-loop */
         for (const orderId of ids) {
             try {
-                await this.api.cancelOrder(orderId);
+                await this.api.cancelOrder(orderId, { localAddress: this.getNextIp() });
                 result.push({ id: orderId, success: true });
             } catch (ex) {
                 console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
@@ -213,7 +235,7 @@ module.exports = class TidexApiService {
 
     async getActiveOrders(symbol) {
         try {
-            return await this.api.getActiveOrders(symbol);
+            return await this.api.getActiveOrders(symbol, { localAddress: this.getNextIp() });
         } catch (ex) {
             console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching active orders, ex: ${ex}`);
@@ -230,7 +252,7 @@ module.exports = class TidexApiService {
         /* eslint-disable no-await-in-loop */
         for (const orderId of ids) {
             try {
-                let order = await this.api.getOrder(orderId);
+                const order = await this.api.getOrder(orderId, { localAddress: this.getNextIp() });
                 result.push({ ...order, success: true });
             } catch (ex) {
                 console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);

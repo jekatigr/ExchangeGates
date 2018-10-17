@@ -2,6 +2,10 @@
     "apiKey": "",
     "apiSecret": "",
     "mainCurrency": "USDT",
+    "ipArray": [
+        "127.0.0.1",
+        "127.0.0.1"
+    ],
     "currencies": [
         "BTC",
         "USDT",
