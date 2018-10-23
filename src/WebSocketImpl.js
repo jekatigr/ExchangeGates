@@ -1,6 +1,5 @@
 const WebSocket = require('ws');
 const { getConfig } = require('./ConfigLoader');
-const TidexApiService = require('./TidexApiService');
 const { timeout } = require('./utils/utils');
 
 const { CONNECTED, AVAILABLE_ACTIONS, ACTION, ORDERBOOKS } = require('./constants/Events');
@@ -50,7 +49,7 @@ module.exports = class WebSocketImpl {
 
         this.service = exchangeService;
 
-        const { wsPort = 2345} = getConfig();
+        const { wsPort = 2345 } = getConfig();
         if (!TEST) {
             this.wss = new WebSocket.Server({ port: wsPort }, () => {
                 console.log(`WS server started on :${wsPort}`);

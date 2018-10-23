@@ -1,80 +1,26 @@
 const TidexApi = require('node-tidex-api');
-const fillBalancesWithMainAmount = require('./utils/BalancesUtil');
-const { getPrices } = require('./utils/PriceUtil');
-const AdjacencyMatrixUtil = require('./utils/AdjacencyMatrixUtil');
-const { getConfig } = require('./ConfigLoader');
+const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
+const fillBalancesWithMainAmount = require('../utils/BalancesUtil');
+const { getPrices } = require('../utils/PriceUtil');
+const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
+const { getConfig } = require('../ConfigLoader');
 
-/**
- * Возвращает только обновленные ордербуки.
- * @param allOrderBooks новые ордербуки
- * @param orderBooksCache существующие ордербуки в кэше
- */
-const filterChangedOrderBooks = (allOrderBooks, orderBooksCache) => {
-    const result = [];
-    allOrderBooks.forEach((orderBook) => {
-        const [cached] = orderBooksCache.filter(c => c.base === orderBook.base && c.quote === orderBook.quote);
-        if (!cached) {
-            result.push(orderBook);
-        } else {
-            const { asks: cachedAsks, bids: cachedBids } = cached;
-            const { asks, bids } = orderBook;
-            if (asks.length !== cachedAsks.length || bids.length !== cachedBids.length) {
-                result.push(orderBook);
-            } else { // длина массиво асков и бидов одинакова
-                let changed = false;
-                for (let i = 0; i < asks.length && !changed; i++) {
-                    if (asks[i].price !== cachedAsks[i].price || asks[i].amount !== cachedAsks[i].amount) {
-                        changed = true;
-                    }
-                }
-
-                for (let i = 0; i < bids.length && !changed; i++) {
-                    if (bids[i].price !== cachedBids[i].price || bids[i].amount !== cachedBids[i].amount) {
-                        changed = true;
-                    }
-                }
-
-                if (changed) {
-                    result.push(orderBook);
-                }
-            }
-        }
-    });
-    return result;
-};
-
-module.exports = class TidexApiService {
+module.exports = class TidexApiService extends ExchangeServiceAbstract {
     constructor() {
         const config = getConfig();
-        const { apiKey, apiSecret, ipArray } = config;
+        const { exchange, apiKey, apiSecret, ipArray } = config;
 
-        this.ipArray = ipArray;
-        this.currentIpIndex = -1;
+        super(exchange, ipArray);
 
         this.api = new TidexApi({
             apiKey,
             apiSecret
         });
-
-        this.orderBooksCache = undefined;
-    }
-
-    getNextIp() {
-        if (this.ipArray && this.ipArray.length > 0) {
-            this.currentIpIndex += 1;
-
-            if (this.currentIpIndex >= this.ipArray.length) {
-                this.currentIpIndex = 0;
-            }
-            return this.ipArray[this.currentIpIndex];
-        }
-
-        return undefined;
     }
 
     async getMarkets() {
         try {
-            return await this.api.getMarkets({ localAddress: this.getNextIp() });
+            return await this.api.getMarkets({ localAddress: super.getNextIp() });
         } catch (ex) {
             console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
@@ -84,8 +30,8 @@ module.exports = class TidexApiService {
     async getBalances(currencies = []) {
         try {
             const { mainCurrency } = getConfig();
-            const { balances } = await this.api.getAccountInfoExtended({ localAddress: this.getNextIp() });
-            const tickers = await this.api.getTickers(undefined, { localAddress: this.getNextIp() }) || [];
+            const { balances } = await this.api.getAccountInfoExtended({ localAddress: super.getNextIp() });
+            const tickers = await this.api.getTickers(undefined, { localAddress: super.getNextIp() }) || [];
 
             const balancesFiltered = (currencies.length > 0)
                 ? balances.filter(b => currencies.includes(b.currency))
@@ -102,10 +48,10 @@ module.exports = class TidexApiService {
         try {
             let symbolsArr = symbols;
             if (symbolsArr.length === 0) {
-                const markets = await this.api.getMarkets({ localAddress: this.getNextIp() });
+                const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
                 symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
             }
-            return this.api.getOrderBooks({ limit, symbols: symbolsArr }, { localAddress: this.getNextIp() });
+            return this.api.getOrderBooks({ limit, symbols: symbolsArr }, { localAddress: super.getNextIp() });
         } catch (ex) {
             console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
@@ -117,7 +63,7 @@ module.exports = class TidexApiService {
             let result = [];
             const allOrderBooks = await this.getOrderBooks({ symbols, limit });
             if (!all && this.orderBooksCache) {
-                result = filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
+                result = ExchangeServiceAbstract.filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
             } else {
                 result = allOrderBooks;
             }
@@ -134,7 +80,7 @@ module.exports = class TidexApiService {
             const config = getConfig();
             const { currencies } = config;
 
-            const markets = await this.api.getMarkets({ localAddress: this.getNextIp() });
+            const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
 
             // создаем матрицу смежности
             const matrix = AdjacencyMatrixUtil.fillAdjacencyMatrixForCurrencies(markets, currencies);
@@ -168,7 +114,7 @@ module.exports = class TidexApiService {
     async getPrices(currencies = []) {
         try {
             const { mainCurrency } = getConfig();
-            const tickers = await this.api.getTickers(undefined, { localAddress: this.getNextIp() }) || [];
+            const tickers = await this.api.getTickers(undefined, { localAddress: super.getNextIp() }) || [];
 
             return getPrices(tickers, currencies, mainCurrency);
         } catch (ex) {
@@ -177,9 +123,7 @@ module.exports = class TidexApiService {
         }
     }
 
-    async createOrder(params = {}) {
-        const { symbol, operation, price, amount, cancelAfter } = params;
-
+    async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
         if (!symbol || !operation || !price || !amount) {
             console.log('Exception while creating order, params missing');
             throw new Error('Exception while creating order, params missing');
@@ -191,13 +135,13 @@ module.exports = class TidexApiService {
                 price,
                 amount,
                 operation,
-                { localAddress: this.getNextIp() }
+                { localAddress: super.getNextIp() }
             );
 
             if (cancelAfter && cancelAfter > 0 && order.status !== 'closed') {
                 setTimeout(async () => {
                     try {
-                        await this.api.cancelOrder(order.id, { localAddress: this.getNextIp() });
+                        await this.api.cancelOrder(order.id, { localAddress: super.getNextIp() });
                         console.log(`Order (id: ${order.id}) cancelled.`);
                     } catch (ex) {
                         console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
@@ -222,7 +166,7 @@ module.exports = class TidexApiService {
         /* eslint-disable no-await-in-loop */
         for (const orderId of ids) {
             try {
-                await this.api.cancelOrder(orderId, { localAddress: this.getNextIp() });
+                await this.api.cancelOrder(orderId, { localAddress: super.getNextIp() });
                 result.push({ id: orderId, success: true });
             } catch (ex) {
                 console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
@@ -235,14 +179,14 @@ module.exports = class TidexApiService {
 
     async getActiveOrders(symbol) {
         try {
-            return await this.api.getActiveOrders(symbol, { localAddress: this.getNextIp() });
+            return await this.api.getActiveOrders(symbol, { localAddress: super.getNextIp() });
         } catch (ex) {
             console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching active orders, ex: ${ex}`);
         }
     }
 
-    async getOrders(ids) {
+    async getOrders(ids = []) {
         if (ids.length === 0) {
             console.log('Exception while getting orders, params missing');
             throw new Error('Exception while getting orders, params missing');
@@ -252,7 +196,7 @@ module.exports = class TidexApiService {
         /* eslint-disable no-await-in-loop */
         for (const orderId of ids) {
             try {
-                const order = await this.api.getOrder(orderId, { localAddress: this.getNextIp() });
+                const order = await this.api.getOrder(orderId, { localAddress: super.getNextIp() });
                 result.push({ ...order, success: true });
             } catch (ex) {
                 console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);

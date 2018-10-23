@@ -1,12 +1,14 @@
 const WebSocketImpl = require('./src/WebSocketImpl');
-const TidexApiService = require('./src/TidexApiService');
-const { loadConfig } = require('./src/ConfigLoader');
+const TidexApiService = require('./src/exchangeServices/TidexApiService');
+const ExchangeServiceAbstract = require('./src/exchangeServices/ExchangeServiceAbstract');
+const { TIDEX, HUOBI } = require('./src/constants/Exchanges');
+const { loadConfig, getConfig } = require('./src/ConfigLoader');
 
 const { CONFIG_FILE_PATH } = process.env;
 
 const start = async () => {
     if (!CONFIG_FILE_PATH) {
-        console.error(`System will not start because of config file option (CONFIG_FILE_PATH environment variable) is not defined.`);
+        console.error('System will not start because of config file option (CONFIG_FILE_PATH environment variable) is not defined.');
         process.exit(1);
     }
 
@@ -19,7 +21,13 @@ const start = async () => {
         console.error(`Config file "${CONFIG_FILE_PATH}" was loaded.`);
     }
 
-    const exchangeService = new TidexApiService();
+    const { exchange } = getConfig();
+    let exchangeService;// = new TidexApiService();
+    switch (exchange) {
+        case TIDEX: { exchangeService = new TidexApiService(); break; }
+        case HUOBI: { exchangeService = new ExchangeServiceAbstract(); break; }
+        default: { exchangeService = new ExchangeServiceAbstract(); break; }
+    }
     // eslint-disable-next-line no-new
     new WebSocketImpl(exchangeService);
 };

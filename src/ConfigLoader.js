@@ -44,7 +44,9 @@ async function loadConfig(path) {
             success: false,
             error: "Config file doesn't have 'exchange'"
         };
-    } else if (!Object.values(SupportedExchanges).includes(configObj.exchange)) {
+    }
+
+    if (!Object.values(SupportedExchanges).includes(configObj.exchange)) {
         return {
             success: false,
             error: "'exchange' config option is wrong"

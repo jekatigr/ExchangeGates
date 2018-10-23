@@ -19,7 +19,8 @@
     "jest": "^23.6.0"
   },
   "scripts": {
-    "start": "cross-env WS_PORT=2345 node index.js",
+    "start-tidex": "cross-env CONFIG_FILE_PATH='./tidexConfig.json' node index.js",
+    "start-huobi": "cross-env CONFIG_FILE_PATH='./huobiConfig.json' node index.js",
     "lint": "./node_modules/.bin/eslint ./",
     "test": "jest",
     "coverage": "jest --collectCoverageFrom=./**.js --coverage ./"
