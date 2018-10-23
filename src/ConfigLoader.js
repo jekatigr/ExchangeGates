@@ -1,4 +1,5 @@
 const fs = require('fs');
+const SupportedExchanges = require('./constants/Exchanges');
 
 let CONFIG;
 
@@ -25,7 +26,7 @@ async function loadConfig(path) {
     } catch (e) {
         return {
             success: false,
-            error: `File "${path}" not found.`
+            error: `File "${path}" not found`
         };
     }
 
@@ -34,7 +35,19 @@ async function loadConfig(path) {
     } catch (e) {
         return {
             success: false,
-            error: 'Config file has wrong format.'
+            error: 'Config file has wrong format'
+        };
+    }
+
+    if (!configObj.exchange || configObj.exchange === '') {
+        return {
+            success: false,
+            error: "Config file doesn't have 'exchange'"
+        };
+    } else if (!Object.values(SupportedExchanges).includes(configObj.exchange)) {
+        return {
+            success: false,
+            error: "'exchange' config option is wrong"
         };
     }
 

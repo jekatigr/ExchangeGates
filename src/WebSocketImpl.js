@@ -1,6 +1,8 @@
 const WebSocket = require('ws');
+const { getConfig } = require('./ConfigLoader');
 const TidexApiService = require('./TidexApiService');
 const { timeout } = require('./utils/utils');
+
 const { CONNECTED, AVAILABLE_ACTIONS, ACTION, ORDERBOOKS } = require('./constants/Events');
 const {
     GET_ORDERBOOKS,
@@ -16,7 +18,7 @@ const {
     GET_ACTIVE_ORDERS
 } = require('./constants/Actions');
 
-const { WS_PORT = 2345, TEST } = process.env;
+const { TEST } = process.env;
 
 module.exports = class WebSocketImpl {
     static sendMessage(ws, timestampStart, timestampEnd, data, event, action) {
@@ -43,14 +45,15 @@ module.exports = class WebSocketImpl {
         ws.send(JSON.stringify(body));
     }
 
-    constructor() {
+    constructor(exchangeService) {
         this.notifierRunning = false;
 
-        this.service = new TidexApiService();
+        this.service = exchangeService;
 
+        const { wsPort = 2345} = getConfig();
         if (!TEST) {
-            this.wss = new WebSocket.Server({ port: WS_PORT }, () => {
-                console.log(`WS server started on :${WS_PORT}`);
+            this.wss = new WebSocket.Server({ port: wsPort }, () => {
+                console.log(`WS server started on :${wsPort}`);
             });
 
             this.wss.on('connection', this.onClientConnect.bind(this));
