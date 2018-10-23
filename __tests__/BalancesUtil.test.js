@@ -3,7 +3,7 @@ const Big = require('big.js');
 const Balance = require('node-tidex-api/models/Balance');
 const Ticker = require('node-tidex-api/models/Ticker');
 
-const fillBalancesWithMainAmount = require('../src/BalancesUtil');
+const fillBalancesWithMainAmount = require('../src/utils/BalancesUtil');
 
 describe('fillMainAmountInBalances', () => {
     const REMBalance = new Balance({ currency: 'REM', free: 0, used: 0, total: 10.001 });

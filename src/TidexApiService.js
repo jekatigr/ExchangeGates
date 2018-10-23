@@ -1,7 +1,7 @@
 const TidexApi = require('node-tidex-api');
-const fillBalancesWithMainAmount = require('./BalancesUtil');
-const { getPrices } = require('./PriceUtil');
-const AdjacencyMatrixUtil = require('./AdjacencyMatrixUtil');
+const fillBalancesWithMainAmount = require('./utils/BalancesUtil');
+const { getPrices } = require('./utils/PriceUtil');
+const AdjacencyMatrixUtil = require('./utils/AdjacencyMatrixUtil');
 const { getConfig } = require('./ConfigLoader');
 
 /**

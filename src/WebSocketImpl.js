@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 const TidexApiService = require('./TidexApiService');
-const { timeout } = require('./utils');
-const { CONNECTED, AVAILABLE_ACTIONS, ACTION, ORDERBOOKS } = require('./Events');
+const { timeout } = require('./utils/utils');
+const { CONNECTED, AVAILABLE_ACTIONS, ACTION, ORDERBOOKS } = require('./constants/Events');
 const {
     GET_ORDERBOOKS,
     RUN_ORDERBOOKS_NOTIFIER,
@@ -14,7 +14,7 @@ const {
     CANCEL_ORDERS,
     GET_ORDERS,
     GET_ACTIVE_ORDERS
-} = require('./Actions');
+} = require('./constants/Actions');
 
 const { WS_PORT = 2345, TEST } = process.env;
 

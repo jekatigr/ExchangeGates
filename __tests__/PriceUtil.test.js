@@ -2,7 +2,7 @@ const Big = require('big.js');
 
 const Ticker = require('node-tidex-api/models/Ticker');
 
-const { getPrices, getAllCurrenciesFromTickers } = require('../src/PriceUtil');
+const { getPrices, getAllCurrenciesFromTickers } = require('../src/utils/PriceUtil');
 
 describe('getPrice', () => {
     const REMBTC = new Ticker({ base: 'REM', quote: 'BTC', ask: 5.002, bid: 7.002 });

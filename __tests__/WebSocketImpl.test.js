@@ -4,7 +4,7 @@ const Big = require('big.js');
 
 const WebSocketImpl = require('../src/WebSocketImpl');
 
-const { GET_BALANCES } = require('../src/Actions');
+const { GET_BALANCES } = require('../src/constants/Actions');
 
 jest.mock('../src/ConfigLoader');
 
