@@ -43,6 +43,8 @@ module.exports = class ExchangeServiceAbstract {
         this.exchange = exchange;
         this.ipArray = ipArray;
         this.currentIpIndex = -1;
+
+        this.notifierRunning = false;
         this.orderBooksCache = undefined;
     }
 
@@ -59,6 +61,14 @@ module.exports = class ExchangeServiceAbstract {
         return undefined;
     }
 
+    isNotifierRunning() {
+        return this.notifierRunning;
+    }
+
+    stopOrderBookNotifier() {
+        this.notifierRunning = false;
+    }
+
     getMarkets() {
         throw new Error(`Method getMarkets not implemented for exchange '${this.exchange}'`);
     }
@@ -73,6 +83,10 @@ module.exports = class ExchangeServiceAbstract {
 
     getUpdatedOrderBooks(all = false, { symbols = [], limit = 1 }) {
         throw new Error(`Method getUpdatedOrderBooks not implemented for exchange '${this.exchange}'`);
+    }
+
+    runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
+        throw new Error(`Method runOrderBookNotifier not implemented for exchange '${this.exchange}'`);
     }
 
     getTriangles() {

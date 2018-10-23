@@ -4,6 +4,7 @@ const fillBalancesWithMainAmount = require('../utils/BalancesUtil');
 const { getPrices } = require('../utils/PriceUtil');
 const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
 const { getConfig } = require('../ConfigLoader');
+const { timeout } = require('../utils/utils');
 
 module.exports = class TidexApiService extends ExchangeServiceAbstract {
     constructor() {
@@ -73,6 +74,34 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
             console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
         }
+    }
+
+    async runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
+        this.notifierRunning = true;
+        let firstFetch = true;
+        /* eslint-disable no-await-in-loop */
+        while (this.notifierRunning) {
+            const start = +new Date();
+            try {
+                const updatedOrderBooks = await this.getUpdatedOrderBooks(firstFetch, { symbols, limit });
+                firstFetch = false;
+                if (this.notifierRunning && updatedOrderBooks && updatedOrderBooks.length > 0) {
+                    callback(undefined, {
+                        timestampStart: start,
+                        timestampEnd: +new Date(),
+                        data: updatedOrderBooks
+                    });
+                }
+            } catch (ex) {
+                callback({
+                    timestampStart: start,
+                    timestampEnd: +new Date(),
+                    data: ex.message
+                });
+            }
+            await timeout(100);
+        }
+        /* eslint-enable no-await-in-loop */
     }
 
     async getTriangles() {

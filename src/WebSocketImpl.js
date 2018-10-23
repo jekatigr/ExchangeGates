@@ -1,6 +1,5 @@
 const WebSocket = require('ws');
 const { getConfig } = require('./ConfigLoader');
-const { timeout } = require('./utils/utils');
 
 const { CONNECTED, AVAILABLE_ACTIONS, ACTION, ORDERBOOKS } = require('./constants/Events');
 const {
@@ -45,8 +44,6 @@ module.exports = class WebSocketImpl {
     }
 
     constructor(exchangeService) {
-        this.notifierRunning = false;
-
         this.service = exchangeService;
 
         const { wsPort = 2345 } = getConfig();
@@ -60,9 +57,10 @@ module.exports = class WebSocketImpl {
     }
 
     async onClientConnect(ws) {
-        this.notifierRunning = false;
-
         ws.on('message', this.onClientMessage.bind(this, ws));
+        ws.on('close', () => {
+            this.service.stopOrderBookNotifier();
+        });
 
         WebSocketImpl.sendMessage(ws, +new Date(), +new Date(), undefined, CONNECTED);
         WebSocketImpl.sendMessage(ws, +new Date(), +new Date(), Object.values({
@@ -115,14 +113,25 @@ module.exports = class WebSocketImpl {
                     break;
                 }
                 case RUN_ORDERBOOKS_NOTIFIER: {
-                    if (!this.notifierRunning) {
-                        this.notifierRunning = true;
-                        this.runOrderBookNotifier(ws, params);
+                    if (!this.service.isNotifierRunning()) {
+                        this.service.runOrderBookNotifier(params, (error, result) => {
+                            if (error) {
+                                const { timestampStart, timestampEnd, data } = error;
+                                if (ws.readyState === 1) {
+                                    WebSocketImpl.sendError(ws, timestampStart, timestampEnd, data, ORDERBOOKS);
+                                } else {
+                                    console.log(`Got error when ws was closed, ex: ${data}`);
+                                }
+                                return;
+                            }
+                            const { timestampStart, timestampEnd, data } = result;
+                            WebSocketImpl.sendMessage(ws, timestampStart, timestampEnd, data, ORDERBOOKS);
+                        });
                     }
                     break;
                 }
                 case STOP_ORDERBOOKS_NOTIFIER: {
-                    this.notifierRunning = false;
+                    this.service.stopOrderBookNotifier();
                     break;
                 }
                 case GET_ORDERBOOKS: {
@@ -162,33 +171,5 @@ module.exports = class WebSocketImpl {
         if (result) {
             WebSocketImpl.sendMessage(ws, start, +new Date(), result, ACTION, action);
         }
-    }
-
-    async runOrderBookNotifier(ws, { symbols = [], limit = 1 } = {}) {
-        let firstFetch = true;
-        /* eslint-disable no-await-in-loop */
-        while (this.notifierRunning && ws.readyState === 1) {
-            const start = +new Date();
-            try {
-                const updatedOrderBooks = await this.service.getUpdatedOrderBooks(firstFetch, { symbols, limit });
-                firstFetch = false;
-                if (
-                    this.notifierRunning
-                    && updatedOrderBooks
-                    && updatedOrderBooks.length > 0
-                    && ws.readyState === 1
-                ) {
-                    WebSocketImpl.sendMessage(ws, start, +new Date(), updatedOrderBooks, ORDERBOOKS);
-                }
-            } catch (ex) {
-                if (ws.readyState === 1) {
-                    WebSocketImpl.sendError(ws, start, +new Date(), ex.message, ORDERBOOKS);
-                } else {
-                    console.log(`Got error when ws was closed, ex: ${ex}`);
-                }
-            }
-            await timeout(100);
-        }
-        /* eslint-enable no-await-in-loop */
     }
 };
