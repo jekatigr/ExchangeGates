@@ -114,9 +114,9 @@ module.exports = class WebSocketImpl {
                 }
                 case RUN_ORDERBOOKS_NOTIFIER: {
                     if (!this.service.isNotifierRunning()) {
-                        this.service.runOrderBookNotifier(params, (error, result) => {
-                            if (error) {
-                                const { timestampStart, timestampEnd, data } = error;
+                        this.service.runOrderBookNotifier(params, (err, res) => {
+                            if (err) {
+                                const { timestampStart, timestampEnd, data } = err;
                                 if (ws.readyState === 1) {
                                     WebSocketImpl.sendError(ws, timestampStart, timestampEnd, data, ORDERBOOKS);
                                 } else {
@@ -124,7 +124,7 @@ module.exports = class WebSocketImpl {
                                 }
                                 return;
                             }
-                            const { timestampStart, timestampEnd, data } = result;
+                            const { timestampStart, timestampEnd, data } = res;
                             WebSocketImpl.sendMessage(ws, timestampStart, timestampEnd, data, ORDERBOOKS);
                         });
                     }
