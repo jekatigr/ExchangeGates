@@ -1,4 +1,6 @@
 {
+    "wsPort": 2345,
+    "exchange": "tidex",
     "apiKey": "",
     "apiSecret": "",
     "mainCurrency": "USDT",
@@ -11,6 +13,7 @@
         "USDT",
         "ETH",
         "LTC",
-        "RLC"
+        "RLC",
+        "REM"
     ]
 }
