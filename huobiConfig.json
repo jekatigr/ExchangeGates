@@ -1,0 +1,18 @@
+{
+    "wsPort": 2345,
+    "exchange": "huobi",
+    "apiKey": "key",
+    "apiSecret": "secret",
+    "mainCurrency": "USDT",
+    "ipArray": [
+
+    ],
+    "currencies": [
+        "BTC",
+        "USDT",
+        "ETH",
+        "LTC",
+        "RLC",
+        "REM"
+    ]
+}

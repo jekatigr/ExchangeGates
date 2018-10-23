@@ -1,6 +1,7 @@
 const WebSocketImpl = require('./src/WebSocketImpl');
-const TidexApiService = require('./src/exchangeServices/TidexApiService');
 const ExchangeServiceAbstract = require('./src/exchangeServices/ExchangeServiceAbstract');
+const TidexApiService = require('./src/exchangeServices/TidexApiService');
+const HuobiApiService = require('./src/exchangeServices/HuobiApiService');
 const { TIDEX, HUOBI } = require('./src/constants/Exchanges');
 const { loadConfig, getConfig } = require('./src/ConfigLoader');
 
@@ -25,7 +26,7 @@ const start = async () => {
     let exchangeService;// = new TidexApiService();
     switch (exchange) {
         case TIDEX: { exchangeService = new TidexApiService(); break; }
-        case HUOBI: { exchangeService = new ExchangeServiceAbstract(); break; }
+        case HUOBI: { exchangeService = new HuobiApiService(); break; }
         default: { exchangeService = new ExchangeServiceAbstract(); break; }
     }
     // eslint-disable-next-line no-new
