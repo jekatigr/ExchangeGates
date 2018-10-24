@@ -7,8 +7,10 @@
   "license": "UNLICENSED",
   "dependencies": {
     "big.js": "^5.2.1",
+    "ccxt": "^1.17.405",
     "cross-env": "^5.2.0",
     "node-tidex-api": "^1.1.0",
+    "pako": "^1.0.6",
     "ws": "^6.1.0"
   },
   "devDependencies": {
@@ -22,7 +24,7 @@
     "start-tidex": "cross-env CONFIG_FILE_PATH='./tidexConfig.json' node index.js",
     "start-huobi": "cross-env CONFIG_FILE_PATH='./huobiConfig.json' node index.js",
     "lint": "./node_modules/.bin/eslint ./",
-    "test": "jest",
+    "test": "cross-env TEST=true jest",
     "coverage": "jest --collectCoverageFrom=./**.js --coverage ./"
   }
 }

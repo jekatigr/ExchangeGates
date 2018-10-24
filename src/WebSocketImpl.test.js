@@ -2,9 +2,9 @@ const TidexApi = require('node-tidex-api');
 const Ticker = require('node-tidex-api/models/Ticker');
 const Big = require('big.js');
 
-const WebSocketImpl = require('../src/WebSocketImpl');
+const WebSocketImpl = require('./WebSocketImpl');
 
-const { GET_BALANCES } = require('../src/constants/Actions');
+const { GET_BALANCES } = require('./constants/Actions');
 
 jest.mock('../src/ConfigLoader');
 
