@@ -28,23 +28,6 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getBalances(currencies = []) {
-        try {
-            const { mainCurrency } = getConfig();
-            const { balances } = await this.api.getAccountInfoExtended({ localAddress: super.getNextIp() });
-            const tickers = await this.api.getTickers(undefined, { localAddress: super.getNextIp() }) || [];
-
-            const balancesFiltered = (currencies.length > 0)
-                ? balances.filter(b => currencies.includes(b.currency))
-                : balances;
-
-            return fillBalancesWithMainAmount(balancesFiltered, tickers, mainCurrency);
-        } catch (ex) {
-            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching balances, ex: ${ex}`);
-        }
-    }
-
     async getOrderBooks({ symbols = [], limit = 1 } = {}) {
         try {
             let symbolsArr = symbols;
@@ -149,6 +132,23 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching prices, ex: ${ex}`);
+        }
+    }
+
+    async getBalances(currencies = []) {
+        try {
+            const { mainCurrency } = getConfig();
+            const { balances } = await this.api.getAccountInfoExtended({ localAddress: super.getNextIp() });
+            const tickers = await this.api.getTickers(undefined, { localAddress: super.getNextIp() }) || [];
+
+            const balancesFiltered = (currencies.length > 0)
+                ? balances.filter(b => currencies.includes(b.currency))
+                : balances;
+
+            return fillBalancesWithMainAmount(balancesFiltered, tickers, mainCurrency);
+        } catch (ex) {
+            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching balances, ex: ${ex}`);
         }
     }
 

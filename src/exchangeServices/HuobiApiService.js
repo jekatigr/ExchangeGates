@@ -5,6 +5,7 @@ const fillBalancesWithMainAmount = require('../utils/BalancesUtil');
 const { getPrices } = require('../utils/PriceUtil');
 const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
 const { getConfig } = require('../ConfigLoader');
+
 module.exports = class HuobiApiService extends ExchangeServiceAbstract {
     constructor() {
         const config = getConfig();
