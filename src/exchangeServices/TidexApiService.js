@@ -19,7 +19,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         });
     }
 
-    async getMarkets() {
+    async getMarkets() { // TODO переформатировать результат в общий шаблон, как у ccxt
         try {
             return await this.api.getMarkets({ localAddress: super.getNextIp() });
         } catch (ex) {

@@ -1,10 +1,10 @@
+const https = require ('https');
 const ccxt = require('ccxt');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const fillBalancesWithMainAmount = require('../utils/BalancesUtil');
 const { getPrices } = require('../utils/PriceUtil');
 const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
 const { getConfig } = require('../ConfigLoader');
-
 module.exports = class HuobiApiService extends ExchangeServiceAbstract {
     constructor() {
         const config = getConfig();
@@ -15,13 +15,20 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         this.api = new ccxt.huobipro({
             apiKey: apiKey,
             secret: apiSecret,
-            enableRateLimit: true,
+            enableRateLimit: false,
             timeout: 10000
+        });
+    }
+
+    rotateAgent() {
+        this.api.agent = https.Agent({
+            localAddress: this.getNextIp()
         });
     }
 
     async getMarkets() {
         try {
+            this.rotateAgent();
             const markets = await this.api.loadMarkets();
 
             const res = [];

@@ -69,12 +69,9 @@ module.exports = class ExchangeServiceAbstract {
         this.notifierRunning = false;
     }
 
+
     getMarkets() {
         throw new Error(`Method getMarkets not implemented for exchange '${this.exchange}'`);
-    }
-
-    getBalances(currencies = []) {
-        throw new Error(`Method getBalances not implemented for exchange '${this.exchange}'`);
     }
 
     getOrderBooks({ symbols = [], limit = 1 } = {}) {
@@ -95,6 +92,10 @@ module.exports = class ExchangeServiceAbstract {
 
     getPrices(currencies = []) {
         throw new Error(`Method getPrices not implemented for exchange '${this.exchange}'`);
+    }
+
+    getBalances(currencies = []) {
+        throw new Error(`Method getBalances not implemented for exchange '${this.exchange}'`);
     }
 
     createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
