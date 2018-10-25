@@ -5,9 +5,15 @@ class CCXTApiMock {
     static setMarkets(m) {
         markets = m;
     }
-};
+}
 
 CCXTApiMock.huobipro = class {
+    loadMarkets() {
+        return markets;
+    }
+};
+
+CCXTApiMock.bitfinex = class {
     loadMarkets() {
         return markets;
     }
