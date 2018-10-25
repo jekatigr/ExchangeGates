@@ -23,6 +23,7 @@
   "scripts": {
     "start-tidex": "cross-env CONFIG_FILE_PATH='./tidexConfig.json' node index.js",
     "start-huobi": "cross-env CONFIG_FILE_PATH='./huobiConfig.json' node index.js",
+    "start-bitfinex": "cross-env CONFIG_FILE_PATH='./bitfinexConfig.json' node index.js",
     "lint": "./node_modules/.bin/eslint ./",
     "test": "cross-env TEST=true jest",
     "coverage": "jest --collectCoverageFrom=./**.js --coverage ./"

@@ -1,8 +1,9 @@
 const WebSocketImpl = require('./src/WebSocketImpl');
 const ExchangeServiceAbstract = require('./src/exchangeServices/ExchangeServiceAbstract');
 const TidexApiService = require('./src/exchangeServices/TidexApiService');
+const BitfinexApiService = require('./src/exchangeServices/BitfinexApiService');
 const HuobiApiService = require('./src/exchangeServices/HuobiApiService');
-const { TIDEX, HUOBI } = require('./src/constants/Exchanges');
+const { TIDEX, HUOBI, BITFINEX } = require('./src/constants/Exchanges');
 const { loadConfig, getConfig } = require('./src/ConfigLoader');
 
 const { CONFIG_FILE_PATH } = process.env;
@@ -27,6 +28,7 @@ const start = async () => {
     switch (exchange) {
         case TIDEX: { exchangeService = new TidexApiService(); break; }
         case HUOBI: { exchangeService = new HuobiApiService(); break; }
+        case BITFINEX: { exchangeService = new BitfinexApiService(); break; }
         default: { exchangeService = new ExchangeServiceAbstract(); break; }
     }
     // eslint-disable-next-line no-new
