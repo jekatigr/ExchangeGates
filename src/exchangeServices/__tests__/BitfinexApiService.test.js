@@ -5,15 +5,15 @@ const { loadConfig } = require('../../ConfigLoader');
 const testData = require('./data/BitfinexTestData');
 
 describe('bitfinex API', () => {
-    describe('getMarkers method', () => {
-        const { getMarkersTest } = testData;
+    describe('getMarkets method', () => {
+        const { getMarketsTest } = testData;
         it('should load and return correct markets', async () => {
             const {
                 case1: {
                     source,
                     expected
                 }
-            } = getMarkersTest;
+            } = getMarketsTest;
 
             await loadConfig('./config/bitfinexConfig.json');
 

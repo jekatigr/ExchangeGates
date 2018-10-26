@@ -1,5 +1,5 @@
 module.exports = {
-    getMarkersTest: {
+    getMarketsTest: {
         case1: {
             source: {
                 'BTC/USDT': {
