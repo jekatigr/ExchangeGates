@@ -1,12 +1,10 @@
 {
     "wsPort": 2345,
-    "exchange": "huobi",
-    "apiKey": "key",
-    "apiSecret": "secret",
+    "exchange": "bitfinex",
+    "apiKey": "",
+    "apiSecret": "",
     "mainCurrency": "USDT",
-    "ipArray": [
-
-    ],
+    "ipArray": [],
     "currencies": [
         "BTC",
         "USDT",

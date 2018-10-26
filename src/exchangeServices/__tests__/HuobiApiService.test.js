@@ -3,7 +3,7 @@ const HuobiApiService = require('../HuobiApiService');
 const { loadConfig } = require('../../ConfigLoader');
 
 it('should fetch markets', async () => {
-    await loadConfig('./huobiConfig.json');
+    await loadConfig('./config/huobiConfig.json');
     const service = new HuobiApiService();
     ccxt.setMarkets({
         '18C/BTC': {

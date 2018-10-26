@@ -15,7 +15,7 @@ describe('bitfinex API', () => {
                 }
             } = getMarkersTest;
 
-            await loadConfig('./bitfinexConfig.json');
+            await loadConfig('./config/bitfinexConfig.json');
 
             const service = new BitfinexApiService();
             ccxt.setMarkets(source);
@@ -34,7 +34,8 @@ describe('bitfinex API', () => {
                     expected
                 }
             } = getTrianglesTest;
-            await loadConfig('./bitfinexConfig.json');
+
+            await loadConfig('./config/bitfinexConfig.json');
 
             const service = new BitfinexApiService();
 
