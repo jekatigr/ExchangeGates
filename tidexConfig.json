@@ -4,10 +4,7 @@
     "apiKey": "",
     "apiSecret": "",
     "mainCurrency": "USDT",
-    "ipArray": [
-        "127.0.0.1",
-        "127.0.0.1"
-    ],
+    "ipArray": [],
     "currencies": [
         "BTC",
         "USDT",

@@ -1,6 +1,7 @@
 const https = require('https');
 const ccxt = require('ccxt');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
+const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
 const { getConfig } = require('../ConfigLoader');
 
 module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
@@ -48,6 +49,23 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
+        }
+    }
+
+    async getTriangles() {
+        try {
+            const config = getConfig();
+            const { currencies } = config;
+
+            const markets = await this.getMarkets();
+
+            // создаем матрицу смежности
+            const matrix = AdjacencyMatrixUtil.fillAdjacencyMatrixForCurrencies(markets, currencies);
+
+            return ExchangeServiceAbstract.calculateTriangles(currencies, matrix);
+        } catch (ex) {
+            console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching triangles, ex: ${ex}`);
         }
     }
 };
