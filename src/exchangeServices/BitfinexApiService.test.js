@@ -4,8 +4,6 @@ const { loadConfig } = require('../ConfigLoader');
 
 const data = require('./BitfinexTestData');
 
-
-
 describe('bitfinex API', () => {
     describe('getMarkers method', () => {
         const { getMarkersTest } = data;

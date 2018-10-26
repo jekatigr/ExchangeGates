@@ -168,117 +168,117 @@ module.exports = {
         case1: {
             sourceForMarkets: [
                 {
-                    "base": "BTC",
-                    "quote": "USDT",
-                    "precision": {
-                        "price": 5,
-                        "amount": 5
+                    base: 'BTC',
+                    quote: 'USDT',
+                    precision: {
+                        price: 5,
+                        amount: 5
                     },
-                    "taker": 0.002,
-                    "maker": 0.001,
-                    "limits": {
-                        "amount": {
-                            "min": 0.002,
-                            "max": 2000
+                    taker: 0.002,
+                    maker: 0.001,
+                    limits: {
+                        amount: {
+                            min: 0.002,
+                            max: 2000
                         },
-                        "price": {
-                            "min": 0.00001,
-                            "max": 100000
+                        price: {
+                            min: 0.00001,
+                            max: 100000
                         },
-                        "cost": {
-                            "min": 2e-8
+                        cost: {
+                            min: 2e-8
                         }
                     }
                 },
                 {
-                    "base": "LTC",
-                    "quote": "USDT",
-                    "precision": {
-                        "price": 5,
-                        "amount": 5
+                    base: 'LTC',
+                    quote: 'USDT',
+                    precision: {
+                        price: 5,
+                        amount: 5
                     },
-                    "taker": 0.002,
-                    "maker": 0.001,
-                    "limits": {
-                        "amount": {
-                            "min": 0.2,
-                            "max": 5000
+                    taker: 0.002,
+                    maker: 0.001,
+                    limits: {
+                        amount: {
+                            min: 0.2,
+                            max: 5000
                         },
-                        "price": {
-                            "min": 0.00001,
-                            "max": 100000
+                        price: {
+                            min: 0.00001,
+                            max: 100000
                         },
-                        "cost": {
-                            "min": 0.0000020000000000000003
+                        cost: {
+                            min: 0.0000020000000000000003
                         }
                     }
                 },
                 {
-                    "base": "LTC",
-                    "quote": "BTC",
-                    "precision": {
-                        "price": 5,
-                        "amount": 5
+                    base: 'LTC',
+                    quote: 'BTC',
+                    precision: {
+                        price: 5,
+                        amount: 5
                     },
-                    "taker": 0.002,
-                    "maker": 0.001,
-                    "limits": {
-                        "amount": {
-                            "min": 0.2,
-                            "max": 5000
+                    taker: 0.002,
+                    maker: 0.001,
+                    limits: {
+                        amount: {
+                            min: 0.2,
+                            max: 5000
                         },
-                        "price": {
-                            "min": 0.00001,
-                            "max": 100000
+                        price: {
+                            min: 0.00001,
+                            max: 100000
                         },
-                        "cost": {
-                            "min": 0.0000020000000000000003
+                        cost: {
+                            min: 0.0000020000000000000003
                         }
                     }
                 },
                 {
-                    "base": "ETH",
-                    "quote": "USDT",
-                    "precision": {
-                        "price": 5,
-                        "amount": 5
+                    base: 'ETH',
+                    quote: 'USDT',
+                    precision: {
+                        price: 5,
+                        amount: 5
                     },
-                    "taker": 0.002,
-                    "maker": 0.001,
-                    "limits": {
-                        "amount": {
-                            "min": 0.06,
-                            "max": 5000
+                    taker: 0.002,
+                    maker: 0.001,
+                    limits: {
+                        amount: {
+                            min: 0.06,
+                            max: 5000
                         },
-                        "price": {
-                            "min": 0.00001,
-                            "max": 100000
+                        price: {
+                            min: 0.00001,
+                            max: 100000
                         },
-                        "cost": {
-                            "min": 6.000000000000001e-7
+                        cost: {
+                            min: 6.000000000000001e-7
                         }
                     }
                 },
                 {
-                    "base": "ETH",
-                    "quote": "BTC",
-                    "precision": {
-                        "price": 5,
-                        "amount": 5
+                    base: 'ETH',
+                    quote: 'BTC',
+                    precision: {
+                        price: 5,
+                        amount: 5
                     },
-                    "taker": 0.002,
-                    "maker": 0.001,
-                    "limits": {
-                        "amount": {
-                            "min": 0.06,
-                            "max": 5000
+                    taker: 0.002,
+                    maker: 0.001,
+                    limits: {
+                        amount: {
+                            min: 0.06,
+                            max: 5000
                         },
-                        "price": {
-                            "min": 0.00001,
-                            "max": 100000
+                        price: {
+                            min: 0.00001,
+                            max: 100000
                         },
-                        "cost": {
-                            "min": 6.000000000000001e-7
+                        cost: {
+                            min: 6.000000000000001e-7
                         }
                     }
                 }
