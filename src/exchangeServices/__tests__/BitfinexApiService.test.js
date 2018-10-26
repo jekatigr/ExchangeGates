@@ -1,12 +1,12 @@
 const ccxt = require('ccxt');
-const BitfinexApiService = require('./BitfinexApiService');
-const { loadConfig } = require('../ConfigLoader');
+const BitfinexApiService = require('../BitfinexApiService');
+const { loadConfig } = require('../../ConfigLoader');
 
-const data = require('./BitfinexTestData');
+const testData = require('./data/BitfinexTestData');
 
 describe('bitfinex API', () => {
     describe('getMarkers method', () => {
-        const { getMarkersTest } = data;
+        const { getMarkersTest } = testData;
         it('should load and return correct markets', async () => {
             const {
                 case1: {
@@ -26,7 +26,7 @@ describe('bitfinex API', () => {
     });
 
     describe('getTriangles method', () => {
-        const { getTrianglesTest } = data;
+        const { getTrianglesTest } = testData;
         it('should return correct triangles', async () => {
             const {
                 case1: {

@@ -1,6 +1,6 @@
 const ccxt = require('ccxt');
-const HuobiApiService = require('./HuobiApiService');
-const {loadConfig} = require('../ConfigLoader');
+const HuobiApiService = require('../HuobiApiService');
+const { loadConfig } = require('../../ConfigLoader');
 
 it('should fetch markets', async () => {
     await loadConfig('./huobiConfig.json');

@@ -1,10 +1,14 @@
 const https = require ('https');
 const ccxt = require('ccxt');
+const request = require('request-promise-native');
+
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const fillBalancesWithMainAmount = require('../utils/BalancesUtil');
 const { getPrices } = require('../utils/PriceUtil');
 const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
 const { getConfig } = require('../ConfigLoader');
+
+const HUOBI_TICKERS_API_URL = 'https://api.huobi.pro/market/tickers';
 
 module.exports = class HuobiApiService extends ExchangeServiceAbstract {
     constructor() {
@@ -66,6 +70,20 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching triangles, ex: ${ex}`);
+        }
+    }
+
+    async getPrices(currencies = []) {
+        try {
+            const { mainCurrency } = getConfig();
+            const tickersRaw = JSON.parse(await request({url: HUOBI_TICKERS_API_URL, localAddress: this.getNextIp()}));
+            const markets = await this.api.loadMarkets();
+            const tickers = await this.api.marketGetTickers();
+
+            return getPrices(tickers, currencies, mainCurrency);
+        } catch (ex) {
+            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching prices, ex: ${ex}`);
         }
     }
 };

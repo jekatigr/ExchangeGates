@@ -104,10 +104,6 @@ module.exports = class WebSocketImpl {
                     result = await this.service.getMarkets();
                     break;
                 }
-                case GET_BALANCES: {
-                    result = await this.service.getBalances(params);
-                    break;
-                }
                 case GET_TRIANGLES: {
                     result = await this.service.getTriangles();
                     break;
@@ -140,6 +136,10 @@ module.exports = class WebSocketImpl {
                 }
                 case GET_PRICES: {
                     result = await this.service.getPrices(params);
+                    break;
+                }
+                case GET_BALANCES: {
+                    result = await this.service.getBalances(params);
                     break;
                 }
                 case CREATE_ORDER: {
