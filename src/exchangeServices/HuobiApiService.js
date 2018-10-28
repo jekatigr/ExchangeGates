@@ -63,10 +63,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
             const markets = await this.getMarkets();
 
-            // создаем матрицу смежности
-            const matrix = AdjacencyMatrixUtil.fillAdjacencyMatrixForCurrencies(markets, currencies);
-
-            return ExchangeServiceAbstract.calculateTriangles(currencies, matrix);
+            return ExchangeServiceAbstract.calculateTriangles(currencies, markets);
         } catch (ex) {
             console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching triangles, ex: ${ex}`);

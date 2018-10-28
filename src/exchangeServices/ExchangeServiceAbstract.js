@@ -1,4 +1,7 @@
 /* eslint-disable no-unused-vars */
+
+const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
+
 module.exports = class ExchangeServiceAbstract {
     /**
      * Возвращает только обновленные ордербуки.
@@ -39,7 +42,10 @@ module.exports = class ExchangeServiceAbstract {
         return result;
     }
 
-    static calculateTriangles(currencies, matrix) {
+    static calculateTriangles(currencies, markets) {
+        // создаем матрицу смежности
+        const matrix = AdjacencyMatrixUtil.fillAdjacencyMatrixForCurrencies(markets, currencies);
+
         const triangles = [];
 
         for (let a = 0; a < currencies.length; a++) {
