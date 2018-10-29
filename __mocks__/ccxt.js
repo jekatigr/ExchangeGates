@@ -1,9 +1,13 @@
 /* eslint-disable class-methods-use-this */
 let markets;
+let tickers;
 
 class CCXTApiMock {
     static setMarkets(m) {
         markets = m;
+    }
+    static setTickers(t) {
+        tickers = t;
     }
 }
 
@@ -16,6 +20,9 @@ CCXTApiMock.huobipro = class {
 CCXTApiMock.bitfinex2 = class {
     loadMarkets() {
         return markets;
+    }
+    fetchTickers() {
+        return tickers;
     }
 };
 

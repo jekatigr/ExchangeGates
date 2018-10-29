@@ -46,4 +46,24 @@ describe('bitfinex API', () => {
             expect(triangles).toEqual(expected);
         });
     });
+
+    describe('getPrices method', () => {
+        const { getPricesTest } = testData;
+        it('should return correct array of prices', async () => {
+            const {
+                case1: {
+                    source,
+                    expected
+                }
+            } = getPricesTest;
+
+            await loadConfig('./config/bitfinexConfig.json');
+
+            const service = new BitfinexApiService();
+            ccxt.setTickers(source);
+            const prices = await service.getPrices();
+
+            expect(prices).toEqual(expected);
+        });
+    });
 });

@@ -298,5 +298,118 @@ module.exports = {
                 [ 'LTC', 'USDT', 'BTC' ]
             ]
         }
+    },
+    getPricesTest: {
+        case1: {
+            source: {
+                'BTC/USDT':
+                    {
+                        symbol: 'BTC/USDT',
+                        timestamp: 1540825379200,
+                        datetime: '2018-10-29T15:02:59.200Z',
+                        high: 6512,
+                        low: 6320.8,
+                        bid: 6364.1,
+                        bidVolume: undefined,
+                        ask: 6364.2,
+                        askVolume: undefined,
+                        vwap: undefined,
+                        open: undefined,
+                        close: 6364.10281183,
+                        last: 6364.10281183,
+                        previousClose: undefined,
+                        change: -135.99718817,
+                        percentage: -2.09,
+                        average: undefined,
+                        baseVolume: 18348.67651798,
+                        quoteVolume: undefined,
+                        info:
+                            [ 'tBTCUSD',
+                                6364.1,
+                                58.86682578,
+                                6364.2,
+                                118.22601725,
+                                -135.99718817,
+                                -0.0209,
+                                6364.10281183,
+                                18348.67651798,
+                                6512,
+                                6320.8 ]
+                    },
+                'LTC/USDT':
+                    {
+                        symbol: 'LTC/USDT',
+                        timestamp: 1540825379200,
+                        datetime: '2018-10-29T15:02:59.200Z',
+                        high: 52.27,
+                        low: 48,
+                        bid: 49.512,
+                        bidVolume: undefined,
+                        ask: 49.513,
+                        askVolume: undefined,
+                        vwap: undefined,
+                        open: undefined,
+                        close: 49.512,
+                        last: 49.512,
+                        previousClose: undefined,
+                        change: -2.755,
+                        percentage: -5.27,
+                        average: undefined,
+                        baseVolume: 100250.18964819,
+                        quoteVolume: undefined,
+                        info:
+                            [ 'tLTCUSD',
+                                49.512,
+                                1464.58635448,
+                                49.513,
+                                1290.76469022,
+                                -2.755,
+                                -0.0527,
+                                49.512,
+                                100250.18964819,
+                                52.27,
+                                48 ]
+                    },
+                'LTC/BTC':
+                    {
+                        symbol: 'LTC/BTC',
+                        timestamp: 1540825379200,
+                        datetime: '2018-10-29T15:02:59.200Z',
+                        high: 0.0080403,
+                        low: 0.007612,
+                        bid: 0.0077798,
+                        bidVolume: undefined,
+                        ask: 0.0077897,
+                        askVolume: undefined,
+                        vwap: undefined,
+                        open: undefined,
+                        close: 0.007784,
+                        last: 0.007784,
+                        previousClose: undefined,
+                        change: -0.0002495,
+                        percentage: -3.11,
+                        average: undefined,
+                        baseVolume: 24222.64896883,
+                        quoteVolume: undefined,
+                        info:
+                            [ 'tLTCBTC',
+                                0.0077798,
+                                819.93462978,
+                                0.0077897,
+                                2589.63497255,
+                                -0.0002495,
+                                -0.0311,
+                                0.007784,
+                                24222.64896883,
+                                0.0080403,
+                                0.007612 ]
+                    },
+            },
+            expected: [
+                { base: 'BTC', quote: 'USDT', ask: 6364.2, bid: 6364.1 },
+                { base: 'USDT', quote: 'USDT', ask: 1, bid: 1 },
+                { base: 'LTC', quote: 'USDT', ask: 49.513, bid: 49.512 }
+            ]
+        }
     }
 };
