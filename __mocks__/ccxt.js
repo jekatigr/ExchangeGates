@@ -13,7 +13,7 @@ CCXTApiMock.huobipro = class {
     }
 };
 
-CCXTApiMock.bitfinex = class {
+CCXTApiMock.bitfinex2 = class {
     loadMarkets() {
         return markets;
     }

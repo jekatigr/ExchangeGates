@@ -1,5 +1,6 @@
 const https = require('https');
 const ccxt = require('ccxt');
+const { getPrices } = require('../utils/PriceUtil');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getConfig } = require('../ConfigLoader');
 
@@ -10,7 +11,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
         super(exchange, ipArray);
 
-        this.api = new ccxt.bitfinex(
+        this.api = new ccxt.bitfinex2(
             {
                 apiKey,
                 secret: apiSecret,
@@ -62,6 +63,31 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching triangles, ex: ${ex}`);
+        }
+    }
+
+    async getPrices(currencies = []) {
+        try {
+            const { mainCurrency } = getConfig();
+            this.rotateAgent();
+            const res = await this.api.fetchTickers();
+
+            const tickers = [];
+            for (const key of Object.keys(res)) {
+                const ticker = res[key];
+                const { ask, bid } = ticker;
+                const symbol = key.split('/');
+                tickers.push({
+                    base: symbol[0].toUpperCase(),
+                    quote: symbol[1].toUpperCase(),
+                    ask,
+                    bid
+                });
+            }
+            return getPrices(tickers, currencies, mainCurrency);
+        } catch (ex) {
+            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching prices, ex: ${ex}`);
         }
     }
 };
