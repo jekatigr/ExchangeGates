@@ -6,7 +6,6 @@ const pako = require('pako');
 const Big = require('big.js');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const fillBalancesWithMainAmount = require('../utils/BalancesUtil');
 const { getPrices } = require('../utils/PriceUtil');
 const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
 const { getConfig } = require('../ConfigLoader');

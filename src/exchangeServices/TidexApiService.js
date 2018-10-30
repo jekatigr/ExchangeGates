@@ -1,6 +1,6 @@
 const TidexApi = require('node-tidex-api');
+const Big = require('big.js');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const fillBalancesWithMainAmount = require('../utils/BalancesUtil');
 const { getPrices } = require('../utils/PriceUtil');
 const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
 const { getConfig } = require('../ConfigLoader');
@@ -119,13 +119,19 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         try {
             const { mainCurrency } = getConfig();
             const { balances } = await this.api.getAccountInfoExtended({ localAddress: super.getNextIp() });
-            const tickers = await this.api.getTickers(undefined, { localAddress: super.getNextIp() }) || [];
-
             const balancesFiltered = (currencies.length > 0)
                 ? balances.filter(b => currencies.includes(b.currency))
                 : balances;
+            const prices = await this.getPrices(balances.map(b => b.currency));
 
-            return fillBalancesWithMainAmount(balancesFiltered, tickers, mainCurrency);
+            for (const balance of balancesFiltered) {
+                const price = prices.find(p => p.base === balance.currency);
+                if (price) {
+                    balance.mainAmount = +Big(balance.total).times(price.bid);
+                }
+            }
+
+            return balancesFiltered;
         } catch (ex) {
             console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching balances, ex: ${ex}`);
