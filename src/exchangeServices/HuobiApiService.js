@@ -42,6 +42,24 @@ const convertToOrderbook = (rawOrderBook) => {
     return res;
 };
 
+/**
+ * Конвертер ордербуков в тикеры
+ * @param orderBooks
+ */
+const convertOrderBooksToTickers = (orderBooks) => {
+    return orderBooks.map((o) => {
+        const { base, quote, asks, bids } = o;
+        const [ { price: ask } ] = asks;
+        const [ { price: bid } ] = bids;
+        return {
+            base,
+            quote,
+            ask,
+            bid
+        }
+    });
+};
+
 module.exports = class HuobiApiService extends ExchangeServiceAbstract {
     constructor() {
         const config = getConfig();
@@ -211,7 +229,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
+    runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
         if (!this.notifierRunning) {
             const orderBooks = this.getOrderBooks({symbols, limit}); // отправляем все ордербуки после начала нотификации
             callback(undefined, {
@@ -272,17 +290,16 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         }
     }
 
-    // async getPrices(currencies = []) {
-    //     try {
-    //         const { mainCurrency } = getConfig();
-    //         const tickersRaw = JSON.parse(await request({url: HUOBI_TICKERS_API_URL, localAddress: this.getNextIp()}));
-    //         const markets = await this.api.loadMarkets();
-    //         const tickers = await this.api.marketGetTickers();
-    //
-    //         return getPrices(tickers, currencies, mainCurrency);
-    //     } catch (ex) {
-    //         console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
-    //         throw new Error(`Exception while fetching prices, ex: ${ex}`);
-    //     }
-    // }
+    async getPrices(currencies = []) {
+        try {
+            const { mainCurrency } = getConfig();
+            const orderBooks = this.getOrderBooks({ limit: 1 });
+            const tickers = convertOrderBooksToTickers(orderBooks);
+
+            return getPrices(tickers, currencies, mainCurrency);
+        } catch (ex) {
+            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching prices, ex: ${ex}`);
+        }
+    }
 };
