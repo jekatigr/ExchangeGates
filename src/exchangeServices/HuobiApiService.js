@@ -57,6 +57,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         });
 
         this.orderBooks = [];
+        this.orderBooksCache = undefined; //кэш ордербуков для клиента
+        this.notifierParams = undefined;
 
         this.initWS();
     }
@@ -123,7 +125,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
         const saveLocalDepth = (symbol, orderbook) => {
             const symbolObj = symbols.find(s => s.symbol === symbol);
-            const orderbookIndex = this.orderBooks.findIndex(e => e.base === symbolObj.base && e.quote === symbolObj.quote);
+            const { base, quote } = symbolObj;
+            const orderbookIndex = this.orderBooks.findIndex(e => e.base === base && e.quote === quote);
             const { asks, bids } = convertToOrderbook(orderbook);
             if (orderbookIndex !== -1) {
                 this.orderBooks[orderbookIndex] = {
@@ -133,16 +136,18 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 };
             } else {
                 this.orderBooks.push({
-                    base: symbolObj.base,
-                    quote: symbolObj.quote,
+                    base,
+                    quote,
                     bids,
                     asks
                 });
             }
+            this.sendUpdatedOrderBooksIfNeeded(base, quote);
         };
 
         init(symbols, saveLocalDepth.bind(this));
     }
+
 
     async getMarkets() {
         try {
@@ -169,7 +174,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getOrderBooks({ symbols = [], limit = 1 } = {}) {
+    getOrderBooks({ symbols = [], limit = 1 } = {}) {
         try {
             let orderbooks = this.orderBooks; // должен быть заполнен из вебсокета
             if (symbols && symbols.length > 0) {
@@ -187,6 +192,70 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
         }
+    }
+
+    getUpdatedOrderBooks(all = false, { symbols = [], limit = 1 }) {
+        try {
+            let result = [];
+            const allOrderBooks = this.getOrderBooks({ symbols, limit });
+            if (!all && this.orderBooksCache) {
+                result = ExchangeServiceAbstract.filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
+            } else {
+                result = allOrderBooks;
+            }
+            this.orderBooksCache = allOrderBooks;
+            return result;
+        } catch (ex) {
+            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+        }
+    }
+
+    async runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
+        if (!this.notifierRunning) {
+            const orderBooks = this.getOrderBooks({symbols, limit}); // отправляем все ордербуки после начала нотификации
+            callback(undefined, {
+                timestampStart: +new Date(),
+                timestampEnd: +new Date(),
+                data: orderBooks
+            });
+
+            this.notifierRunning = true;
+            this.notifierParams = {
+                symbols,
+                limit,
+                callback
+            };
+        }
+    }
+
+    sendUpdatedOrderBooksIfNeeded(base, quote) {
+        if (this.notifierRunning && this.notifierParams) {
+            if (!this.notifierParams.symbols
+                || this.notifierParams.symbols.length === 0
+                || this.notifierParams.symbols.includes(`${base}/${quote}`)
+            ) {
+                const start = +new Date();
+                const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
+                    symbols: [`${base}/${quote}`],
+                    limit: this.notifierParams.limit
+                });
+
+                if (this.notifierRunning && updatedOrderBooks && updatedOrderBooks.length > 0) {
+                    this.notifierParams.callback(undefined, {
+                        timestampStart: start,
+                        timestampEnd: +new Date(),
+                        data: updatedOrderBooks
+                    });
+                }
+            }
+        }
+    }
+
+    stopOrderBookNotifier() {
+        this.notifierRunning = false;
+        this.notifierParams = undefined;
+        this.orderBooksCache = undefined;
     }
 
     async getTriangles() {
