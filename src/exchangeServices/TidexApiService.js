@@ -17,6 +17,8 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
             apiKey,
             apiSecret
         });
+
+        this.orderBooksCache = undefined;
     }
 
     async getMarkets() { // TODO переформатировать результат в общий шаблон, как у ccxt

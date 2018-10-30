@@ -74,7 +74,6 @@ module.exports = class ExchangeServiceAbstract {
         this.currentIpIndex = -1;
 
         this.notifierRunning = false;
-        this.orderBooksCache = undefined;
     }
 
     getNextIp() {

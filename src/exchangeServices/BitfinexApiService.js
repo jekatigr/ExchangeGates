@@ -19,6 +19,8 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 timeout: 10000
             }
         );
+
+        this.orderBooksCache = undefined;
     }
 
     rotateAgent() {
