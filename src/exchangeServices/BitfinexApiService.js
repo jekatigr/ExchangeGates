@@ -1,5 +1,6 @@
 const https = require('https');
 const ccxt = require('ccxt');
+const Big = require('big.js');
 const { getPrices } = require('../utils/PriceUtil');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getConfig } = require('../ConfigLoader');
@@ -87,6 +88,43 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 });
             }
             return getPrices(tickers, currencies, mainCurrency);
+        } catch (ex) {
+            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching prices, ex: ${ex}`);
+        }
+    }
+
+    async getBalances(currencies = []) {
+        try {
+            this.rotateAgent();
+            const res = await this.api.fetchBalance();
+
+            const { free, total, used } = res;
+
+            const balances = [];
+            for (const key of Object.keys(total)) {
+                balances.push({
+                    currency: key,
+                    total: total[key],
+                    used: used[key],
+                    free: free[key]
+                })
+            }
+
+            const balancesFiltered = (currencies.length > 0)
+                ? balances.filter(b => currencies.includes(b.currency))
+                : balances;
+
+            const prices =  await this.getPrices(balances.map(b => b.currency));
+
+            for (const balance of balancesFiltered) {
+                const price = prices.find(p => p.base === balance.currency);
+                if (price) {
+                    balance.mainAmount = +Big(balance.total).times(price.bid);
+                }
+            }
+
+            return balancesFiltered;
         } catch (ex) {
             console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching prices, ex: ${ex}`);
