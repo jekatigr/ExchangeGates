@@ -1,13 +1,11 @@
-const https = require ('https');
+const https = require('https');
 const ccxt = require('ccxt');
-const request = require('request-promise-native');
 const WebSocket = require('ws');
 const pako = require('pako');
 const Big = require('big.js');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getPrices } = require('../utils/PriceUtil');
-const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
 const { getConfig } = require('../ConfigLoader');
 
 const WS_URL = 'wss://api.huobi.pro/ws';
@@ -46,19 +44,19 @@ const convertToOrderbook = (rawOrderBook) => {
  * Конвертер ордербуков в тикеры
  * @param orderBooks
  */
-const convertOrderBooksToTickers = (orderBooks) => {
-    return orderBooks.map((o) => {
+const convertOrderBooksToTickers = orderBooks => (
+    orderBooks.map((o) => {
         const { base, quote, asks, bids } = o;
-        const [ { price: ask } ] = asks;
-        const [ { price: bid } ] = bids;
+        const [{ price: ask }] = asks;
+        const [{ price: bid }] = bids;
         return {
             base,
             quote,
             ask,
             bid
-        }
-    });
-};
+        };
+    })
+);
 
 module.exports = class HuobiApiService extends ExchangeServiceAbstract {
     constructor() {
@@ -68,14 +66,14 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         super(exchange, ipArray);
 
         this.api = new ccxt.huobipro({
-            apiKey: apiKey,
+            apiKey,
             secret: apiSecret,
             enableRateLimit: false,
             timeout: 10000
         });
 
         this.orderBooks = [];
-        this.orderBooksCache = undefined; //кэш ордербуков для клиента
+        this.orderBooksCache = undefined; // кэш ордербуков для клиента
         this.notifierParams = undefined;
 
         this.initWS();
@@ -89,17 +87,17 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
     async initWS() {
         function subscribe(ws, symbols) {
-            for (let symbol of symbols) {
+            for (const symbol of symbols) {
                 ws.send(JSON.stringify({
-                    "sub": `market.${symbol.symbol}.depth.step0`,
-                    "id": `${symbol.symbol}`
+                    sub: `market.${symbol.symbol}.depth.step0`,
+                    id: `${symbol.symbol}`
                 }));
             }
         }
 
         function handle(data, callback) {
-            let symbol = data.ch.split('.')[1];
-            let channel = data.ch.split('.')[2];
+            const symbol = data.ch.split('.')[1];
+            const channel = data.ch.split('.')[2];
             if (channel === 'depth') {
                 callback(symbol, data.tick);
             }
@@ -114,8 +112,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             });
 
             ws.on('message', (data) => {
-                let text = pako.inflate(data, { to: 'string' });
-                let msg = JSON.parse(text);
+                const text = pako.inflate(data, { to: 'string' });
+                const msg = JSON.parse(text);
                 if (msg.ping) {
                     ws.send(JSON.stringify({ pong: msg.ping }));
                 } else if (msg.tick) {
@@ -128,7 +126,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 init(symbols, callback);
             });
 
-            ws.on('error', err => {
+            ws.on('error', (err) => {
                 console.log('error on huobi ws:', err);
                 init(symbols, callback);
             });
@@ -173,8 +171,9 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             const markets = await this.api.loadMarkets();
 
             const res = [];
-            for (let marketId in markets) {
-                let market = markets[marketId];
+            const marketIds = Object.keys(markets);
+            for (const marketId of marketIds) {
+                const market = markets[marketId];
                 const { base, quote, precision, taker, maker, limits } = market;
                 res.push({
                     base,
@@ -183,7 +182,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                     taker,
                     maker,
                     limits
-                })
+                });
             }
             return res;
         } catch (ex) {
@@ -231,7 +230,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
     runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
         if (!this.notifierRunning) {
-            const orderBooks = this.getOrderBooks({symbols, limit}); // отправляем все ордербуки после начала нотификации
+            // отправляем все ордербуки после начала нотификации
+            const orderBooks = this.getOrderBooks({ symbols, limit });
             callback(undefined, {
                 timestampStart: +new Date(),
                 timestampEnd: +new Date(),
@@ -305,7 +305,6 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
     async getBalances(currencies = []) {
         try {
-            const { mainCurrency } = getConfig();
             this.rotateAgent();
             let balances = await this.api.fetchBalance();
             delete balances.free;
@@ -336,5 +335,132 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching balances, ex: ${ex}`);
         }
+    }
+
+    async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
+        if (!symbol || !operation || !price || !amount) {
+            console.log('Exception while creating order, params missing');
+            throw new Error('Exception while creating order, params missing');
+        }
+
+        try {
+            this.rotateAgent();
+            const orderRaw = await this.api.createOrder(
+                symbol,
+                'limit',
+                operation,
+                amount,
+                price
+            );
+
+            const [ base, quote ] = orderRaw.symbol.split('/');
+
+            const order = {
+                id: orderRaw.id,
+                base,
+                quote,
+                operation: orderRaw.side,
+                amount: orderRaw.amount,
+                remain: (orderRaw.remaining === undefined) ? orderRaw.amount : orderRaw.remaining,
+                price: orderRaw.price,
+                average: orderRaw.average,
+                created: orderRaw.timestamp,
+                status: 'active'
+            };
+
+            if (cancelAfter && cancelAfter > 0 && order.status !== 'closed') {
+                setTimeout(async () => {
+                    try {
+                        await this.api.cancelOrder(order.id);
+                        console.log(`Order (id: ${order.id}) cancelled.`);
+                    } catch (ex) {
+                        console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                    }
+                }, cancelAfter);
+            }
+
+            return order;
+        } catch (ex) {
+            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while creating order, ex: ${ex}`);
+        }
+    }
+
+    async cancelOrders(ids = []) {
+        if (ids.length === 0) {
+            console.log('Exception while canceling orders, params missing');
+            throw new Error('Exception while canceling orders, params missing');
+        }
+
+        const result = [];
+        /* eslint-disable no-await-in-loop */
+        for (const orderId of ids) {
+            try {
+                this.rotateAgent();
+                await this.api.cancelOrder(orderId);
+                result.push({ id: orderId, success: true });
+            } catch (ex) {
+                console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+                result.push({ id: orderId, success: false, error: ex.message });
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        return result;
+    }
+
+    async getActiveOrders(symbol) {
+        try {
+            this.rotateAgent();
+            const openOrders = await this.api.fetchOpenOrders(symbol) || [];
+            return openOrders.map(o => ({
+                id: o.id,
+                base: o.symbol.split('/')[0],
+                quote: o.symbol.split('/')[1],
+                operation: o.side,
+                amount: o.amount,
+                remain: (o.remaining === undefined) ? o.amount : o.remaining,
+                price: o.price,
+                average: o.average,
+                created: o.timestamp,
+                status: 'active'
+            }));
+        } catch (ex) {
+            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
+        }
+    }
+
+    async getOrders(ids = []) {
+        if (ids.length === 0) {
+            console.log('Exception while getting orders, params missing');
+            throw new Error('Exception while getting orders, params missing');
+        }
+
+        const result = [];
+        /* eslint-disable no-await-in-loop */
+        for (const orderId of ids) {
+            try {
+                this.rotateAgent();
+                const o = await this.api.fetchOrder(orderId);
+                result.push({
+                    success: true,
+                    id: o.id,
+                    base: o.symbol.split('/')[0],
+                    quote: o.symbol.split('/')[1],
+                    operation: o.side,
+                    amount: o.amount,
+                    remain: (o.remaining === undefined) ? o.amount : o.remaining,
+                    price: o.price,
+                    average: o.average,
+                    created: o.timestamp,
+                    status: (o.status === 'open') ? 'active' : o.status
+                });
+            } catch (ex) {
+                console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
+                result.push({ id: orderId, success: false, error: ex.message });
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        return result;
     }
 };

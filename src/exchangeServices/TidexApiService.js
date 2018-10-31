@@ -2,7 +2,6 @@ const TidexApi = require('node-tidex-api');
 const Big = require('big.js');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getPrices } = require('../utils/PriceUtil');
-const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
 const { getConfig } = require('../ConfigLoader');
 const { timeout } = require('../utils/utils');
 
@@ -117,7 +116,6 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
 
     async getBalances(currencies = []) {
         try {
-            const { mainCurrency } = getConfig();
             const { balances } = await this.api.getAccountInfoExtended({ localAddress: super.getNextIp() });
             const balancesFiltered = (currencies.length > 0)
                 ? balances.filter(b => currencies.includes(b.currency))
