@@ -1,3 +1,5 @@
+// jest.unmock('ccxt');
+
 const https = require('https');
 const ccxt = require('ccxt');
 const Big = require('big.js');
@@ -108,14 +110,14 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                     total: total[key],
                     used: used[key],
                     free: free[key]
-                })
+                });
             }
 
             const balancesFiltered = (currencies.length > 0)
                 ? balances.filter(b => currencies.includes(b.currency))
                 : balances;
 
-            const prices =  await this.getPrices(balances.map(b => b.currency));
+            const prices = await this.getPrices(balances.map(b => b.currency));
 
             for (const balance of balancesFiltered) {
                 const price = prices.find(p => p.base === balance.currency);

@@ -1,6 +1,7 @@
 /* eslint-disable class-methods-use-this */
 let markets;
 let tickers;
+let balance;
 
 class CCXTApiMock {
     static setMarkets(m) {
@@ -8,6 +9,9 @@ class CCXTApiMock {
     }
     static setTickers(t) {
         tickers = t;
+    }
+    static setBalance(b) {
+        balance = b;
     }
 }
 
@@ -23,6 +27,9 @@ CCXTApiMock.bitfinex2 = class {
     }
     fetchTickers() {
         return tickers;
+    }
+    fetchBalance() {
+        return balance;
     }
 };
 

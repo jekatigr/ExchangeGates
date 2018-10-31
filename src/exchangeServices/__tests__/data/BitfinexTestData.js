@@ -411,5 +411,122 @@ module.exports = {
                 { base: 'LTC', quote: 'USDT', ask: 49.513, bid: 49.512 }
             ]
         }
+    },
+    getBalanceTest: {
+        case1: {
+            sourceFetchBalance: {
+                info: [
+                    [
+                        'funding',
+                        'ETH',
+                        0.15532976,
+                        0,
+                        null
+                    ],
+                    [
+                        'exchange',
+                        'ETC',
+                        70.0173445,
+                        0,
+                        null
+                    ],
+                    [
+                        'exchange',
+                        'NEO',
+                        0.0000658,
+                        0,
+                        null
+                    ],
+                    [
+                        'exchange',
+                        'USD',
+                        245.69379164,
+                        0,
+                        null
+                    ],
+                    [
+                        'exchange',
+                        'XRP',
+                        1e-8,
+                        0,
+                        null
+                    ]
+                ],
+                ETC: {
+                    free: 70.0173445,
+                    used: 0,
+                    total: 70.0173445
+                },
+                NEO: {
+                    free: 0.0000658,
+                    used: 0,
+                    total: 0.0000658
+                },
+                USDT: {
+                    free: 245.69379164,
+                    used: 0,
+                    total: 245.69379164
+                },
+                XRP: {
+                    free: 1e-8,
+                    used: 0,
+                    total: 1e-8
+                },
+                free: {
+                    ETC: 70.0173445,
+                    NEO: 0.0000658,
+                    USDT: 245.69379164,
+                    XRP: 1e-8
+                },
+                used: {
+                    ETC: 0,
+                    NEO: 0,
+                    USDT: 0,
+                    XRP: 0
+                },
+                total: {
+                    ETC: 70.0173445,
+                    NEO: 0.0000658,
+                    USDT: 245.69379164,
+                    XRP: 1e-8
+                }
+            },
+            sourceForPrices: [
+                {
+                    base: 'ETC',
+                    quote: 'USDT',
+                    ask: 9.0119,
+                    bid: 9.0118
+                },
+                {
+                    base: 'NEO',
+                    quote: 'USDT',
+                    ask: 15.266,
+                    bid: 15.256
+                },
+                {
+                    base: 'USDT',
+                    quote: 'USDT',
+                    ask: 1,
+                    bid: 1
+                },
+                {
+                    base: 'XRP',
+                    quote: 'USDT',
+                    ask: 0.44538,
+                    bid: 0.44537
+                }
+            ],
+            expected: [
+                {
+                    currency: 'ETC',
+                    total: 70.0173445,
+                    used: 0,
+                    free: 70.0173445,
+                    mainAmount: 630.9823051651
+                }
+            ]
+        }
+
     }
 };

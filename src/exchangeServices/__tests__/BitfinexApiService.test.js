@@ -44,6 +44,8 @@ describe('bitfinex API', () => {
             const triangles = await service.getTriangles();
 
             expect(triangles).toEqual(expected);
+
+            service.getMarkets.mockRestore();
         });
     });
 
@@ -64,6 +66,30 @@ describe('bitfinex API', () => {
             const prices = await service.getPrices();
 
             expect(prices).toEqual(expected);
+        });
+    });
+
+    describe('getBalances method', () => {
+        const { getBalanceTest } = testData;
+        it('should return correct balances', async () => {
+            const {
+                case1: {
+                    sourceFetchBalance,
+                    sourceForPrices,
+                    expected
+                }
+            } = getBalanceTest;
+
+            await loadConfig('./config/bitfinexConfig.json');
+
+            const service = new BitfinexApiService();
+            ccxt.setBalance(sourceFetchBalance);
+            service.getPrices = jest.fn().mockReturnValue(sourceForPrices);
+
+            const balances = await service.getBalances(['ETC']);
+            expect(balances).toEqual(expected);
+
+            service.getPrices.mockRestore();
         });
     });
 });
