@@ -2,6 +2,9 @@
 let markets;
 let tickers;
 let balance;
+let openOrders;
+let cancelOrder;
+let newOrder;
 
 class CCXTApiMock {
     static setMarkets(m) {
@@ -12,6 +15,15 @@ class CCXTApiMock {
     }
     static setBalance(b) {
         balance = b;
+    }
+    static setOpenOrders(oo) {
+        openOrders = oo;
+    }
+    static setCancelOrder(co) {
+        cancelOrder = co;
+    }
+    static setCreateOrder(co) {
+        newOrder = co;
     }
 }
 
@@ -30,6 +42,18 @@ CCXTApiMock.bitfinex2 = class {
     }
     fetchBalance() {
         return balance;
+    }
+};
+
+CCXTApiMock.bitfinex = class {
+    fetchOpenOrders() {
+        return openOrders;
+    }
+    cancelOrder() {
+        return cancelOrder;
+    }
+    createOrder() {
+        return newOrder;
     }
 };
 

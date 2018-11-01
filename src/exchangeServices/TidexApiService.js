@@ -182,7 +182,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 await this.api.cancelOrder(orderId, { localAddress: super.getNextIp() });
                 result.push({ id: orderId, success: true });
             } catch (ex) {
-                console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+                console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
                 result.push({ id: orderId, success: false, error: ex.message });
             }
         }

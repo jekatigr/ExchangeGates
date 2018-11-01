@@ -92,4 +92,72 @@ describe('bitfinex API', () => {
             service.getPrices.mockRestore();
         });
     });
+
+    describe('createOrder method', () => {
+        const { createOrderTest } = testData;
+        it('should return correct created order', async () => {
+            const {
+                case1: {
+                    source,
+                    expected
+                }
+            } = createOrderTest;
+            await loadConfig('./config/bitfinexConfig.json');
+
+            const server = new BitfinexApiService();
+            ccxt.setCreateOrder(source);
+
+            const order = await server.createOrder({
+                symbol: 'BTC/USDT',
+                operation: 'buy',
+                price: 0.00001,
+                amount: 0.002
+            });
+            expect(order).toEqual(expected);
+        });
+    });
+
+    describe('cancelOrders method', () => {
+        const { cancelOrderTest } = testData;
+        it('should return correct cancel order', async () => {
+            const {
+                case1: {
+                    source,
+                    expected
+                }
+            } = cancelOrderTest;
+            await loadConfig('./config/bitfinexConfig.json');
+
+            const server = new BitfinexApiService();
+            ccxt.setCancelOrder(source);
+
+            const res = await server.cancelOrders([18613034229]);
+            expect(res).toEqual(expected);
+        });
+    });
+
+    describe('getActiveOrders method', () => {
+        const { getActiveOrdersTest } = testData;
+        it('should return correct array of active orders', async () => {
+            const {
+                case1: {
+                    source,
+                    expected
+                }
+            } = getActiveOrdersTest;
+
+            await loadConfig('./config/bitfinexConfig.json');
+
+            const server = new BitfinexApiService();
+            ccxt.setOpenOrders(source);
+
+            let orders = await server.getActiveOrders();
+
+            orders = orders.map((o) => {
+                const { created, ...order } = o;
+                return order;
+            });
+            expect(orders).toEqual(expected);
+        });
+    });
 });

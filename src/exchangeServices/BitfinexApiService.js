@@ -14,7 +14,16 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
         super(exchange, ipArray);
 
-        this.api = new ccxt.bitfinex2(
+        this.api1 = new ccxt.bitfinex(
+            {
+                apiKey,
+                secret: apiSecret,
+                enableRateLimit: false,
+                timeout: 10000
+            }
+        );
+
+        this.api2 = new ccxt.bitfinex2(
             {
                 apiKey,
                 secret: apiSecret,
@@ -26,16 +35,22 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         this.orderBooksCache = undefined;
     }
 
-    rotateAgent() {
-        this.api.agent = https.Agent({
+    rotateAgent1() {
+        this.api1.agent = https.Agent({
+            localAddress: this.getNextIp()
+        });
+    }
+
+    rotateAgent2() {
+        this.api2.agent = https.Agent({
             localAddress: this.getNextIp()
         });
     }
 
     async getMarkets() {
         try {
-            this.rotateAgent();
-            const markets = await this.api.loadMarkets();
+            this.rotateAgent2();
+            const markets = await this.api2.loadMarkets();
 
             const res = [];
             for (const marketId of Object.keys(markets)) {
@@ -74,8 +89,8 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
     async getPrices(currencies = []) {
         try {
             const { mainCurrency } = getConfig();
-            this.rotateAgent();
-            const res = await this.api.fetchTickers();
+            this.rotateAgent2();
+            const res = await this.api2.fetchTickers();
 
             const tickers = [];
             for (const key of Object.keys(res)) {
@@ -98,8 +113,8 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
     async getBalances(currencies = []) {
         try {
-            this.rotateAgent();
-            const res = await this.api.fetchBalance();
+            this.rotateAgent2();
+            const res = await this.api2.fetchBalance();
 
             const { free, total, used } = res;
 
@@ -128,8 +143,98 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
             return balancesFiltered;
         } catch (ex) {
-            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching prices, ex: ${ex}`);
+            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching balances, ex: ${ex}`);
+        }
+    }
+
+    async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
+        if (!symbol || !operation || !price || !amount) {
+            throw new Error('Exception while creating order, params missing');
+        }
+
+        try {
+            this.rotateAgent1();
+            const res = await this.api1.createOrder(
+                symbol,
+                'limit',
+                operation,
+                amount,
+                price
+            );
+
+            const [ base, quote ] = res.symbol.split('/');
+            const order = {
+                id: res.id,
+                base,
+                quote,
+                operation: res.side,
+                amount: res.amount,
+                remain: (res.remaining === undefined) ? res.amount : res.remaining,
+                price: res.price,
+                created: res.timestamp,
+                status: 'active',
+                average: res.average
+            };
+
+            if (cancelAfter && cancelAfter > 0 && order.status !== 'closed') {
+                setTimeout(async () => {
+                    try {
+                        await this.api.cancelOrder(order.id);
+                        console.log(`Order (id: ${order.id}) cancelled.`);
+                    } catch (ex) {
+                        console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                    }
+                }, cancelAfter);
+            }
+
+            return order;
+        } catch (ex) {
+            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while creating order, ex: ${ex.stack}`);
+        }
+    }
+
+    async cancelOrders(ids = []) {
+        if (ids.length === 0) {
+            console.log('Exception while canceling orders, params missing');
+            throw new Error('Exception while canceling orders, params missing');
+        }
+        const result = [];
+        /* eslint-disable no-await-in-loop */
+        for (const orderId of ids) {
+            try {
+                this.rotateAgent1();
+                await this.api1.cancelOrder(orderId, { localAddress: super.getNextIp() });
+                result.push({ id: orderId, success: true });
+            } catch (ex) {
+                console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+                result.push({ id: orderId, success: false, error: ex.message });
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        return result;
+    }
+
+    async getActiveOrders(symbol) {
+        try {
+            this.rotateAgent1();
+            const openOrders = await this.api1.fetchOpenOrders(symbol) || [];
+            return openOrders.map(o => ({
+                id: o.id,
+                base: o.symbol.split('/')[0],
+                quote: o.symbol.split('/')[1],
+                operation: o.side,
+                amount: o.amount,
+                remain: (o.remaining === undefined) ? o.amount : o.remaining,
+                price: o.price,
+                average: o.average,
+                created: o.timestamp,
+                status: 'active'
+            }));
+        } catch (ex) {
+            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
         }
     }
 };

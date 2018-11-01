@@ -528,5 +528,192 @@ module.exports = {
             ]
         }
 
+    },
+    createOrderTest: {
+        case1: {
+            source: {
+                info: {
+                    id: 18609031664,
+                    cid: 36969309440,
+                    cid_date: '2018-11-01',
+                    gid: null,
+                    symbol: 'btcusd',
+                    exchange: 'bitfinex',
+                    price: 0.00001,
+                    avg_execution_price: 0.0,
+                    side: 'buy',
+                    type: 'exchange limit',
+                    timestamp: 1541067369.327826096,
+                    is_live: true,
+                    is_cancelled: false,
+                    is_hidden: false,
+                    oco_order: null,
+                    was_forced: false,
+                    original_amount: 0.002,
+                    remaining_amount: 0.002,
+                    executed_amount: 0.0,
+                    src: 'api',
+                    order_id: 18609031664
+                },
+                id: 18609031664,
+                timestamp: 1541067369327,
+                datetime: '2018-11-01T10:16:09.327Z',
+                symbol: 'BTC/USDT',
+                type: 'limit',
+                side: 'buy',
+                price: 0.00001,
+                average: 0,
+                amount: 0.002,
+                remaining: 0.002,
+                filled: 0,
+                status: open
+            },
+            expected:   {
+                id: 18609031664,
+                base: 'BTC',
+                quote: 'USDT',
+                operation: 'buy',
+                amount: 0.002,
+                remain: 0.002,
+                price: 0.00001,
+                created: 1541067369327,
+                status: 'active',
+                average: 0
+            }
+        }
+    },
+    cancelOrderTest: {
+        case1: {
+            source: {
+                id: 18613034229,
+                cid: 50276532735,
+                cid_date: '2018-11-01',
+                gid: null,
+                symbol: 'btcusd',
+                exchange: 'bitfinex',
+                price: 0.00001,
+                avg_execution_price: 0.0,
+                side: 'buy',
+                type: 'exchange limit',
+                timestamp: 1541080677.0,
+                is_live: true,
+                is_cancelled: false,
+                is_hidden: false,
+                oco_order: null,
+                was_forced: false,
+                original_amount: 0.002,
+                remaining_amount: 0.002,
+                executed_amount: 0.0,
+                src: 'api'
+            },
+            expected: [
+                {
+                    id: 18613034229,
+                    success: true
+                }
+            ]
+        }
+    },
+    getActiveOrdersTest: {
+        case1: {
+            source: [
+                {
+                    info: {
+                        id: 18613002834,
+                        cid: 50174043403,
+                        cid_date: '2018-11-01',
+                        gid: null,
+                        symbol: 'btcusd',
+                        exchange: 'bitfinex',
+                        price: 0.00001,
+                        avg_execution_price: 0.0,
+                        side: 'buy',
+                        type: 'exchange limit',
+                        timestamp: 1541080574.0,
+                        is_live: true,
+                        is_cancelled: false,
+                        is_hidden: false,
+                        oco_order: null,
+                        was_forced: false,
+                        original_amount: 0.002,
+                        remaining_amount: 0.002,
+                        executed_amount: 0.0,
+                        src: 'api'
+                    },
+                    id: 18613002834,
+                    timestamp: 1541080574000,
+                    datetime: '2018-11-01T13:56:14.000Z',
+                    symbol: 'BTC/USDT',
+                    type: 'limit',
+                    side: 'buy',
+                    price: 0.00001,
+                    average: 0,
+                    amount: 0.002,
+                    remaining: 0.002,
+                    filled: 0,
+                    status: open
+                },
+                {
+                    info: {
+                        id: 18613034229,
+                        cid: 50276532735,
+                        cid_date: '2018-11-01',
+                        gid: null,
+                        symbol: 'btcusd',
+                        exchange: 'bitfinex',
+                        price: 0.00001,
+                        avg_execution_price: 0.0,
+                        side: 'buy',
+                        type: 'exchange limit',
+                        timestamp: 1541080677.0,
+                        is_live: true,
+                        is_cancelled: false,
+                        is_hidden: false,
+                        oco_order: null,
+                        was_forced: false,
+                        original_amount: 0.002,
+                        remaining_amount: 0.002,
+                        executed_amount: 0.0,
+                        src: 'api'
+                    },
+                    id: 18613034229,
+                    timestamp: 1541080677000,
+                    datetime: '2018-11-01T13:57:57.000Z',
+                    symbol: 'BTC/USDT',
+                    type: 'limit',
+                    side: 'buy',
+                    price: 0.00001,
+                    average: 0,
+                    amount: 0.002,
+                    remaining: 0.002,
+                    filled: 0,
+                    status: open
+                }
+            ],
+            expected: [
+                {
+                    id: 18613002834,
+                    base: 'BTC',
+                    quote: 'USDT',
+                    operation: 'buy',
+                    amount: 0.002,
+                    remain: 0.002,
+                    price: 0.00001,
+                    average: 0,
+                    status: 'active'
+                },
+                {
+                    id: 18613034229,
+                    base: 'BTC',
+                    quote: 'USDT',
+                    operation: 'buy',
+                    amount: 0.002,
+                    remain: 0.002,
+                    price: 0.00001,
+                    average: 0,
+                    status: 'active'
+                }
+            ]
+        }
     }
 };
