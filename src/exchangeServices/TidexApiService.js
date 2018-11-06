@@ -20,9 +20,33 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         this.orderBooksCache = undefined;
     }
 
-    async getMarkets() { // TODO переформатировать результат в общий шаблон, как у ccxt
+    async getMarkets() {
         try {
-            return await this.api.getMarkets({ localAddress: super.getNextIp() });
+            const markets =  await this.api.getMarkets({ localAddress: super.getNextIp() });
+
+            return markets.map(m => ({
+                base: m.base,
+                quote: m.quote,
+                precision: {
+                    price: m.precision,
+                    amount: m.precision
+                },
+                taker: m.fee,
+                maker: m.fee,
+                limits: {
+                    amount: {
+                        min: m.minAmount,
+                        max: m.maxAmount
+                    },
+                    price: {
+                        min: m.minPrice,
+                        max: m.maxPrice
+                    },
+                    cost: {
+                        min: m.minAmount  * m.minPrice
+                    }
+                }
+            }));
         } catch (ex) {
             console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
