@@ -75,6 +75,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         this.orderBooks = [];
         this.orderBooksCache = undefined; // кэш ордербуков для клиента
         this.notifierParams = undefined;
+        this.notifireIntervalId = undefined;
+        this.storeOrderBooks = [];
 
         this.initWS();
     }
@@ -158,7 +160,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                     asks
                 });
             }
-            this.sendUpdatedOrderBooksIfNeeded(base, quote);
+            this.storeUpdatedOrderBooksIfNeeded(base, quote);
         };
 
         init(symbols, saveLocalDepth.bind(this));
@@ -241,30 +243,38 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             this.notifierRunning = true;
             this.notifierParams = {
                 symbols,
-                limit,
-                callback
+                limit
             };
+
+            this.notifireIntervalId = setInterval(() => {
+                if(this.storeOrderBooks.length > 0) {
+                    const timestampEnd = +new Date();
+                    callback (undefined, {
+                        timestampStart: this.notifierParams.timestampStart,
+                        timestampEnd,
+                        data: this.storeOrderBooks
+                    });
+                    this.storeOrderBooks = [];
+                    this.notifierParams.timestampStart = undefined;
+                }
+            }, 0);
         }
     }
 
-    sendUpdatedOrderBooksIfNeeded(base, quote) {
+    storeUpdatedOrderBooksIfNeeded(base, quote) {
         if (this.notifierRunning && this.notifierParams) {
             if (!this.notifierParams.symbols
                 || this.notifierParams.symbols.length === 0
                 || this.notifierParams.symbols.includes(`${base}/${quote}`)
             ) {
-                const start = +new Date();
+                this.notifierParams.timestampStart = +new Date();
                 const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
                     symbols: [`${base}/${quote}`],
                     limit: this.notifierParams.limit
                 });
 
                 if (this.notifierRunning && updatedOrderBooks && updatedOrderBooks.length > 0) {
-                    this.notifierParams.callback(undefined, {
-                        timestampStart: start,
-                        timestampEnd: +new Date(),
-                        data: updatedOrderBooks
-                    });
+                    this.storeOrderBooks.push(updatedOrderBooks);
                 }
             }
         }
@@ -274,6 +284,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         this.notifierRunning = false;
         this.notifierParams = undefined;
         this.orderBooksCache = undefined;
+        clearInterval(this.notifireIntervalId);
+        this.storeOrderBooks = [];
     }
 
     async getTriangles() {
