@@ -19,7 +19,7 @@ const convertToOrderbook = (rawOrderBook) => {
     };
 
     for (const ask of asks) {
-        const [ price, amount ] = ask;
+        const [ price, count, amount ] = ask;
         res.asks.push({
             price,
             amount: -amount
@@ -27,7 +27,7 @@ const convertToOrderbook = (rawOrderBook) => {
     }
 
     for (const bid of bids) {
-        const [ price, amount ] = bid;
+        const [ price, count, amount ] = bid;
         res.bids.push({
             price,
             amount
@@ -206,7 +206,6 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         };
 
         init(symbols.slice(0, Math.floor(symbols.length / 2)), saveLocalDepth.bind(this));
-
         init(symbols.slice(Math.floor(symbols.length / 2) + 1, symbols.length), saveLocalDepth.bind(this));
     }
 
@@ -274,6 +273,12 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
     runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
         if (!this.notifierRunning) {
+            this.notifierRunning = true;
+            this.notifierParams = {
+                symbols,
+                limit
+            };
+
             // отправляем все ордербуки после начала нотификации
             const orderBooks = this.getOrderBooks({ symbols, limit });
             callback(undefined, {
@@ -281,12 +286,6 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 timestampEnd: +new Date(),
                 data: orderBooks
             });
-
-            this.notifierRunning = true;
-            this.notifierParams = {
-                symbols,
-                limit
-            };
 
             this.notifireIntervalId = setInterval(() => {
                 if (this.storeOrderBooks.length > 0) {
@@ -310,13 +309,19 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 || this.notifierParams.symbols.length === 0
                 || this.notifierParams.symbols.includes(`${base}/${quote}`)
             ) {
-                const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
+                const [ updatedOrderBook ] = this.getUpdatedOrderBooks(false, {
                     symbols: [`${base}/${quote}`],
                     limit: this.notifierParams.limit
-                });
+                }) || [];
 
-                if (this.notifierRunning && updatedOrderBooks && updatedOrderBooks.length > 0) {
-                    this.storeOrderBooks.push(updatedOrderBooks);
+                if (this.notifierRunning && updatedOrderBook) {
+                    const existingIndex = this.storeOrderBooks
+                        .findIndex(e => e.base === updatedOrderBook.base && e.quote === updatedOrderBook.quote);
+                    if (existingIndex !== -1) {
+                        this.storeOrderBooks.splice(existingIndex, 1);
+                    }
+                    this.storeOrderBooks.push(updatedOrderBook);
+
                     if (this.storeOrderBooks.length === 1) {
                         this.notifierParams.timestampStart = +new Date();
                     }
@@ -441,7 +446,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             if (cancelAfter && cancelAfter > 0 && order.status !== 'closed') {
                 setTimeout(async () => {
                     try {
-                        await this.api.cancelOrder(order.id);
+                        await this.api1.cancelOrder(order.id);
                         console.log(`Order (id: ${order.id}) cancelled.`);
                     } catch (ex) {
                         console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
