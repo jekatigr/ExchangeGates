@@ -247,9 +247,9 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             };
 
             this.notifireIntervalId = setInterval(() => {
-                if(this.storeOrderBooks.length > 0) {
+                if (this.storeOrderBooks.length > 0) {
                     const timestampEnd = +new Date();
-                    callback (undefined, {
+                    callback(undefined, {
                         timestampStart: this.notifierParams.timestampStart,
                         timestampEnd,
                         data: this.storeOrderBooks
@@ -267,7 +267,6 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 || this.notifierParams.symbols.length === 0
                 || this.notifierParams.symbols.includes(`${base}/${quote}`)
             ) {
-                this.notifierParams.timestampStart = +new Date();
                 const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
                     symbols: [`${base}/${quote}`],
                     limit: this.notifierParams.limit
@@ -275,6 +274,9 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
                 if (this.notifierRunning && updatedOrderBooks && updatedOrderBooks.length > 0) {
                     this.storeOrderBooks.push(updatedOrderBooks);
+                    if (this.storeOrderBooks.length === 1) {
+                        this.notifierParams.timestampStart = +new Date();
+                    }
                 }
             }
         }

@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "big.js": "^5.2.1",
+    "bitfinex-api-node": "^2.0.1",
     "ccxt": "^1.17.405",
     "cross-env": "^5.2.0",
     "node-tidex-api": "^1.1.0",

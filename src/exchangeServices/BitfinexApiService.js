@@ -1,9 +1,42 @@
 const https = require('https');
 const ccxt = require('ccxt');
 const Big = require('big.js');
+const BFX = require('bitfinex-api-node');
+
 const { getPrices } = require('../utils/PriceUtil');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getConfig } = require('../ConfigLoader');
+
+/**
+ * Конвертер ордербуков из формата массивов в формат объектов
+ * @param rawOrderBook
+ */
+const convertToOrderbook = (rawOrderBook) => {
+    const { asks, bids } = rawOrderBook;
+    const res = {
+        asks: [],
+        bids: []
+    };
+
+    for (const ask of asks) {
+        const [ price, amount ] = ask;
+        res.asks.push({
+            price,
+            amount: -amount
+        });
+    }
+
+    for (const bid of bids) {
+        const [ price, amount ] = bid;
+        res.bids.push({
+            price,
+            amount
+        });
+    }
+
+    return res;
+};
+
 
 module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
     constructor() {
@@ -30,7 +63,13 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             }
         );
 
-        this.orderBooksCache = undefined;
+        this.orderBooks = [];
+        this.orderBooksCache = undefined; // кэш ордербуков для клиента
+        this.notifierParams = undefined;
+        this.notifireIntervalId = undefined;
+        this.storeOrderBooks = [];
+
+        this.initWS();
     }
 
     rotateAgent1() {
@@ -43,6 +82,132 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         this.api2.agent = https.Agent({
             localAddress: this.getNextIp()
         });
+    }
+
+    async initWS() {
+        async function init(symbols, callback) {
+            let isWSReconnecting = false;
+            const bfx = new BFX({
+                ws: {
+                    autoReconnect: false,
+                    seqAudit: true,
+                    packetWDDelay: 10 * 1000
+                }
+            });
+
+            const ws = bfx.ws(2, {
+                manageOrderBooks: true, // enable candle dataset persistence/management
+                transform: true // converts ws data arrays to Candle models (and others)
+            });
+
+            function subscribe(localWs, localSymbols, localCallback) {
+                for (const symbolObj of localSymbols) {
+                    localWs.subscribeOrderBook(symbolObj.symbol, 'P0', 100);
+                    localWs.onOrderBook({ symbol: symbolObj.symbol }, (orderbook) => {
+                        localCallback(symbolObj.symbol, orderbook);
+                    });
+                }
+            }
+
+            function reconnect(localSymbols, localCallback) {
+                if (!isWSReconnecting && (!ws || !ws.isOpen())) {
+                    isWSReconnecting = true;
+                    setTimeout(async () => {
+                        await init(localSymbols, localCallback);
+                    }, 10000);
+                }
+            }
+
+            ws.on('open', async () => {
+                console.log('bitfinex ws socket opened');
+                subscribe(ws, symbols, callback);
+            });
+
+            ws.on('error', async (err) => {
+                console.log(`web socket error, err: ${JSON.stringify(err)}`);
+                try {
+                    await ws.close();
+                } catch (ex) {
+                    console.log(`error: ws already closed, ex: ${ex}`);
+                }
+
+                await reconnect(symbols, callback).bind(this);
+            });
+
+            ws.onMaintenanceStart(() => {
+                console.log('info: ws maintenance period started');
+            });
+
+            ws.onMaintenanceEnd(async () => {
+                console.log('info: ws maintenance period ended');
+
+                try {
+                    await ws.close();
+                } catch (ex) {
+                    console.log(`error: ws already closed, ex: ${ex}`);
+                }
+
+                await reconnect(symbols, callback).bind(this);
+            });
+
+            ws.onServerRestart(async () => {
+                console.log('info: ws bitfinex server restarted');
+                try {
+                    await ws.close();
+                } catch (ex) {
+                    console.log(`error: ws already closed, ex: ${ex}`);
+                }
+
+                await reconnect(symbols, callback).bind(this);
+            });
+
+            ws.on('close', async () => {
+                console.log('info: ws bitfinex server closed');
+                try {
+                    await ws.close();
+                } catch (ex) {
+                    console.log(`error: ws already closed, ex: ${ex}`);
+                }
+                await reconnect(symbols, callback).bind(this);
+            });
+
+            ws.open();
+            isWSReconnecting = false;
+        }
+
+        this.rotateAgent2();
+        const markets = await this.api2.loadMarkets();
+        const symbols = Object.values(markets).map(m => ({
+            symbol: m.id,
+            base: m.base,
+            quote: m.quote
+        }));
+
+        const saveLocalDepth = (symbol, orderbook) => {
+            const symbolObj = symbols.find(s => s.symbol === symbol);
+            const { base, quote } = symbolObj;
+            const orderbookIndex = this.orderBooks.findIndex(e => e.base === base && e.quote === quote);
+            const { asks, bids } = convertToOrderbook(orderbook);
+            if (orderbookIndex !== -1) {
+                this.orderBooks[orderbookIndex] = {
+                    ...this.orderBooks[orderbookIndex],
+                    bids,
+                    asks
+                };
+            } else {
+                this.orderBooks.push({
+                    base,
+                    quote,
+                    bids,
+                    asks
+                });
+            }
+            this.storeUpdatedOrderBooksIfNeeded(base, quote);
+        };
+
+        init(symbols.slice(0, Math.floor(symbols.length / 2)), saveLocalDepth.bind(this));
+
+        init(symbols.slice(Math.floor(symbols.length / 2) + 1, symbols.length), saveLocalDepth.bind(this));
     }
 
     async getMarkets() {
@@ -68,6 +233,104 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
         }
+    }
+
+    getOrderBooks({ symbols = [], limit = 1 } = {}) {
+        try {
+            let orderbooks = this.orderBooks; // должен быть заполнен из вебсокета
+            if (symbols && symbols.length > 0) {
+                orderbooks = orderbooks.filter(o => symbols.includes(`${o.base}/${o.quote}`));
+            }
+
+            orderbooks = orderbooks.map(o => ({
+                ...o,
+                bids: o.bids.slice(0, limit),
+                asks: o.asks.slice(0, limit),
+            }));
+
+            return orderbooks;
+        } catch (ex) {
+            console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
+        }
+    }
+
+    getUpdatedOrderBooks(all = false, { symbols = [], limit = 1 }) {
+        try {
+            let result = [];
+            const allOrderBooks = this.getOrderBooks({ symbols, limit });
+            if (!all && this.orderBooksCache) {
+                result = ExchangeServiceAbstract.filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
+            } else {
+                result = allOrderBooks;
+            }
+            this.orderBooksCache = allOrderBooks;
+            return result;
+        } catch (ex) {
+            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+        }
+    }
+
+    runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
+        if (!this.notifierRunning) {
+            // отправляем все ордербуки после начала нотификации
+            const orderBooks = this.getOrderBooks({ symbols, limit });
+            callback(undefined, {
+                timestampStart: +new Date(),
+                timestampEnd: +new Date(),
+                data: orderBooks
+            });
+
+            this.notifierRunning = true;
+            this.notifierParams = {
+                symbols,
+                limit
+            };
+
+            this.notifireIntervalId = setInterval(() => {
+                if (this.storeOrderBooks.length > 0) {
+                    const timestampEnd = +new Date();
+
+                    callback(undefined, {
+                        timestampStart: this.notifierParams.timestampStart,
+                        timestampEnd,
+                        data: this.storeOrderBooks
+                    });
+                    this.storeOrderBooks = [];
+                    this.notifierParams.timestampStart = undefined;
+                }
+            }, 0);
+        }
+    }
+
+    storeUpdatedOrderBooksIfNeeded(base, quote) {
+        if (this.notifierRunning && this.notifierParams) {
+            if (!this.notifierParams.symbols
+                || this.notifierParams.symbols.length === 0
+                || this.notifierParams.symbols.includes(`${base}/${quote}`)
+            ) {
+                const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
+                    symbols: [`${base}/${quote}`],
+                    limit: this.notifierParams.limit
+                });
+
+                if (this.notifierRunning && updatedOrderBooks && updatedOrderBooks.length > 0) {
+                    this.storeOrderBooks.push(updatedOrderBooks);
+                    if (this.storeOrderBooks.length === 1) {
+                        this.notifierParams.timestampStart = +new Date();
+                    }
+                }
+            }
+        }
+    }
+
+    stopOrderBookNotifier() {
+        this.notifierRunning = false;
+        this.notifierParams = undefined;
+        this.orderBooksCache = undefined;
+        clearInterval(this.notifireIntervalId);
+        this.storeOrderBooks = [];
     }
 
     async getTriangles() {

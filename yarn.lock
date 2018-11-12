@@ -448,12 +448,88 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
+bfx-api-node-models@^1.0.0:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/bfx-api-node-models/-/bfx-api-node-models-1.0.2.tgz#d3ba169ea9d27caa32bf56bad8e0b031468bff82"
+  integrity sha512-gJRGIKAUTwCynLF8gQMleWzWsG2v8RfO42QQuc/tkGfrILEbG/K/xohg5nyyIZ67sEBRsUmy1tH2Qos/0DXo9Q==
+  dependencies:
+    bfx-api-node-util bitfinexcom/bfx-api-node-util
+    bluebird "^3.5.1"
+    crc-32 "^1.2.0"
+
+bfx-api-node-rest@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/bfx-api-node-rest/-/bfx-api-node-rest-1.0.1.tgz#e32fd38542551976f1eb10c4944e87bcc253f386"
+  integrity sha512-0fkfVCJraLcukegGEqVotA8oZ6LUFHOqOWyzrEX3C3FHrYZ82mPF0FD85Sof0cmAvEofyG/ml/73CD/pcU2HYw==
+  dependencies:
+    bfx-api-node-models "^1.0.0"
+    bfx-api-node-util "^1.0.0"
+    bluebird "^3.5.1"
+    debug "^2.2.0"
+    lodash "^4.17.4"
+    request "^2.67.0"
+    request-promise "^4.2.0"
+
+bfx-api-node-util@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/bfx-api-node-util/-/bfx-api-node-util-1.0.0.tgz#4370d71bfb991a49a13c8276d218f200a818441c"
+  integrity sha512-eSacLP9wALPmNMZ9/bIGVGOMxGBv5RKacuqBlAJpbAygKRvWvq8HaTESNgv7QJ/pnQ1+flLBuo1+wzckZxGhoQ==
+  dependencies:
+    bignumber.js "^6.0.0"
+
+"bfx-api-node-util@github:bitfinexcom/bfx-api-node-util":
+  version "1.0.0"
+  resolved "https://codeload.github.com/bitfinexcom/bfx-api-node-util/tar.gz/62583249c5870061d1e41d2b59c056d153a26873"
+  dependencies:
+    bignumber.js "^6.0.0"
+
+bfx-api-node-ws1@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/bfx-api-node-ws1/-/bfx-api-node-ws1-1.0.0.tgz#3480c9ecc66d992eb820fa17e2392043661773f5"
+  integrity sha512-sCqyvxJp6CrcUzxq9a+JVo3WgU/soTRBSBWgf7PtIQALvGPjGR5mDMh6Nbv2rgfUf5SlgJDDNiboiPL8ngnmvQ==
+  dependencies:
+    bfx-api-node-util bitfinexcom/bfx-api-node-util
+    bluebird "^3.5.1"
+    debug "^2.2.0"
+    lodash "^4.17.4"
+    ws "^3.0.0"
+
 big.js@^5.2.1:
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/big.js/-/big.js-5.2.1.tgz#0abb06f3acd00509e8385ebe20b1b41419612cb9"
   integrity sha512-k8S+ioyE06BcIcS29R3M7YbbmmcGh0DWfMY6JnZ3n4hhEv/lIRS2qRPCqUoHiGIXlrrRBKJtTbw8Fwp92bGOZA==
   dependencies:
     opencollective "^1.0.3"
+
+bignumber.js@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-6.0.0.tgz#bbfa047644609a5af093e9cbd83b0461fa3f6002"
+  integrity sha512-x247jIuy60/+FtMRvscqfxtVHQf8AGx2hm9c6btkgC0x/hp9yt+teISNhvF8WlwRkCc5yF2fDECH8SIMe8j+GA==
+
+bitfinex-api-node@^2.0.1:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/bitfinex-api-node/-/bitfinex-api-node-2.0.2.tgz#3360b9f29f9d33739ffebae3751737f1d70bea04"
+  integrity sha512-qVvjvP23qfAkVMrNJ2lmrdNocsw/Z1B1WZejmakuucIXYmkjPhOtgXYqPZpr3ltP7MAIj0fbSXunFYYXQtfiTA==
+  dependencies:
+    bfx-api-node-models "^1.0.0"
+    bfx-api-node-rest "^1.0.0"
+    bfx-api-node-util "^1.0.0"
+    bfx-api-node-ws1 "^1.0.0"
+    bignumber.js "^6.0.0"
+    bluebird "^3.5.1"
+    cbq "0.0.1"
+    crc-32 "^1.2.0"
+    debug "^2.2.0"
+    lodash "^4.17.4"
+    lodash.throttle "^4.1.1"
+    request "^2.67.0"
+    request-promise "^4.2.0"
+    ws "^3.0.0"
+
+bluebird@^3.5.0, bluebird@^3.5.1:
+  version "3.5.3"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.3.tgz#7d01c6f9616c9a51ab0f8c549a79dfe6ec33efa7"
+  integrity sha512-/qKPUQlaW1OyR51WeCPBvRnAlnZFUJkCSG5HzGnuIqhgyJtF+T94lFnn33eiazjRm2LAHVy2guNnaq48X9SJuw==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
@@ -565,6 +641,11 @@ caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
   integrity sha1-G2gcIf+EAzyCZUMJBolCDRhxUdw=
+
+cbq@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/cbq/-/cbq-0.0.1.tgz#8cbfea9f16243423622c46d50eeda8a33dde7604"
+  integrity sha512-MCLjfpHAcI3gPdx26xoQx2JqRdNMf68ovhJkqNSiZIx/yQP6yNYYKbf8ww2J6kgNTPGIrXyugFlNz5jmGtg8BQ==
 
 ccxt@^1.17.405:
   version "1.17.405"
@@ -742,6 +823,14 @@ core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
   integrity sha1-tf1UIgqivFq1eqtxQMlAdUUDwac=
+
+crc-32@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/crc-32/-/crc-32-1.2.0.tgz#cb2db6e29b88508e32d9dd0ec1693e7b41a18208"
+  integrity sha512-1uBwHxF+Y/4yF5G48fwnKq6QsIXheor3ZLPT80yGBV1oEUwpPojlEhQbWKVw1VwcTQyMGHK1/XMmTjmlsmTTGA==
+  dependencies:
+    exit-on-epipe "~1.0.1"
+    printj "~1.1.0"
 
 cross-env@^5.2.0:
   version "5.2.0"
@@ -1181,6 +1270,11 @@ execa@^0.7.0:
     p-finally "^1.0.0"
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
+
+exit-on-epipe@~1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/exit-on-epipe/-/exit-on-epipe-1.0.1.tgz#0bdd92e87d5285d267daa8171d0eb06159689692"
+  integrity sha512-h2z5mrROTxce56S+pnvAV890uu7ls7f1kEvVGJbw1OlFH3/mlJ5bkXu0KRyW94v37zzHPiUd55iLn3DA7TjWpw==
 
 exit@^0.1.2:
   version "0.1.2"
@@ -2627,6 +2721,11 @@ lodash.sortby@^4.7.0:
   resolved "https://registry.yarnpkg.com/lodash.sortby/-/lodash.sortby-4.7.0.tgz#edd14c824e2cc9c1e0b0a1b42bb5210516a42438"
   integrity sha1-7dFMgk4sycHgsKG0K7UhBRakJDg=
 
+lodash.throttle@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/lodash.throttle/-/lodash.throttle-4.1.1.tgz#c23e91b710242ac70c37f1e1cda9274cc39bf2f4"
+  integrity sha1-wj6RtxAkKscMN/HhzaknTMOb8vQ=
+
 lodash@^4.13.1, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
@@ -3301,6 +3400,11 @@ pretty-format@^23.6.0:
     ansi-regex "^3.0.0"
     ansi-styles "^3.2.0"
 
+printj@~1.1.0:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/printj/-/printj-1.1.2.tgz#d90deb2975a8b9f600fb3a1c94e3f4c53c78a222"
+  integrity sha512-zA2SmoLaxZyArQTOPj5LXecR+RagfPSU5Kw1qP+jkWeNlrq+eJZyY2oS68SU1Z/7/myXM4lo9716laOFAVStCQ==
+
 private@^0.1.8:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/private/-/private-0.1.8.tgz#2381edb3689f7a53d653190060fcf822d2f368ff"
@@ -3495,7 +3599,17 @@ request-promise-native@^1.0.5:
     stealthy-require "^1.1.0"
     tough-cookie ">=2.3.3"
 
-request@^2.87.0, request@^2.88.0:
+request-promise@^4.2.0:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/request-promise/-/request-promise-4.2.2.tgz#d1ea46d654a6ee4f8ee6a4fea1018c22911904b4"
+  integrity sha1-0epG1lSm7k+O5qT+oQGMIpEZBLQ=
+  dependencies:
+    bluebird "^3.5.0"
+    request-promise-core "1.1.1"
+    stealthy-require "^1.1.0"
+    tough-cookie ">=2.3.3"
+
+request@^2.67.0, request@^2.87.0, request@^2.88.0:
   version "2.88.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.0.tgz#9c2fca4f7d35b592efe57c7f0a55e81052124fef"
   integrity sha512-NAqBSrijGLZdM0WZNsInLJpkJokL72XYjUpnB0iwsRgxh7dB6COrHnTBNwN0E+lHDAJzu7kLAkDeY08z2/A0hg==
@@ -4102,6 +4216,11 @@ uglify-js@^3.1.4:
     commander "~2.17.1"
     source-map "~0.6.1"
 
+ultron@~1.1.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ultron/-/ultron-1.1.1.tgz#9fe1536a10a664a65266a1e3ccf85fd36302bc9c"
+  integrity sha512-UIEXBNeYmKptWH6z8ZnqTeS8fV74zG0/eRU9VGkpzz+LIJNs8W/zM/L+7ctCkRrgbNnnR0xxw4bKOr0cW0N0Og==
+
 union-value@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/union-value/-/union-value-1.0.0.tgz#5c71c34cb5bad5dcebe3ea0cd08207ba5aa1aea4"
@@ -4286,6 +4405,15 @@ write@^0.2.1:
   integrity sha1-X8A4KOJkzqP+kUVUdvejxWbLB1c=
   dependencies:
     mkdirp "^0.5.1"
+
+ws@^3.0.0:
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-3.3.3.tgz#f1cf84fe2d5e901ebce94efaece785f187a228f2"
+  integrity sha512-nnWLa/NwZSt4KQJu51MYlCcSQ5g7INpOrOMt4XV8j4dqTXdmlUmSHQ8/oLC069ckre0fRsgfvsKwbTdtKLCDkA==
+  dependencies:
+    async-limiter "~1.0.0"
+    safe-buffer "~5.1.0"
+    ultron "~1.1.0"
 
 ws@^5.2.0:
   version "5.2.2"
