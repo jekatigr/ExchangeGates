@@ -232,6 +232,12 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
     runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
         if (!this.notifierRunning) {
+            this.notifierRunning = true;
+            this.notifierParams = {
+                symbols,
+                limit
+            };
+
             // отправляем все ордербуки после начала нотификации
             const orderBooks = this.getOrderBooks({ symbols, limit });
             callback(undefined, {
@@ -239,12 +245,6 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 timestampEnd: +new Date(),
                 data: orderBooks
             });
-
-            this.notifierRunning = true;
-            this.notifierParams = {
-                symbols,
-                limit
-            };
 
             this.notifireIntervalId = setInterval(() => {
                 if (this.storeOrderBooks.length > 0) {
