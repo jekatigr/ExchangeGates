@@ -267,13 +267,18 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 || this.notifierParams.symbols.length === 0
                 || this.notifierParams.symbols.includes(`${base}/${quote}`)
             ) {
-                const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
+                const [ updatedOrderBook ] = this.getUpdatedOrderBooks(false, {
                     symbols: [`${base}/${quote}`],
                     limit: this.notifierParams.limit
-                });
+                }) || [];
 
-                if (this.notifierRunning && updatedOrderBooks && updatedOrderBooks.length > 0) {
-                    this.storeOrderBooks.push(updatedOrderBooks);
+                if (this.notifierRunning && updatedOrderBook) {
+                    const existingIndex = this.storeOrderBooks
+                        .findIndex(e => e.base === updatedOrderBook.base && e.quote === updatedOrderBook.quote);
+                    if (existingIndex !== -1) {
+                        this.storeOrderBooks.splice(existingIndex, 1);
+                    }
+                    this.storeOrderBooks.push(updatedOrderBook);
                     if (this.storeOrderBooks.length === 1) {
                         this.notifierParams.timestampStart = +new Date();
                     }
