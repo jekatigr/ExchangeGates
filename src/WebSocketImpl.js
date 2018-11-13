@@ -121,7 +121,7 @@ module.exports = class WebSocketImpl {
                                 return;
                             }
                             const { timestampStart, timestampEnd, data } = res;
-                            if (this.service.isNotifierRunning()) {
+                            if (ws.readyState === 1 && this.service.isNotifierRunning()) {
                                 WebSocketImpl.sendMessage(ws, timestampStart, timestampEnd, data, ORDERBOOKS);
                             }
                         });

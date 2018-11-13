@@ -74,9 +74,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
         this.orderBooks = [];
         this.orderBooksCache = undefined; // кэш ордербуков для клиента
-        this.notifierParams = undefined;
         this.notifireIntervalId = undefined;
-        this.storeOrderBooks = [];
 
         this.initWS();
     }
@@ -160,7 +158,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                     asks
                 });
             }
-            this.storeUpdatedOrderBooksIfNeeded(base, quote);
+            // this.storeUpdatedOrderBooksIfNeeded(base, quote);
         };
 
         init(symbols, saveLocalDepth.bind(this));
@@ -213,6 +211,13 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         }
     }
 
+    /**
+     * Возвращает обновленные ордербуки для клиента. Сохраняет кэш ордербуков, которые уже были отправлены клиенту.
+     * @param all
+     * @param symbols
+     * @param limit
+     * @returns {Array}
+     */
     getUpdatedOrderBooks(all = false, { symbols = [], limit = 1 }) {
         try {
             let result = [];
@@ -233,10 +238,6 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
     runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
         if (!this.notifierRunning) {
             this.notifierRunning = true;
-            this.notifierParams = {
-                symbols,
-                limit
-            };
 
             // отправляем все ордербуки после начала нотификации
             const orderBooks = this.getOrderBooks({ symbols, limit });
@@ -247,52 +248,27 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             });
 
             this.notifireIntervalId = setInterval(() => {
-                if (this.storeOrderBooks.length > 0) {
-                    const timestampEnd = +new Date();
-                    callback(undefined, {
-                        timestampStart: this.notifierParams.timestampStart,
-                        timestampEnd,
-                        data: this.storeOrderBooks
-                    });
-                    this.storeOrderBooks = [];
-                    this.notifierParams.timestampStart = undefined;
-                }
-            }, 0);
-        }
-    }
-
-    storeUpdatedOrderBooksIfNeeded(base, quote) {
-        if (this.notifierRunning && this.notifierParams) {
-            if (!this.notifierParams.symbols
-                || this.notifierParams.symbols.length === 0
-                || this.notifierParams.symbols.includes(`${base}/${quote}`)
-            ) {
-                const [ updatedOrderBook ] = this.getUpdatedOrderBooks(false, {
-                    symbols: [`${base}/${quote}`],
-                    limit: this.notifierParams.limit
+                const start = +new Date();
+                const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
+                    symbols,
+                    limit
                 }) || [];
 
-                if (this.notifierRunning && updatedOrderBook) {
-                    const existingIndex = this.storeOrderBooks
-                        .findIndex(e => e.base === updatedOrderBook.base && e.quote === updatedOrderBook.quote);
-                    if (existingIndex !== -1) {
-                        this.storeOrderBooks.splice(existingIndex, 1);
-                    }
-                    this.storeOrderBooks.push(updatedOrderBook);
-                    if (this.storeOrderBooks.length === 1) {
-                        this.notifierParams.timestampStart = +new Date();
-                    }
+                if (this.notifierRunning && updatedOrderBooks.length > 0) {
+                    callback(undefined, {
+                        timestampStart: start,
+                        timestampEnd: +new Date(),
+                        data: updatedOrderBooks
+                    });
                 }
-            }
+            }, 10);
         }
     }
 
     stopOrderBookNotifier() {
         this.notifierRunning = false;
-        this.notifierParams = undefined;
         this.orderBooksCache = undefined;
         clearInterval(this.notifireIntervalId);
-        this.storeOrderBooks = [];
     }
 
     async getTriangles() {
