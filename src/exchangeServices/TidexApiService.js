@@ -43,7 +43,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                         max: m.maxPrice
                     },
                     cost: {
-                        min: m.minAmount  * m.minPrice
+                        min: +Big(m.minAmount).times(m.minPrice)
                     }
                 }
             }));
