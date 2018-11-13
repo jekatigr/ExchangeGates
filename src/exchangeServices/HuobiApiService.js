@@ -239,14 +239,6 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         if (!this.notifierRunning) {
             this.notifierRunning = true;
 
-            // отправляем все ордербуки после начала нотификации
-            const orderBooks = this.getOrderBooks({ symbols, limit });
-            callback(undefined, {
-                timestampStart: +new Date(),
-                timestampEnd: +new Date(),
-                data: orderBooks
-            });
-
             this.notifireIntervalId = setInterval(() => {
                 const start = +new Date();
                 const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
