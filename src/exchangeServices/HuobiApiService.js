@@ -93,6 +93,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                     id: `${symbol.symbol}`
                 }));
             }
+            console.log(`Subscribed to ${symbols.length} orderbook channels.`);
         }
 
         function handle(data, callback) {
@@ -158,7 +159,6 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                     asks
                 });
             }
-            // this.storeUpdatedOrderBooksIfNeeded(base, quote);
         };
 
         init(symbols, saveLocalDepth.bind(this));

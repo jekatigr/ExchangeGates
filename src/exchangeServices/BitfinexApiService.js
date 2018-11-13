@@ -105,6 +105,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                         localCallback(symbolObj.symbol, orderbook);
                     });
                 }
+                console.log(`Subscribed to ${localSymbols.length} orderbook channels.`);
             }
 
             function reconnect(localSymbols, localCallback) {
