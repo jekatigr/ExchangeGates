@@ -22,7 +22,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
 
     async getMarkets() {
         try {
-            const markets =  await this.api.getMarkets({ localAddress: super.getNextIp() });
+            const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
 
             return markets.map(m => ({
                 base: m.base,

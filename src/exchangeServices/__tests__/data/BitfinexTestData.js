@@ -566,9 +566,9 @@ module.exports = {
                 amount: 0.002,
                 remaining: 0.002,
                 filled: 0,
-                status: open
+                status: 'open'
             },
-            expected:   {
+            expected: {
                 id: 18609031664,
                 base: 'BTC',
                 quote: 'USDT',
@@ -651,7 +651,7 @@ module.exports = {
                     amount: 0.002,
                     remaining: 0.002,
                     filled: 0,
-                    status: open
+                    status: 'open'
                 },
                 {
                     info: {
@@ -687,7 +687,7 @@ module.exports = {
                     amount: 0.002,
                     remaining: 0.002,
                     filled: 0,
-                    status: open
+                    status: 'open'
                 }
             ],
             expected: [

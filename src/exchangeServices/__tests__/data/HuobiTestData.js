@@ -23,20 +23,20 @@ module.exports = {
                     percentage: true,
                     taker: 0.002,
                     maker: 0.002,
-                    id: "18cbtc",
-                    symbol: "18C/BTC",
-                    base: "18C",
-                    quote: "BTC",
-                    baseId: "18c",
-                    quoteId: "btc",
+                    id: '18cbtc',
+                    symbol: '18C/BTC',
+                    base: '18C',
+                    quote: 'BTC',
+                    baseId: '18c',
+                    quoteId: 'btc',
                     active: true,
                     info: {
-                        "base-currency": "18c",
-                        "quote-currency": "btc",
-                        "price-precision": 10,
-                        "amount-precision": 2,
-                        "symbol-partition": "innovation",
-                        "symbol": "18cbtc"
+                        'base-currency': '18c',
+                        'quote-currency': 'btc',
+                        'price-precision': 10,
+                        'amount-precision': 2,
+                        'symbol-partition': 'innovation',
+                        symbol: '18cbtc'
                     }
                 }
             },

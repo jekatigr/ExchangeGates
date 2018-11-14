@@ -1,4 +1,4 @@
-jest.dontMock('ccxt')
+jest.dontMock('ccxt');
 const ccxt = require('ccxt');
 const HuobiApiService = require('../HuobiApiService');
 const { loadConfig } = require('../../ConfigLoader');
@@ -27,26 +27,6 @@ describe('huobi API', () => {
             const markets = await service.getMarkets();
 
             expect(markets).toEqual(expected);
-        });
-    });
-
-    describe('getPrices method', () => {
-        // const { getMarketsTest } = testData;
-        it('should load and return correct prices', async () => {
-            // const {
-            //     case1: {
-            //         source,
-            //         expected
-            //     }
-            // } = getMarketsTest;
-
-
-            // ccxt.setMarkets(source);
-            // jest.unmock('ccxt');
-
-            const prices = await service.getBalances();
-
-            // expect(markets).toEqual(expected);
         });
     });
 });

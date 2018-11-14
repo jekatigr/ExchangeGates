@@ -19,7 +19,7 @@ const convertToOrderbook = (rawOrderBook) => {
     };
 
     for (const ask of asks) {
-        const [ price, count, amount ] = ask;
+        const [ price, , amount ] = ask;
         res.asks.push({
             price,
             amount: -amount
@@ -27,7 +27,7 @@ const convertToOrderbook = (rawOrderBook) => {
     }
 
     for (const bid of bids) {
-        const [ price, count, amount ] = bid;
+        const [ price, , amount ] = bid;
         res.bids.push({
             price,
             amount
