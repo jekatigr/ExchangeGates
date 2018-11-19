@@ -55,4 +55,18 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
         }
     }
+
+    async getTriangles() {
+        try {
+            const config = getConfig();
+            const { currencies } = config;
+
+            const markets = await this.getMarkets();
+
+            return ExchangeServiceAbstract.calculateTriangles(currencies, markets);
+        } catch (ex) {
+            console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching triangles, ex: ${ex}`);
+        }
+    }
 };
