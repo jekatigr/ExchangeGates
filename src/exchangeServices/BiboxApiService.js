@@ -2,6 +2,7 @@ const https = require('https');
 const ccxt = require('ccxt');
 const WebSocket = require('ws');
 const pako = require('pako');
+const Big = require('big.js');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getPrices } = require('../utils/PriceUtil');
@@ -232,6 +233,40 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching prices, ex: ${ex}`);
+        }
+    }
+
+    async getBalances(currencies = []) {
+        try {
+            this.rotateAgent();
+            let balances = await this.api.fetchBalance();
+            delete balances.free;
+            delete balances.used;
+            delete balances.total;
+            delete balances.info;
+            balances = Object.entries(balances).filter(e => e[1].total > 0).map(e => ({
+                currency: e[0],
+                free: e[1].free,
+                used: e[1].used,
+                total: e[1].total,
+            }));
+
+            const balancesFiltered = (currencies.length > 0)
+                ? balances.filter(b => currencies.includes(b.currency))
+                : balances;
+            const prices = this.getPrices(balancesFiltered.map(b => b.currency)) || [];
+
+            for (const balance of balancesFiltered) {
+                const price = prices.find(p => p.base === balance.currency);
+                if (price) {
+                    balance.mainAmount = +Big(balance.total).times(price.bid);
+                }
+            }
+
+            return balancesFiltered;
+        } catch (ex) {
+            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching balances, ex: ${ex}`);
         }
     }
 };
