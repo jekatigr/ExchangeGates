@@ -270,6 +270,55 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
         }
     }
 
+    async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
+        if (!symbol || !operation || !price || !amount) {
+            console.log('Exception while creating order, params missing');
+            throw new Error('Exception while creating order, params missing');
+        }
+
+        try {
+            this.rotateAgent();
+            const orderRaw = await this.api.createOrder(
+                symbol,
+                'limit',
+                operation,
+                amount,
+                price
+            );
+
+            const [ base, quote ] = symbol.split('/');
+
+            const order = {
+                id: orderRaw.id,
+                base,
+                quote,
+                operation,
+                amount,
+                remain: amount,
+                price: price,
+                average: 0,
+                created: +new Date(),
+                status: 'active'
+            };
+
+            if (cancelAfter && cancelAfter > 0 && order.status !== 'closed') {
+                setTimeout(async () => {
+                    try {
+                        await this.api.cancelOrder(order.id);
+                        console.log(`Order (id: ${order.id}) cancelled.`);
+                    } catch (ex) {
+                        console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                    }
+                }, cancelAfter);
+            }
+
+            return order;
+        } catch (ex) {
+            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while creating order, ex: ${ex}`);
+        }
+    }
+
     async getActiveOrders(symbol) {
         try {
             this.rotateAgent();
