@@ -319,6 +319,28 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
         }
     }
 
+    async cancelOrders(ids = []) {
+        if (ids.length === 0) {
+            console.log('Exception while canceling orders, params missing');
+            throw new Error('Exception while canceling orders, params missing');
+        }
+
+        const result = [];
+        /* eslint-disable no-await-in-loop */
+        for (const orderId of ids) {
+            try {
+                this.rotateAgent();
+                await this.api.cancelOrder(orderId);
+                result.push({ id: orderId, success: true });
+            } catch (ex) {
+                console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+                result.push({ id: orderId, success: false, error: ex.message });
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        return result;
+    }
+
     async getActiveOrders(symbol) {
         try {
             this.rotateAgent();
