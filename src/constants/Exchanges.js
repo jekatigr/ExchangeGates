@@ -1,5 +1,6 @@
 module.exports = {
     TIDEX: 'tidex',
     HUOBI: 'huobi',
-    BITFINEX: 'bitfinex'
+    BITFINEX: 'bitfinex',
+    BIBOX: 'bibox'
 };

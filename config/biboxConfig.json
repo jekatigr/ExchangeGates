@@ -1,0 +1,16 @@
+{
+  "wsPort": 2345,
+  "exchange": "bibox",
+  "apiKey": "",
+  "apiSecret": "",
+  "mainCurrency": "USDT",
+  "ipArray": [],
+  "currencies": [
+    "BTC",
+    "USDT",
+    "ETH",
+    "LTC",
+    "RLC",
+    "REM"
+  ]
+}
