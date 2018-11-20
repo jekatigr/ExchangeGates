@@ -10,7 +10,7 @@
 - Huobi ([huobi.pro](https://huobi.pro))
 - Tidex ([tidex.com](https://tidex.com))
 
-<br />  
+*****
 
 ### Конфигурация
 
@@ -48,7 +48,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
         ]
     }
 
-<br/>  
+***** 
 
 ### Установка и запуск
 
@@ -67,7 +67,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     yarn run start-huobi
     yarn run start-tidex
 
-<br/>  
+*****
 
 ### Формат взаимодействия
 
@@ -99,7 +99,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - connected
 - availableActions
 
-<br/>   
+***** 
 
 ### Доступные методы
 
@@ -115,7 +115,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - [getOrders](#getorders)
 - [cancelOrders](#cancelorders)
 
-<br/>  
+***** 
 
 #### getMarkets
 
@@ -129,8 +129,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -181,9 +180,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-</details>
-
-<br/>  
+*****
 
 #### getOrderBooks
 
@@ -209,8 +206,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -272,9 +268,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-</details>
-
-<br/>  
+***** 
 
 #### runOrderbooksNotifier
 
@@ -304,8 +298,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -366,9 +359,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-</details>
-
-<br/>  
+*****
 
 #### stopOrderbooksNotifier
 
@@ -384,7 +375,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 
 На данный запрос ответа не предусмотрено.
 
-<br/>  
+*****
 
 #### getPrices
 
@@ -408,8 +399,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -441,9 +431,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-</details>
-
-<br/>  
+*****  
 
 #### getTriangles
 
@@ -458,8 +446,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -494,9 +481,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-</details>
-
-<br/>  
+*****
 
 #### getBalances
 
@@ -520,8 +505,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -549,9 +533,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-</details>
-
-<br/>  
+*****
 
 #### createOrder
 
@@ -581,8 +563,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -606,9 +587,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-</details>
-
-<br/>  
+*****
 
 #### getActiveOrders
 
@@ -627,8 +606,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -654,9 +632,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-</details>
-
-<br/>  
+*****
 
 #### getOrders
 
@@ -678,8 +654,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -718,9 +693,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     ]
 }
 ```
-</details>
 
-<br/>  
+*****
 
 #### cancelOrders
 
@@ -742,8 +716,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-<details>
-<summary>Результат:</summary>
+Результат:
 
 ```json
 {  
@@ -764,5 +737,3 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     ]
 }
 ```
-
-</details>
