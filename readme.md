@@ -10,7 +10,7 @@
 - Huobi ([huobi.pro](https://huobi.pro))
 - Tidex ([tidex.com](https://tidex.com))
 
-  &nbsp; 
+<br />  
 
 ### Конфигурация
 
