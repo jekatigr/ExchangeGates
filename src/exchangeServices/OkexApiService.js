@@ -144,6 +144,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         init(symbols, saveLocalDepth.bind(this));
     }
 
+
     async getMarkets() {
         try {
             const raw = await request({
@@ -182,6 +183,26 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
+        }
+    }
+
+    getOrderBooks({ symbols = [], limit = 1 } = {}) {
+        try {
+            let orderbooks = this.orderBooks; // должен быть заполнен из вебсокета
+            if (symbols && symbols.length > 0) {
+                orderbooks = orderbooks.filter(o => symbols.includes(`${o.base}/${o.quote}`));
+            }
+
+            orderbooks = orderbooks.map(o => ({
+                ...o,
+                bids: o.bids.slice(0, limit),
+                asks: o.asks.slice(0, limit),
+            }));
+
+            return orderbooks;
+        } catch (ex) {
+            console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
         }
     }
 
