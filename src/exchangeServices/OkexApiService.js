@@ -206,6 +206,58 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         }
     }
 
+    /**
+     * Возвращает обновленные ордербуки для клиента. Сохраняет кэш ордербуков, которые уже были отправлены клиенту.
+     * @param all
+     * @param symbols
+     * @param limit
+     * @returns {Array}
+     */
+    getUpdatedOrderBooks(all = false, { symbols = [], limit = 1 }) {
+        try {
+            let result = [];
+            const allOrderBooks = this.getOrderBooks({ symbols, limit });
+            if (!all && this.orderBooksCache) {
+                result = ExchangeServiceAbstract.filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
+            } else {
+                result = allOrderBooks;
+            }
+            this.orderBooksCache = allOrderBooks;
+            return result;
+        } catch (ex) {
+            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+        }
+    }
+
+    runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
+        if (!this.notifierRunning) {
+            this.notifierRunning = true;
+
+            this.notifireIntervalId = setInterval(() => {
+                const start = +new Date();
+                const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
+                    symbols,
+                    limit
+                }) || [];
+
+                if (this.notifierRunning && updatedOrderBooks.length > 0) {
+                    callback(undefined, {
+                        timestampStart: start,
+                        timestampEnd: +new Date(),
+                        data: updatedOrderBooks
+                    });
+                }
+            }, 10);
+        }
+    }
+
+    stopOrderBookNotifier() {
+        this.notifierRunning = false;
+        this.orderBooksCache = undefined;
+        clearInterval(this.notifireIntervalId);
+    }
+
     async getTriangles() {
         try {
             const config = getConfig();
