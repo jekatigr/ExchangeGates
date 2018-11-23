@@ -34,6 +34,25 @@ const convertToOrderbook = (rawOrderBook) => {
     return res;
 };
 
+/**
+ * Конвертер ордербуков в тикеры
+ * @param orderBooks
+ */
+const convertOrderBooksToTickers = orderBooks => (
+    orderBooks.map((o) => {
+        const { base, quote, asks, bids } = o;
+        const [{ price: ask }] = asks;
+        const [{ price: bid }] = bids;
+        return {
+            base,
+            quote,
+            ask,
+            bid
+        };
+    })
+);
+
+
 module.exports = class OkexApiService extends ExchangeServiceAbstract {
     constructor() {
         const config = getConfig();
@@ -269,6 +288,19 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching triangles, ex: ${ex}`);
+        }
+    }
+
+    getPrices(currencies = []) {
+        try {
+            const { mainCurrency } = getConfig();
+            const orderBooks = this.getOrderBooks({ limit: 1 });
+            const tickers = convertOrderBooksToTickers(orderBooks);
+
+            return getPrices(tickers, currencies, mainCurrency);
+        } catch (ex) {
+            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching prices, ex: ${ex}`);
         }
     }
 };
