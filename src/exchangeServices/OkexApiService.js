@@ -1,6 +1,6 @@
 const util = require('util');
 const request = require('request-promise-native');
-const Big = require('Big.js');
+const Big = require('big.js');
 const WebSocket = require('ws');
 const pako = require('pako');
 const Okex = require('okex-rest2');
@@ -309,7 +309,10 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
 
     async getBalances(currencies = []) {
         try {
-            let userInfo = await util.promisify(this.api.getUserInfo).bind(this.api)(undefined);
+            const options = {
+                localAddress: this.getNextIp()
+            };
+            const userInfo = await util.promisify(this.api.getUserInfo).bind(this.api)(options);
             if (userInfo && userInfo.info && userInfo.info.funds) {
                 const { free, freezed } = userInfo.info.funds;
 
@@ -330,7 +333,9 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     balances = Object.entries(freezed).reduce((accumulated, current) => {
                         const [ currency, amount ] = current;
                         if (+amount > 0) {
-                            const existingIndex = (accumulated.findIndex(balance => balance.currency === currency.toUpperCase()));
+                            const existingIndex = accumulated.findIndex(
+                                balance => balance.currency === currency.toUpperCase()
+                            );
                             if (existingIndex === -1) {
                                 accumulated.push({
                                     currency,
@@ -339,7 +344,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                                     total: +amount,
                                 });
                             } else {
-                                accumulated[existingIndex] = {
+                                accumulated[existingIndex] = { // eslint-disable-line no-param-reassign
                                     ...accumulated[existingIndex],
                                     used: +amount,
                                     total: +Big(amount).plus(accumulated[existingIndex].free)
@@ -364,6 +369,8 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     return balancesFiltered;
                 }
             }
+            console.log('Exception while fetching balances, exchange doesn\'t return data.');
+            throw new Error('Exception while fetching balances, exchange doesn\'t return data.');
         } catch (ex) {
             console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching balances, ex: ${ex}`);
