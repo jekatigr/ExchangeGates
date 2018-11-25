@@ -11,6 +11,7 @@
     "ccxt": "^1.17.405",
     "cross-env": "^5.2.0",
     "node-tidex-api": "^1.1.0",
+    "okex-rest2": "^0.0.1",
     "pako": "^1.0.6",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
