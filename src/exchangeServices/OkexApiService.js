@@ -71,19 +71,18 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         function subscribe(ws, symbols) {
             for (const symbol of symbols) {
                 ws.send(JSON.stringify({
-                    event: "addChannel",
-                    channel: 'ok_sub_spot_' + symbol.symbol + '_depth_20'
+                    event: 'addChannel',
+                    channel: `ok_sub_spot_${symbol.symbol}_depth_20`
                 }));
             }
             console.log(`Subscribed to ${symbols.length} orderbook channels.`);
         }
 
         function handle(msg, callback) {
-            let channel = msg.channel;
-            let data = msg.data;
-            let channelArr = channel.split('_');
-            let symbol = channelArr[3] + '_' + channelArr[4];
-            let channelType = channelArr[5];
+            const { channel, data } = msg;
+            const channelArr = channel.split('_');
+            const symbol = `${channelArr[3]}_${channelArr[4]}`;
+            const channelType = channelArr[5];
             if (msg.binary === 0) {
                 switch (channelType) {
                     case 'depth':
@@ -106,10 +105,10 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
             ws.on('message', (data) => {
                 let msg;
                 if (data instanceof String) {
-                    console.log('Message from websocket: ' + data);
+                    console.log(`Message from websocket: ${data}`);
                 } else {
                     try {
-                        msg = JSON.parse(pako.inflateRaw(data, {to: 'string'}));
+                        msg = JSON.parse(pako.inflateRaw(data, { to: 'string' }));
                     } catch (err) {
                         console.log(`Error while parsing ws message, err: ${err}`);
                     }
@@ -174,7 +173,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
             });
 
             if (raw && raw.data && raw.data.length > 0) {
-                return raw.data.map(m => {
+                return raw.data.map((m) => {
                     const [ base, quote ] = m.symbol.split('_');
 
                     return {
@@ -193,7 +192,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                             price: {},
                             cost: {}
                         }
-                    }
+                    };
                 });
             }
 

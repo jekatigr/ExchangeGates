@@ -77,24 +77,23 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
         function subscribe(ws, symbols) {
             for (const symbol of symbols) {
                 ws.send(JSON.stringify({
-                    event: "addChannel",
-                    channel: 'bibox_sub_spot_' + symbol.symbol + '_depth'
+                    event: 'addChannel',
+                    channel: `bibox_sub_spot_${symbol.symbol}_depth`
                 }));
             }
             console.log(`Subscribed to ${symbols.length} orderbook channels.`);
         }
 
         function handle(msg, callback) {
-            let channel = msg.channel;
-            let data = msg.data;
-            let text = pako.inflate(Buffer.from(data, 'base64'), {
+            const { channel, data } = msg;
+            const text = pako.inflate(Buffer.from(data, 'base64'), {
                 to: 'string'
             });
 
-            let recvMsg = JSON.parse(text);
-            let channelArr = channel.split('_');
-            let symbol = channelArr[3] + '_' + channelArr[4];
-            let channelType = channelArr[5];
+            const recvMsg = JSON.parse(text);
+            const channelArr = channel.split('_');
+            const symbol = `${channelArr[3]}_${channelArr[4]}`;
+            const channelType = channelArr[5];
             switch (channelType) {
                 case 'depth':
                     callback(symbol, recvMsg);
@@ -113,7 +112,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             });
 
             ws.on('message', (data) => {
-                let msg = JSON.parse(data);
+                const msg = JSON.parse(data);
                 if (msg[0]) {
                     handle(msg[0], callback);
                 } else {
@@ -348,7 +347,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                 operation,
                 amount,
                 remain: amount,
-                price: price,
+                price,
                 average: 0,
                 created: +new Date(),
                 status: 'active'
