@@ -1,4 +1,3 @@
-//const util = require('util');
 const request = require('request-promise-native');
 const Big = require('big.js');
 const WebSocket = require('ws');
@@ -311,14 +310,12 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         try {
             let balances = await this.api.getBalances({ localAddress: this.getNextIp() });
             if (balances && balances.length > 0) {
-                balances = balances.map((b) => {
-                    return {
-                        currency: b.currency,
-                        free: +b.available,
-                        used: +b.hold,
-                        total: +b.balance,
-                    }
-                });
+                balances = balances.map(b => ({
+                    currency: b.currency,
+                    free: +b.available,
+                    used: +b.hold,
+                    total: +b.balance,
+                }));
 
                 const balancesFiltered = (currencies.length > 0)
                     ? balances.filter(b => currencies.includes(b.currency))
@@ -342,7 +339,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getActiveOrders(symbol = "") {
+    async getActiveOrders(symbol = '') {
         try {
             const openOrders = await this.api.getActiveOrders(
                 symbol.replace('/', '-'),
@@ -351,18 +348,17 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                 undefined,
                 { localAddress: this.getNextIp() }
             ) || [];
-            return openOrders.map(o => {
+            return openOrders.map((o) => {
                 const {
                     order_id: id,
-                    instrument_id: symbol,
+                    instrument_id: instrumentId,
                     side,
                     size,
                     filled_size: filled,
                     price,
-                    timestamp,
-                    status
+                    timestamp
                 } = o;
-                const [ base, quote ] = symbol.split('-');
+                const [ base, quote ] = instrumentId.split('-');
 
                 return {
                     id,
@@ -375,12 +371,11 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     average: 0,
                     created: +new Date(timestamp),
                     status: 'active'
-                }
+                };
             });
         } catch (ex) {
             console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching active orders, ex: ${ex}`);
         }
     }
-
 };

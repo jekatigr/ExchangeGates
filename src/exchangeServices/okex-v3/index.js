@@ -2,29 +2,30 @@ const request = require('request-promise-native');
 const CryptoJS = require('crypto-js');
 
 const get = (url, params, apiKey, apiSecret, passphrase, requestOptions) => {
-    let paramKeys = Object.keys(params);
+    const paramKeys = Object.keys(params);
     let index = 0;
-    for (let key of paramKeys) {
-        if (params[key] !== undefined && params[key] !== "") {
+    let urlT = url;
+    for (const key of paramKeys) {
+        if (params[key] !== undefined && params[key] !== '') {
             if (index === 0) {
-                url += `?${paramKeys[index]}=${params[key]}`;
+                urlT += `?${paramKeys[index]}=${params[key]}`;
             } else {
-                url += `&${paramKeys[index]}=${params[key]}`;
+                urlT += `&${paramKeys[index]}=${params[key]}`;
             }
             index += 1;
         }
     }
     const timestamp = new Date().toISOString();
-    const dirUrl = url.replace(/.*\/\/[^\/]*/, '');
-    let sign = CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(timestamp + 'GET' + dirUrl, apiSecret));
-    let options = {
+    const dirUrl = urlT.replace(/.*\/\/[^\/]*/, ''); // eslint-disable-line no-useless-escape
+    const sign = CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(`${timestamp}GET${dirUrl}`, apiSecret));
+    const options = {
         method: 'get',
         headers: {
             'OK-ACCESS-KEY': apiKey,
             'OK-ACCESS-SIGN': sign,
             'OK-ACCESS-TIMESTAMP': timestamp,
             'OK-ACCESS-PASSPHRASE': passphrase,
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'Content-Type': 'application/json'
         },
         json: true,
@@ -32,7 +33,7 @@ const get = (url, params, apiKey, apiSecret, passphrase, requestOptions) => {
         ...requestOptions
     };
 
-    return request(url, options)
+    return request(urlT, options);
 };
 
 const URL = 'https://www.okex.com/api';
@@ -45,11 +46,11 @@ module.exports = class OkexApi {
     }
 
     async getBalances(requestOptions) {
-        return await get(`${URL}/spot/v3/accounts`, {}, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
+        return get(`${URL}/spot/v3/accounts`, {}, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
     }
 
     async getActiveOrders(instrumentId, limit, from, to, requestOptions) {
-        return await get(`${URL}/spot/v3/orders_pending`, {
+        return get(`${URL}/spot/v3/orders_pending`, {
             instrument_id: instrumentId,
             limit,
             from,
