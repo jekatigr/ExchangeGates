@@ -74,6 +74,13 @@ async function loadConfig(path) {
         };
     }
 
+    if (configObj.exchange === 'okex' && (!configObj.passphrase || configObj.passphrase === '')) {
+        return {
+            success: false,
+            error: "Config file doesn't have 'passphrase'. It's required for okex."
+        };
+    }
+
     if (!configObj.apiSecret || configObj.apiSecret === '') {
         return {
             success: false,

@@ -1,9 +1,9 @@
-const util = require('util');
+//const util = require('util');
 const request = require('request-promise-native');
 const Big = require('big.js');
 const WebSocket = require('ws');
 const pako = require('pako');
-const Okex = require('okex-rest2');
+const OkexApi = require('./okex-v3');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getPrices } = require('../utils/PriceUtil');
@@ -44,8 +44,8 @@ const convertToOrderbook = (rawOrderBook) => {
 const convertOrderBooksToTickers = orderBooks => (
     orderBooks.map((o) => {
         const { base, quote, asks, bids } = o;
-        const [{ price: ask }] = asks;
-        const [{ price: bid }] = bids;
+        const [{ price: ask } = {}] = asks;
+        const [{ price: bid } = {}] = bids;
         return {
             base,
             quote,
@@ -58,11 +58,11 @@ const convertOrderBooksToTickers = orderBooks => (
 module.exports = class OkexApiService extends ExchangeServiceAbstract {
     constructor() {
         const config = getConfig();
-        const { exchange, apiKey, apiSecret, ipArray } = config;
+        const { exchange, apiKey, apiSecret, passphrase, ipArray } = config;
 
         super(exchange, ipArray);
 
-        this.api = new Okex(apiKey, apiSecret);
+        this.api = new OkexApi(apiKey, apiSecret, passphrase);
 
         this.orderBooks = [];
         this.orderBooksCache = undefined; // кэш ордербуков для клиента
@@ -312,62 +312,30 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
             const options = {
                 localAddress: this.getNextIp()
             };
-            const userInfo = await util.promisify(this.api.getUserInfo).bind(this.api)(options);
-            if (userInfo && userInfo.info && userInfo.info.funds) {
-                const { free, freezed } = userInfo.info.funds;
-
-                if (free && Object.keys(free).length > 0 && freezed && Object.keys(freezed).length > 0) {
-                    let balances = Object.entries(free).reduce((accumulated, current) => {
-                        const [ currency, amount ] = current;
-                        if (+amount > 0) {
-                            accumulated.push({
-                                currency: currency.toUpperCase(),
-                                free: +amount,
-                                used: 0,
-                                total: +amount,
-                            });
-                        }
-                        return accumulated;
-                    }, []);
-
-                    balances = Object.entries(freezed).reduce((accumulated, current) => {
-                        const [ currency, amount ] = current;
-                        if (+amount > 0) {
-                            const existingIndex = accumulated.findIndex(
-                                balance => balance.currency === currency.toUpperCase()
-                            );
-                            if (existingIndex === -1) {
-                                accumulated.push({
-                                    currency,
-                                    free: +amount,
-                                    used: 0,
-                                    total: +amount,
-                                });
-                            } else {
-                                accumulated[existingIndex] = { // eslint-disable-line no-param-reassign
-                                    ...accumulated[existingIndex],
-                                    used: +amount,
-                                    total: +Big(amount).plus(accumulated[existingIndex].free)
-                                };
-                            }
-                        }
-                        return accumulated;
-                    }, balances);
-
-                    const balancesFiltered = (currencies.length > 0)
-                        ? balances.filter(b => currencies.includes(b.currency))
-                        : balances;
-                    const prices = this.getPrices(balancesFiltered.map(b => b.currency)) || [];
-
-                    for (const balance of balancesFiltered) {
-                        const price = prices.find(p => p.base === balance.currency);
-                        if (price) {
-                            balance.mainAmount = +Big(balance.total).times(price.bid);
-                        }
+            let balances = await this.api.getBalances(options);
+            if (balances && balances.length > 0) {
+                balances = balances.map((b) => {
+                    return {
+                        currency: b.currency,
+                        free: +b.available,
+                        used: +b.hold,
+                        total: +b.balance,
                     }
+                });
 
-                    return balancesFiltered;
+                const balancesFiltered = (currencies.length > 0)
+                    ? balances.filter(b => currencies.includes(b.currency))
+                    : balances;
+                const prices = this.getPrices(balancesFiltered.map(b => b.currency)) || [];
+
+                for (const balance of balancesFiltered) {
+                    const price = prices.find(p => p.base === balance.currency);
+                    if (price) {
+                        balance.mainAmount = +Big(balance.total).times(price.bid);
+                    }
                 }
+
+                return balancesFiltered;
             }
             console.log('Exception while fetching balances, exchange doesn\'t return data.');
             throw new Error('Exception while fetching balances, exchange doesn\'t return data.');
