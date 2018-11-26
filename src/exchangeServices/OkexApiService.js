@@ -309,10 +309,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
 
     async getBalances(currencies = []) {
         try {
-            const options = {
-                localAddress: this.getNextIp()
-            };
-            let balances = await this.api.getBalances(options);
+            let balances = await this.api.getBalances({ localAddress: this.getNextIp() });
             if (balances && balances.length > 0) {
                 balances = balances.map((b) => {
                     return {
@@ -344,4 +341,46 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
             throw new Error(`Exception while fetching balances, ex: ${ex}`);
         }
     }
+
+    async getActiveOrders(symbol = "") {
+        try {
+            const openOrders = await this.api.getActiveOrders(
+                symbol.replace('/', '-'),
+                undefined,
+                undefined,
+                undefined,
+                { localAddress: this.getNextIp() }
+            ) || [];
+            return openOrders.map(o => {
+                const {
+                    order_id: id,
+                    instrument_id: symbol,
+                    side,
+                    size,
+                    filled_size: filled,
+                    price,
+                    timestamp,
+                    status
+                } = o;
+                const [ base, quote ] = symbol.split('-');
+
+                return {
+                    id,
+                    base,
+                    quote,
+                    operation: side,
+                    amount: +size,
+                    remain: +Big(size).minus(filled),
+                    price: +price,
+                    average: 0,
+                    created: +new Date(timestamp),
+                    status: 'active'
+                }
+            });
+        } catch (ex) {
+            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
+        }
+    }
+
 };

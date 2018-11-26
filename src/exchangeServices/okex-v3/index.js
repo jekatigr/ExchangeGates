@@ -1,14 +1,17 @@
 const request = require('request-promise-native');
 const CryptoJS = require('crypto-js');
 
-const get = (url, params, apiKey, apiSecret, passphrase) => {
+const get = (url, params, apiKey, apiSecret, passphrase, requestOptions) => {
     let paramKeys = Object.keys(params);
-    for (let index in paramKeys) {
-        if (index === 0) {
-            url += `?${paramKeys[index]}=${params[index]}`;
-        }
-        else {
-            url += `&${paramKeys[index]}=${params[index]}`;
+    let index = 0;
+    for (let key of paramKeys) {
+        if (params[key] !== undefined && params[key] !== "") {
+            if (index === 0) {
+                url += `?${paramKeys[index]}=${params[key]}`;
+            } else {
+                url += `&${paramKeys[index]}=${params[key]}`;
+            }
+            index += 1;
         }
     }
     const timestamp = new Date().toISOString();
@@ -24,7 +27,9 @@ const get = (url, params, apiKey, apiSecret, passphrase) => {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        json: true
+        json: true,
+        timeout: 10000,
+        ...requestOptions
     };
 
     return request(url, options)
@@ -39,7 +44,16 @@ module.exports = class OkexApi {
         this.passphrase = passphrase;
     }
 
-    async getBalances() {
-        return await get(`${URL}/spot/v3/accounts`, {}, this.apiKey, this.apiSecret, this.passphrase);
+    async getBalances(requestOptions) {
+        return await get(`${URL}/spot/v3/accounts`, {}, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
+    }
+
+    async getActiveOrders(instrumentId, limit, from, to, requestOptions) {
+        return await get(`${URL}/spot/v3/orders_pending`, {
+            instrument_id: instrumentId,
+            limit,
+            from,
+            to
+        }, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
     }
 };
