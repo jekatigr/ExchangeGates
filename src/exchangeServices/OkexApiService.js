@@ -354,6 +354,28 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         }
     }
 
+    async cancelOrders(params = []) {
+        if (params.length === 0) {
+            console.log('Exception while canceling orders, params missing');
+            throw new Error('Exception while canceling orders, params missing');
+        }
+
+        const result = [];
+        /* eslint-disable no-await-in-loop */
+        for (const param of params) {
+            const { symbol, id } = param;
+            try {
+                await this.api.cancelOrder(symbol.replace('/', '-'), id, { localAddress: this.getNextIp() });
+                result.push({ id, success: true });
+            } catch (ex) {
+                console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+                result.push({ id, success: false, error: ex.message });
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        return result;
+    }
+
     async getActiveOrders(symbol = '') {
         try {
             const openOrders = await this.api.getActiveOrders(

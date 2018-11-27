@@ -117,6 +117,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - [getOrders](#getorders)
 - [getOrders - Okex](#getorders---okex)
 - [cancelOrders](#cancelorders)
+- [cancelOrders - Okex](#cancelorders---okex)
 
 ***** 
 
@@ -703,7 +704,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 
 #### getOrders - Okex
 
-**Метод только для okex!**
+**Описание только для okex!**
 
 Метод возвращает массив ордеров.
 
@@ -777,6 +778,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 
 #### cancelOrders
 
+**Описание ниже для всех бирж кроме okex!**
+
 Отмена нескольких ордеров по id.
 
 |Параметр|Тип|Обязательный|Описание|
@@ -792,6 +795,62 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
         1212100295,
         "1212074575"
     ]
+}
+```
+
+Результат:
+
+```json
+{  
+    "success": true,
+    "timestampStart": 1542719952740,
+    "timestampEnd": 1542719953566,
+    "event": "action",
+    "action": "cancelOrders",
+    "data": [  
+        {  
+            "id": 1212100295,
+            "success": true
+        },
+        {  
+            "id": "1212074575",
+            "success": true
+        }
+    ]
+}
+```
+
+*****
+
+#### cancelOrders - Okex
+
+**Описание только для okex!**
+
+Отмена нескольких ордеров.
+
+|Параметр|Тип|Обязательный|Описание|
+ |--- |--- |--- |--- |
+ |params|Array<Object\>|Да|Параметры ордеров.
+
+Где каждый объект в массвие params содержит:
+ 
+ |Параметр|Тип|Обязательный|Описание|
+  |--- |--- |--- |--- |
+  |symbol|String|Да|Рынок, на котором был создан ордер.
+  |id|String/Number|Да|id ордера.
+
+Пример:
+
+```json
+{
+    "action": "cancelOrders",
+    "params": [{
+        "symbol": "ETH/USDT",
+        "id": 1212100295
+    }, {
+        "symbol": "ETH/USDT",
+        "id": "1212074575"
+    }]
 }
 ```
 

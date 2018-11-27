@@ -36,6 +36,27 @@ const get = (url, params, apiKey, apiSecret, passphrase, requestOptions) => {
     return request(urlT, options);
 };
 
+const post = (url, params, apiKey, apiSecret, passphrase, requestOptions) => {
+    const jsonValue = JSON.stringify(params);
+    const timestamp = new Date().toISOString();
+    const dirUrl = url.replace(/.*\/\/[^\/]*/, ''); // eslint-disable-line no-useless-escape
+    const sign = CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(`${timestamp}POST${dirUrl}${jsonValue}`, apiSecret));
+    const options = {
+        method: 'post',
+        body: jsonValue,
+        headers: {
+            'OK-ACCESS-KEY': apiKey,
+            'OK-ACCESS-SIGN': sign,
+            'OK-ACCESS-TIMESTAMP': timestamp,
+            'OK-ACCESS-PASSPHRASE': passphrase,
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        },
+        ...requestOptions
+    };
+    return request(url, options);
+};
+
 const URL = 'https://www.okex.com/api';
 
 module.exports = class OkexApi {
@@ -61,6 +82,12 @@ module.exports = class OkexApi {
     async getOrder(symbol, orderId, requestOptions) {
         return get(`${URL}/spot/v3/orders/${orderId}`, {
             instrument_id: symbol
+        }, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
+    }
+
+    async cancelOrder(symbol, orderId, requestOptions) {
+        return post(`${URL}/spot/v3/cancel_orders/${orderId}`, {
+            instrument_id: symbol,
         }, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
     }
 };
