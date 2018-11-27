@@ -79,6 +79,17 @@ module.exports = class OkexApi {
         }, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
     }
 
+    async createOrder(symbol, operation, price, amount, requestOptions) {
+        return post(`${URL}/spot/v3/orders`, {
+            type: 'limit',
+            side: operation,
+            instrument_id: symbol,
+            price,
+            size: amount,
+            margin_trading: 1
+        }, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
+    }
+
     async getOrder(symbol, orderId, requestOptions) {
         return get(`${URL}/spot/v3/orders/${orderId}`, {
             instrument_id: symbol

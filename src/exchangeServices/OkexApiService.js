@@ -354,6 +354,61 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         }
     }
 
+    async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
+        if (!symbol || !operation || !price || !amount) {
+            console.log('Exception while creating order, params missing');
+            throw new Error('Exception while creating order, params missing');
+        }
+
+        try {
+            const orderRaw = await this.api.createOrder(
+                symbol.replace('/', '-'),
+                operation,
+                price,
+                amount,
+                { localAddress: this.getNextIp() }
+            );
+
+            const orderRes = JSON.parse(orderRaw);
+            const { order_id: orderId } = orderRes;
+
+            if (orderId) {
+                const [ base, quote ] = symbol.split('/');
+                const order = {
+                    id: orderId,
+                    base,
+                    quote,
+                    operation,
+                    amount,
+                    remain: amount,
+                    price,
+                    average: 0,
+                    created: +new Date(),
+                    status: 'active'
+                };
+
+                if (cancelAfter && cancelAfter > 0 && order.status !== 'closed') {
+                    setTimeout(async () => {
+                        try {
+                            await this.api.cancelOrder(symbol.replace('/', '-'), order.id, { localAddress: this.getNextIp() });
+                            console.log(`Order (id: ${order.id}) cancelled.`);
+                        } catch (ex) {
+                            console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                        }
+                    }, cancelAfter);
+                }
+
+                return order;
+            }
+
+            console.log(`Exception while creating order, exchange message: ${orderRes}`);
+            throw new Error(`Exception while creating order, exchange message: ${orderRes}`);
+        } catch (ex) {
+            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while creating order, ex: ${ex}`);
+        }
+    }
+
     async cancelOrders(params = []) {
         if (params.length === 0) {
             console.log('Exception while canceling orders, params missing');
