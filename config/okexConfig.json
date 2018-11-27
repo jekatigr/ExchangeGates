@@ -3,6 +3,7 @@
     "exchange": "okex",
     "apiKey": "",
     "apiSecret": "",
+    "passphrase": "",
     "mainCurrency": "USDT",
     "ipArray": [],
     "currencies": [
