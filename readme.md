@@ -68,6 +68,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     yarn run start-bitfinex
     yarn run start-huobi
     yarn run start-tidex
+    yarn run start-okex
 
 *****
 
