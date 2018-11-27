@@ -411,6 +411,10 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                 };
             });
         } catch (ex) {
+            if (ex.message.indexOf('30036') !== -1) { // okex возвращает 400 ошибку, когда ордеров нет
+                return [];
+            }
+
             console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching active orders, ex: ${ex}`);
         }
