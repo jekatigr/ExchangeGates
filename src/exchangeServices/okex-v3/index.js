@@ -57,4 +57,10 @@ module.exports = class OkexApi {
             to
         }, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
     }
+
+    async getOrder(symbol, orderId, requestOptions) {
+        return get(`${URL}/spot/v3/orders/${orderId}`, {
+            instrument_id: symbol
+        }, this.apiKey, this.apiSecret, this.passphrase, requestOptions);
+    }
 };

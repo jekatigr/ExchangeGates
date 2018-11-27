@@ -54,6 +54,21 @@ const convertOrderBooksToTickers = orderBooks => (
     })
 );
 
+const convertOrderStatus = (status) => {
+    // (all, open, part_filled, canceling, filled, cancelled，ordering)
+    switch (status) {
+        case 'open':
+        case 'part_filled':
+            return 'active';
+        case 'cancelling':
+        case 'cancelled':
+            return 'cancelled';
+        case 'filled':
+            return 'closed';
+        default: return undefined;
+    }
+};
+
 module.exports = class OkexApiService extends ExchangeServiceAbstract {
     constructor() {
         const config = getConfig();
@@ -368,14 +383,48 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     amount: +size,
                     remain: +Big(size).minus(filled),
                     price: +price,
-                    average: 0,
+                    average: (!(Big(o.filled_size).eq(0))) ? +Big(o.executed_value).div(o.filled_size) : 0,
                     created: +new Date(timestamp),
-                    status: 'active'
+                    status: convertOrderStatus(o.status)
                 };
             });
         } catch (ex) {
             console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching active orders, ex: ${ex}`);
         }
+    }
+
+    async getOrders(params = []) {
+        if (params.length === 0) {
+            console.log('Exception while getting orders, params missing');
+            throw new Error('Exception while getting orders, params missing');
+        }
+
+        const result = [];
+        /* eslint-disable no-await-in-loop */
+        for (const param of params) {
+            const { symbol, id } = param;
+            try {
+                const o = await this.api.getOrder(symbol.replace('/', '-'), id, { localAddress: this.getNextIp() });
+                result.push({
+                    success: true,
+                    id: o.order_id,
+                    base: o.instrument_id.split('-')[0],
+                    quote: o.instrument_id.split('-')[1],
+                    operation: o.side,
+                    amount: +o.size,
+                    remain: +Big(o.size).minus(o.filled_size),
+                    price: +o.price,
+                    average: (!(Big(o.filled_size).eq(0))) ? +Big(o.executed_value).div(o.filled_size) : 0,
+                    created: +new Date(o.timestamp),
+                    status: convertOrderStatus(o.status)
+                });
+            } catch (ex) {
+                console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
+                result.push({ id, success: false, error: ex.message });
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        return result;
     }
 };

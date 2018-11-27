@@ -9,6 +9,7 @@
 - Bitfinex ([bitfinex.com](https://bitfinex.com))
 - Huobi ([huobi.pro](https://huobi.pro))
 - Tidex ([tidex.com](https://tidex.com))
+- Tidex ([okex.com](https://www.okex.com))
 
 *****
 
@@ -114,6 +115,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - [createOrder](#createorder)
 - [getActiveOrders](#getactiveorders)
 - [getOrders](#getorders)
+- [getOrders - Okex](#getorders---okex)
 - [cancelOrders](#cancelorders)
 
 ***** 
@@ -637,6 +639,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 
 #### getOrders
 
+**Описание ниже для всех бирж кроме okex!**
+
 Метод возвращает массив ордеров по id.
 
 |Параметр|Тип|Обязательный|Описание|
@@ -652,6 +656,80 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
         1212100295,
         "1212074575"
     ]
+}
+```
+
+Результат:
+
+```json
+{  
+    "success": true,
+    "timestampStart": 1542719586867,
+    "timestampEnd": 1542719587697,
+    "event": "action",
+    "action": "getOrders",
+    "data": [  
+        {  
+            "success": true,
+            "id": "1212100295",
+            "base": "ETH",
+            "quote": "USDT",
+            "operation": "sell",
+            "amount": 0.011,
+            "remain": 0.011,
+            "price": 220,
+            "average": 0,
+            "created": 1542719561000,
+            "status": "active"
+        },
+        {  
+            "success": true,
+            "id": "1212074575",
+            "base": "ETH",
+            "quote": "USDT",
+            "operation": "sell",
+            "amount": 0.011,
+            "remain": 0.011,
+            "price": 210,
+            "average": 0,
+            "created": 1542719077000,
+            "status": "active"
+        }
+    ]
+}
+```
+
+*****
+
+#### getOrders - Okex
+
+**Метод только для okex!**
+
+Метод возвращает массив ордеров.
+
+|Параметр|Тип|Обязательный|Описание|
+ |--- |--- |--- |--- |
+ |params|Array<Object\>|Да|Параметры ордеров.
+ 
+ Где каждый объект в массвие params содержит:
+ 
+ |Параметр|Тип|Обязательный|Описание|
+  |--- |--- |--- |--- |
+  |symbol|String|Да|Рынок, на котором был создан ордер.
+  |id|String/Number|Да|id ордера.
+
+Пример:
+
+```json
+{
+    "action": "getOrders",
+    "params": [{
+        "symbol": "ETH/USDT",
+        "id": 1212100295
+    }, {
+        "symbol": "ETH/USDT",
+        "id": "1212074575"
+    }]
 }
 ```
 
