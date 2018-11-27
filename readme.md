@@ -9,7 +9,7 @@
 - Bitfinex ([bitfinex.com](https://bitfinex.com))
 - Huobi ([huobi.pro](https://huobi.pro))
 - Tidex ([tidex.com](https://tidex.com))
-- Tidex ([okex.com](https://www.okex.com))
+- Okex ([okex.com](https://www.okex.com))
 
 *****
 
