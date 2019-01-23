@@ -102,6 +102,30 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - connected
 - availableActions
 
+####Идентификатор запроса
+
+В каждую команду к веб-сокету можно добавить поле id с пользовательским идентификатором.
+Этот id вернется в ответе на запрос, например:
+
+Запрос:
+
+    { 
+        "action": "getMarkets", 
+        "id": "myUniqueId" 
+    }
+    
+Ответ:
+    
+    {
+        "success": true
+        "id": "myUniqueId",
+        "event": "action"
+        "action": "getMarkets"
+        "data": [...]
+        "timestampStart": 15345654565435,
+        "timestampEnd": 15345654565435
+    }
+
 ***** 
 
 ### Доступные методы
