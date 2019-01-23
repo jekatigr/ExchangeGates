@@ -2,15 +2,11 @@ const TidexApi = require('node-tidex-api');
 const Big = require('big.js');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getPrices } = require('../utils/PriceUtil');
-const { getConfig } = require('../ConfigLoader');
 const { timeout } = require('../utils/utils');
 
 module.exports = class TidexApiService extends ExchangeServiceAbstract {
-    constructor() {
-        const config = getConfig();
-        const { exchange, apiKey, apiSecret, ipArray } = config;
-
-        super(exchange, ipArray);
+    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }) {
+        super({ exchange, ipArray, mainCurrency, currencies });
 
         this.api = new TidexApi({
             apiKey,
@@ -114,12 +110,9 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
 
     async getTriangles() {
         try {
-            const config = getConfig();
-            const { currencies } = config;
-
             const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
 
-            return ExchangeServiceAbstract.calculateTriangles(currencies, markets);
+            return ExchangeServiceAbstract.calculateTriangles(this.currencies, markets);
         } catch (ex) {
             console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching triangles, ex: ${ex}`);
@@ -128,10 +121,9 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
 
     async getPrices(currencies = []) {
         try {
-            const { mainCurrency } = getConfig();
             const tickers = await this.api.getTickers(undefined, { localAddress: super.getNextIp() }) || [];
 
-            return getPrices(tickers, currencies, mainCurrency);
+            return getPrices(tickers, currencies, this.mainCurrency);
         } catch (ex) {
             console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching prices, ex: ${ex}`);

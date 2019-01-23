@@ -28,15 +28,15 @@ const start = async () => {
         console.error(`Config file "${CONFIG_FILE_PATH}" was loaded.`);
     }
 
-    const { exchange } = getConfig();
+    const config = getConfig();
     let exchangeService;
-    switch (exchange) {
-        case BIBOX: { exchangeService = new BiboxApiService(); break; }
-        case BITFINEX: { exchangeService = new BitfinexApiService(); break; }
-        case HUOBI: { exchangeService = new HuobiApiService(); break; }
-        case TIDEX: { exchangeService = new TidexApiService(); break; }
-        case OKEX: { exchangeService = new OkexApiService(); break; }
-        default: { exchangeService = new ExchangeServiceAbstract(); break; }
+    switch (config.exchange) {
+        case BIBOX: { exchangeService = new BiboxApiService(config); break; }
+        case BITFINEX: { exchangeService = new BitfinexApiService(config); break; }
+        case HUOBI: { exchangeService = new HuobiApiService(config); break; }
+        case TIDEX: { exchangeService = new TidexApiService(config); break; }
+        case OKEX: { exchangeService = new OkexApiService(config); break; }
+        default: { exchangeService = new ExchangeServiceAbstract(config); break; }
     }
     // eslint-disable-next-line no-new
     new WebSocketImpl(exchangeService);

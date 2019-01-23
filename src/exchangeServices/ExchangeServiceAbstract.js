@@ -68,9 +68,12 @@ module.exports = class ExchangeServiceAbstract {
         return triangles;
     }
 
-    constructor(exchange, ipArray) {
+    constructor({ exchange, ipArray, mainCurrency, currencies }) {
         this.exchange = exchange;
         this.ipArray = ipArray;
+        this.mainCurrency = mainCurrency;
+        this.currencies = currencies;
+
         this.currentIpIndex = -1;
 
         this.notifierRunning = false;

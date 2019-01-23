@@ -6,7 +6,6 @@ const OkexApi = require('./okex-v3');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getPrices } = require('../utils/PriceUtil');
-const { getConfig } = require('../ConfigLoader');
 
 const WS_URL = 'wss://real.okex.com:10441/websocket?compress=true';
 
@@ -70,11 +69,8 @@ const convertOrderStatus = (status) => {
 };
 
 module.exports = class OkexApiService extends ExchangeServiceAbstract {
-    constructor() {
-        const config = getConfig();
-        const { exchange, apiKey, apiSecret, passphrase, ipArray } = config;
-
-        super(exchange, ipArray);
+    constructor({ exchange, apiKey, apiSecret, passphrase, ipArray, mainCurrency, currencies }) {
+        super({ exchange, ipArray, mainCurrency, currencies });
 
         this.api = new OkexApi(apiKey, apiSecret, passphrase);
 
@@ -296,12 +292,9 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
 
     async getTriangles() {
         try {
-            const config = getConfig();
-            const { currencies } = config;
-
             const markets = await this.getMarkets();
 
-            return ExchangeServiceAbstract.calculateTriangles(currencies, markets);
+            return ExchangeServiceAbstract.calculateTriangles(this.currencies, markets);
         } catch (ex) {
             console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching triangles, ex: ${ex}`);
@@ -310,11 +303,10 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
 
     getPrices(currencies = []) {
         try {
-            const { mainCurrency } = getConfig();
             const orderBooks = this.getOrderBooks({ limit: 1 });
             const tickers = convertOrderBooksToTickers(orderBooks);
 
-            return getPrices(tickers, currencies, mainCurrency);
+            return getPrices(tickers, currencies, this.mainCurrency);
         } catch (ex) {
             console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching prices, ex: ${ex}`);

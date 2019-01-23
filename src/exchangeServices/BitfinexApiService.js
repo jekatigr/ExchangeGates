@@ -5,7 +5,6 @@ const BFX = require('bitfinex-api-node');
 
 const { getPrices } = require('../utils/PriceUtil');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const { getConfig } = require('../ConfigLoader');
 
 /**
  * Конвертер ордербуков из формата массивов в формат объектов
@@ -39,11 +38,8 @@ const convertToOrderbook = (rawOrderBook) => {
 
 
 module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
-    constructor() {
-        const config = getConfig();
-        const { exchange, apiKey, apiSecret, ipArray } = config;
-
-        super(exchange, ipArray);
+    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }) {
+        super({ exchange, ipArray, mainCurrency, currencies });
 
         this.api1 = new ccxt.bitfinex(
             {
@@ -299,12 +295,9 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
     async getTriangles() {
         try {
-            const config = getConfig();
-            const { currencies } = config;
-
             const markets = await this.getMarkets();
 
-            return ExchangeServiceAbstract.calculateTriangles(currencies, markets);
+            return ExchangeServiceAbstract.calculateTriangles(this.currencies, markets);
         } catch (ex) {
             console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching triangles, ex: ${ex}`);
@@ -313,7 +306,6 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
     async getPrices(currencies = []) {
         try {
-            const { mainCurrency } = getConfig();
             this.rotateAgent2();
             const res = await this.api2.fetchTickers();
 
@@ -329,7 +321,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                     bid
                 });
             }
-            return getPrices(tickers, currencies, mainCurrency);
+            return getPrices(tickers, currencies, this.mainCurrency);
         } catch (ex) {
             console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching prices, ex: ${ex}`);
