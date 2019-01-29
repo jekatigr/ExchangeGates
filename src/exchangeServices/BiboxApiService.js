@@ -46,8 +46,8 @@ const convertOrderBooksToTickers = orderBooks => (
 );
 
 module.exports = class BiboxApiService extends ExchangeServiceAbstract {
-    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }) {
-        super({ exchange, ipArray, mainCurrency, currencies });
+    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback) {
+        super({ exchange, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback);
 
         this.api = new ccxt.bibox({
             apiKey,
@@ -139,19 +139,26 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             const { base, quote } = symbolObj;
             const orderbookIndex = this.orderBooks.findIndex(e => e.base === base && e.quote === quote);
             const { asks, bids } = convertToOrderbook(orderbook);
+            let updatedOrderbook;
             if (orderbookIndex !== -1) {
-                this.orderBooks[orderbookIndex] = {
+                updatedOrderbook = {
                     ...this.orderBooks[orderbookIndex],
                     bids,
                     asks
                 };
+                this.orderBooks[orderbookIndex] = updatedOrderbook;
             } else {
-                this.orderBooks.push({
+                updatedOrderbook = {
                     base,
                     quote,
                     bids,
                     asks
-                });
+                };
+                this.orderBooks.push(updatedOrderbook);
+            }
+
+            if (this.orderbooksUpdatedCallback) {
+                this.orderbooksUpdatedCallback(updatedOrderbook);
             }
         };
 

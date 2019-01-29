@@ -1,6 +1,6 @@
 {
-  "name": "ArbBotDataProvider",
-  "version": "4.2.0",
+  "name": "ExchangeGates",
+  "version": "4.3.0",
   "description": "Data provider for arbitrage bot.",
   "main": "index.js",
   "author": "jekatigr",

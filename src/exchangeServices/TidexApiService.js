@@ -5,8 +5,8 @@ const { getPrices } = require('../utils/PriceUtil');
 const { timeout } = require('../utils/utils');
 
 module.exports = class TidexApiService extends ExchangeServiceAbstract {
-    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }) {
-        super({ exchange, ipArray, mainCurrency, currencies });
+    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback) {
+        super({ exchange, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback);
 
         this.api = new TidexApi({
             apiKey,
@@ -56,7 +56,17 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
                 symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
             }
-            return this.api.getOrderBooks({ limit, symbols: symbolsArr }, { localAddress: super.getNextIp() });
+            const orderbooks = this.api.getOrderBooks({ limit, symbols: symbolsArr }, { localAddress: super.getNextIp() });
+
+            if (orderbooks && orderbooks.length > 0) {
+                if (this.orderbooksUpdatedCallback) {
+                    for(const updatedOrderbook of orderbooks) {
+                        this.orderbooksUpdatedCallback(updatedOrderbook);
+                    }
+                }
+            }
+
+            return orderbooks;
         } catch (ex) {
             console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);

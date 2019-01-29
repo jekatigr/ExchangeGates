@@ -38,8 +38,18 @@ const convertToOrderbook = (rawOrderBook) => {
 
 
 module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
-    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }) {
-        super({ exchange, ipArray, mainCurrency, currencies });
+    /**
+     *
+     * @param exchange
+     * @param apiKey
+     * @param apiSecret
+     * @param ipArray
+     * @param mainCurrency
+     * @param currencies
+     * @param orderbooksUpdatedCallback - метод, который будет вызван после обновления ордербуков
+     */
+    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback) {
+        super({ exchange, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback);
 
         this.api1 = new ccxt.bitfinex(
             {
@@ -183,19 +193,26 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             const { base, quote } = symbolObj;
             const orderbookIndex = this.orderBooks.findIndex(e => e.base === base && e.quote === quote);
             const { asks, bids } = convertToOrderbook(orderbook);
+            let updatedOrderbook;
             if (orderbookIndex !== -1) {
-                this.orderBooks[orderbookIndex] = {
+                updatedOrderbook = {
                     ...this.orderBooks[orderbookIndex],
                     bids,
                     asks
                 };
+                this.orderBooks[orderbookIndex] = updatedOrderbook;
             } else {
-                this.orderBooks.push({
+                updatedOrderbook = {
                     base,
                     quote,
                     bids,
                     asks
-                });
+                };
+                this.orderBooks.push(updatedOrderbook);
+            }
+
+            if (this.orderbooksUpdatedCallback) {
+                this.orderbooksUpdatedCallback(updatedOrderbook);
             }
         };
 
