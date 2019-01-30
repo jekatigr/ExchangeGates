@@ -151,7 +151,7 @@ module.exports = class ExchangeServiceAbstract {
         throw new Error(`Method getDepositAddress not implemented for exchange '${this.exchange}'`);
     }
 
-    withdraw(currency, address, amount) {
+    withdraw({ currency, address, amount }) {
         throw new Error(`Method withdraw not implemented for exchange '${this.exchange}'`);
     }
 };

@@ -144,6 +144,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - [cancelOrders](#cancelorders)
 - [cancelOrders - Okex](#cancelorders---okex)
 - [getDepositAddress](#getdepositaddress)
+- [withdraw](#withdraw)
 
 ***** 
 
@@ -974,3 +975,44 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 </details>
 
 *****
+
+
+#### withdraw
+
+Вывод средств с баланса. В ответе возвращает id запроса на вывод средств.
+
+|Параметр|Тип|Обязательный|Описание|
+ |--- |--- |--- |--- |
+ |currency|String|Да|Валюта
+ |address|String|Да|Адрес кошелька
+ |amount|Number|Да|Количество
+ 
+Пример:
+
+```json
+
+{
+    "action": "withdraw", 
+    "params": {
+        "address": "15sTTAbJF00000JV3qme0000004S6iSTzG",
+        "currency": "BTC",
+        "amount": 0.071
+    }
+}
+```
+
+<details>
+<summary>Результат:</summary>
+
+```json
+{  
+    "success": true,
+    "timestampStart": 1542719064085,
+    "timestampEnd": 1542719064590,
+    "event": "action",
+    "action": "withdraw",
+    "data": 12234543
+}
+```
+
+</details>

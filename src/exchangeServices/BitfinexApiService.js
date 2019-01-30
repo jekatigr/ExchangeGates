@@ -522,4 +522,29 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             throw new Error(`Exception while fetching deposit address, ex: ${ex}`);
         }
     }
+
+    async withdraw({ currency, address, amount }) {
+        if (!currency) {
+            console.log('Exception while making withdraw, currency missing');
+            throw new Error('Exception while making withdraw, currency missing');
+        }
+        if (!address) {
+            console.log('Exception while making withdraw, address missing');
+            throw new Error('Exception while making withdraw, address missing');
+        }
+        if (!amount) {
+            console.log('Exception while making withdraw, amount missing');
+            throw new Error('Exception while making withdraw, amount missing');
+        }
+
+        try {
+            this.rotateAgent1();
+            const res = await this.api1.withdraw(currency, +amount, address);
+            const { id } = res;
+            return id;
+        } catch (ex) {
+            console.log(`Exception while making withdraw, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while making withdraw, ex: ${ex}`);
+        }
+    }
 };
