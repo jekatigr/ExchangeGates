@@ -449,4 +449,29 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         /* eslint-enable no-await-in-loop */
         return result;
     }
+
+    async withdraw({ currency, address, amount }) {
+        if (!currency) {
+            console.log('Exception while making withdraw, currency missing');
+            throw new Error('Exception while making withdraw, currency missing');
+        }
+        if (!address) {
+            console.log('Exception while making withdraw, address missing');
+            throw new Error('Exception while making withdraw, address missing');
+        }
+        if (!amount) {
+            console.log('Exception while making withdraw, amount missing');
+            throw new Error('Exception while making withdraw, amount missing');
+        }
+
+        try {
+            this.rotateAgent();
+            const res = await this.api.withdraw(currency, +amount, address);
+            const { id } = res;
+            return id;
+        } catch (ex) {
+            console.log(`Exception while making withdraw, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while making withdraw, ex: ${ex}`);
+        }
+    }
 };
