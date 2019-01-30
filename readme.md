@@ -102,7 +102,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - connected
 - availableActions
 
-####Идентификатор запроса
+#### Идентификатор запроса
 
 В каждую команду к веб-сокету можно добавить поле id с пользовательским идентификатором.
 Этот id вернется в ответе на запрос, например:
@@ -143,6 +143,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - [getOrders - Okex](#getorders---okex)
 - [cancelOrders](#cancelorders)
 - [cancelOrders - Okex](#cancelorders---okex)
+- [getDepositAddress](#getdepositaddress)
 
 ***** 
 
@@ -158,7 +159,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -208,6 +210,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     ]
 }
 ```
+</details>
 
 *****
 
@@ -235,7 +238,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -297,6 +301,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
+</details>
+
 ***** 
 
 #### runOrderbooksNotifier
@@ -327,7 +333,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -388,6 +395,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
+</details>
+
 *****
 
 #### stopOrderbooksNotifier
@@ -428,7 +437,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -460,6 +470,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
+</details>
+
 *****  
 
 #### getTriangles
@@ -475,7 +487,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -510,6 +523,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
+</details>
+
 *****
 
 #### getBalances
@@ -534,7 +549,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -561,6 +577,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     ]
 }
 ```
+
+</details>
 
 *****
 
@@ -592,7 +610,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -616,6 +635,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
+</details>
+
 *****
 
 #### getActiveOrders
@@ -635,7 +656,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -661,6 +683,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
+</details>
+
 *****
 
 #### getOrders
@@ -685,7 +709,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -724,6 +749,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     ]
 }
 ```
+
+</details>
 
 *****
 
@@ -759,7 +786,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -799,6 +827,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
+</details>
+
 *****
 
 #### cancelOrders
@@ -823,7 +853,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -844,6 +875,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     ]
 }
 ```
+
+</details>
 
 *****
 
@@ -879,7 +912,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 }
 ```
 
-Результат:
+<details>
+<summary>Результат:</summary>
 
 ```json
 {  
@@ -899,4 +933,44 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
         }
     ]
 }
+
 ```
+
+</details>
+
+*****
+
+#### getDepositAddress
+
+Метод возвращает адрес для ввода средств на биржу.
+
+|Параметр|Тип|Обязательный|Описание|
+ |--- |--- |--- |--- |
+ |params|String|Да|Валюта, для которой нужно получить адрес ввода.
+
+Пример:
+
+```json
+{
+    "action": "getDepositAddress",
+    "params": "BTC"
+}
+```
+
+<details>
+<summary>Результат:</summary>
+
+```json
+{  
+    "success": true,
+    "timestampStart": 1542718516618,
+    "timestampEnd": 1542718517159,
+    "event": "action",
+    "action": "getDepositAddress",
+    "data": "1adaa63de25ad445dae763a5d65dae7a6da45ae7a36"
+}
+```
+
+</details>
+
+*****

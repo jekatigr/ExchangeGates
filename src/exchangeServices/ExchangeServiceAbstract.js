@@ -126,6 +126,7 @@ module.exports = class ExchangeServiceAbstract {
         throw new Error(`Method getPrices not implemented for exchange '${this.exchange}'`);
     }
 
+
     getBalances(currencies = []) {
         throw new Error(`Method getBalances not implemented for exchange '${this.exchange}'`);
     }
@@ -144,5 +145,13 @@ module.exports = class ExchangeServiceAbstract {
 
     getOrders(ids = []) {
         throw new Error(`Method getOrders not implemented for exchange '${this.exchange}'`);
+    }
+
+    getDepositAddress(currency) {
+        throw new Error(`Method getDepositAddress not implemented for exchange '${this.exchange}'`);
+    }
+
+    withdraw(currency, address, amount) {
+        throw new Error(`Method withdraw not implemented for exchange '${this.exchange}'`);
     }
 };

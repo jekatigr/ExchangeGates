@@ -9,5 +9,6 @@ module.exports = {
     CREATE_ORDER: 'createOrder',
     CANCEL_ORDERS: 'cancelOrders',
     GET_ORDERS: 'getOrders',
-    GET_ACTIVE_ORDERS: 'getActiveOrders'
+    GET_ACTIVE_ORDERS: 'getActiveOrders',
+    GET_DEPOSIT_ADDRESS: 'getDepositAddress'
 };

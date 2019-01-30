@@ -505,4 +505,21 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         /* eslint-enable no-await-in-loop */
         return result;
     }
+
+    async getDepositAddress(currency) {
+        if (!currency) {
+            console.log('Exception while getting deposit address, currency missing');
+            throw new Error('Exception while getting deposit address, currency missing');
+        }
+
+        try {
+            this.rotateAgent1();
+            const res = await this.api1.fetchDepositAddress(currency);
+            const { address } = res;
+            return address;
+        } catch (ex) {
+            console.log(`Exception while fetching deposit address, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while fetching deposit address, ex: ${ex}`);
+        }
+    }
 };

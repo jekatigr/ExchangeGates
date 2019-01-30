@@ -13,7 +13,8 @@ const {
     CREATE_ORDER,
     CANCEL_ORDERS,
     GET_ORDERS,
-    GET_ACTIVE_ORDERS
+    GET_ACTIVE_ORDERS,
+    GET_DEPOSIT_ADDRESS
 } = require('./constants/Actions');
 
 const { TEST } = process.env;
@@ -90,7 +91,8 @@ module.exports = class WebSocketImpl {
             CREATE_ORDER,
             CANCEL_ORDERS,
             GET_ORDERS,
-            GET_ACTIVE_ORDERS
+            GET_ACTIVE_ORDERS,
+            GET_DEPOSIT_ADDRESS
         }), AVAILABLE_ACTIONS);
     }
 
@@ -174,6 +176,10 @@ module.exports = class WebSocketImpl {
                 }
                 case GET_ACTIVE_ORDERS: {
                     result = await this.service.getActiveOrders(params);
+                    break;
+                }
+                case GET_DEPOSIT_ADDRESS: {
+                    result = await this.service.getDepositAddress(params);
                     break;
                 }
                 default: {
