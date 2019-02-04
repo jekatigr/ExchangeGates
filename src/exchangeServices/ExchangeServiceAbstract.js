@@ -135,16 +135,16 @@ module.exports = class ExchangeServiceAbstract {
         throw new Error(`Method createOrder not implemented for exchange '${this.exchange}'`);
     }
 
-    cancelOrders(ids = []) {
-        throw new Error(`Method cancelOrders not implemented for exchange '${this.exchange}'`);
+    cancelOrder({ symbol, id }) {
+        throw new Error(`Method cancelOrder not implemented for exchange '${this.exchange}'`);
     }
 
     getActiveOrders(symbol) {
         throw new Error(`Method getActiveOrders not implemented for exchange '${this.exchange}'`);
     }
 
-    getOrders(ids = []) {
-        throw new Error(`Method getOrders not implemented for exchange '${this.exchange}'`);
+    getOrder({ symbol, id }) {
+        throw new Error(`Method getOrder not implemented for exchange '${this.exchange}'`);
     }
 
     getDepositAddress(currency) {

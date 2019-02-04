@@ -117,7 +117,7 @@ describe('bitfinex API', () => {
         });
     });
 
-    describe('cancelOrders method', () => {
+    describe('cancelOrder method', () => {
         const { cancelOrderTest } = testData;
         it('should return correct cancel order', async () => {
             const {
@@ -131,7 +131,7 @@ describe('bitfinex API', () => {
             const server = new BitfinexApiService();
             ccxt.setCancelOrder(source);
 
-            const res = await server.cancelOrders([18613034229]);
+            const res = await server.cancelOrder({ id: 18613034229 });
             expect(res).toEqual(expected);
         });
     });

@@ -374,11 +374,33 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async cancelOrders(ids = []) {
-        throw new Error(`Method cancelOrders not implemented for exchange '${this.exchange}'`);
+    async cancelOrder({ symbol, id }) {
+        if (!id || !symbol) {
+            console.log('Exception while canceling order, params missing');
+            throw new Error('Exception while canceling order, params missing');
+        }
+
+        let result;
+        try {
+            this.rotateAgent();
+            await this.api.cancelOrder(id, symbol);
+            result = { id, success: true };
+        } catch (ex) {
+            console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            result = { id, success: false, error: ex.message };
+        }
+
+        return result;
     }
 
-    async getActiveOrders([symbol]) {
+    async getActiveOrders(params) {
+        if (!params || params.length === 0) {
+            console.log('Exception while getting active orders, symbol missing');
+            throw new Error('Exception while getting active orders, symbol missing');
+        }
+
+        const [ symbol ] = params;
+
         try {
             this.rotateAgent();
             const openOrders = await this.api.fetchOpenOrders(symbol) || [];
@@ -400,7 +422,33 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getOrders(ids = []) {
-        throw new Error(`Method getOrders not implemented for exchange '${this.exchange}'`);
+    async getOrder({ symbol, id }) {
+        if (!id || !symbol) {
+            console.log('Exception while getting order, params missing');
+            throw new Error('Exception while getting order, params missing');
+        }
+
+        let result;
+        try {
+            this.rotateAgent();
+            const o = await this.api.fetchOrder(id, symbol);
+            result = {
+                success: true,
+                id: o.id,
+                base: o.symbol.split('/')[0],
+                quote: o.symbol.split('/')[1],
+                operation: o.side,
+                amount: o.amount,
+                remain: (o.remaining === undefined) ? o.amount : o.remaining,
+                price: o.price,
+                average: o.average,
+                created: o.timestamp,
+                status: (o.status === 'open') ? 'active' : o.status
+            };
+        } catch (ex) {
+            console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            result = { id, success: false, error: ex.message };
+        }
+        return result;
     }
 };

@@ -11,8 +11,8 @@ const {
     GET_PRICES,
     GET_BALANCES,
     CREATE_ORDER,
-    CANCEL_ORDERS,
-    GET_ORDERS,
+    CANCEL_ORDER,
+    GET_ORDER,
     GET_ACTIVE_ORDERS,
     GET_DEPOSIT_ADDRESS,
     WITHDRAW,
@@ -91,8 +91,8 @@ module.exports = class WebSocketImpl {
             GET_PRICES,
             GET_BALANCES,
             CREATE_ORDER,
-            CANCEL_ORDERS,
-            GET_ORDERS,
+            CANCEL_ORDERS: CANCEL_ORDER,
+            GET_ORDERS: GET_ORDER,
             GET_ACTIVE_ORDERS,
             GET_DEPOSIT_ADDRESS,
             WITHDRAW,
@@ -170,12 +170,12 @@ module.exports = class WebSocketImpl {
                     result = await this.service.createOrder(params);
                     break;
                 }
-                case CANCEL_ORDERS: {
-                    result = await this.service.cancelOrders(params);
+                case CANCEL_ORDER: {
+                    result = await this.service.cancelOrder(params);
                     break;
                 }
-                case GET_ORDERS: {
-                    result = await this.service.getOrders(params);
+                case GET_ORDER: {
+                    result = await this.service.getOrder(params);
                     break;
                 }
                 case GET_ACTIVE_ORDERS: {

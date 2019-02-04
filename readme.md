@@ -6,6 +6,7 @@
 ### Поддерживаемые биржи
 
 - Bibox ([bibox.com](https://bibox.com))
+- Binance ([binance.com](https://binance.com))
 - Bitfinex ([bitfinex.com](https://bitfinex.com))
 - Huobi ([huobi.pro](https://huobi.pro))
 - Tidex ([tidex.com](https://tidex.com))
@@ -65,6 +66,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 Либо один из следующих вариантов:
 
     yarn run start-bibox
+    yarn run start-binance
     yarn run start-bitfinex
     yarn run start-huobi
     yarn run start-tidex
@@ -139,10 +141,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - [getBalances](#getbalances)
 - [createOrder](#createorder)
 - [getActiveOrders](#getactiveorders)
-- [getOrders](#getorders)
-- [getOrders - Okex](#getorders---okex)
-- [cancelOrders](#cancelorders)
-- [cancelOrders - Okex](#cancelorders---okex)
+- [getOrder](#getorder)
+- [cancelOrder](#cancelorder)
 - [getDepositAddress](#getdepositaddress)
 - [withdraw](#withdraw)
 - [shutdown](#shutdown)
@@ -647,7 +647,9 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 
 |Параметр|Тип|Обязательный|По-умолчанию|Описание|
  |--- |--- |--- |--- |--- |
- |params|String|Нет|Все рынки|Рынок, для которого нужно получить активные ордера.
+ |params|String|Нет*|Все рынки|Рынок, для которого нужно получить активные ордера.
+
+* для Binance указание рынка обязательно!
 
 Пример:
 
@@ -689,25 +691,24 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 
 *****
 
-#### getOrders
+#### getOrder
 
-**Описание ниже для всех бирж кроме okex!**
-
-Метод возвращает массив ордеров по id.
+Метод возвращает ордер.
 
 |Параметр|Тип|Обязательный|Описание|
  |--- |--- |--- |--- |
- |params|Array<String/Number\>|Да|Массив id ордеров.
+ |symbol|String|Да|Рынок.
+ |id|String/Number|Да|id ордера.
 
 Пример:
 
 ```json
 {
-    "action": "getOrders",
-    "params": [
-        1212100295,
-        "1212074575"
-    ]
+    "action": "getOrder",
+    "params": {
+        "symbol": "ETH/USDT",
+        "id": "1212100295"
+    }
 }
 ```
 
@@ -720,9 +721,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     "timestampStart": 1542719586867,
     "timestampEnd": 1542719587697,
     "event": "action",
-    "action": "getOrders",
-    "data": [  
-        {  
+    "action": "getOrder",
+    "data": {  
             "success": true,
             "id": "1212100295",
             "base": "ETH",
@@ -734,21 +734,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
             "average": 0,
             "created": 1542719561000,
             "status": "active"
-        },
-        {  
-            "success": true,
-            "id": "1212074575",
-            "base": "ETH",
-            "quote": "USDT",
-            "operation": "sell",
-            "amount": 0.011,
-            "remain": 0.011,
-            "price": 210,
-            "average": 0,
-            "created": 1542719077000,
-            "status": "active"
-        }
-    ]
+    }
 }
 ```
 
@@ -756,102 +742,24 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 
 *****
 
-#### getOrders - Okex
+#### cancelOrder
 
-**Описание только для okex!**
-
-Метод возвращает массив ордеров.
+Отмена ордера.
 
 |Параметр|Тип|Обязательный|Описание|
  |--- |--- |--- |--- |
- |params|Array<Object\>|Да|Параметры ордеров.
- 
- Где каждый объект в массвие params содержит:
- 
- |Параметр|Тип|Обязательный|Описание|
-  |--- |--- |--- |--- |
-  |symbol|String|Да|Рынок, на котором был создан ордер.
-  |id|String/Number|Да|id ордера.
+ |symbol|String|Да|Рынок.
+ |id|String/Number|Да|id ордера.
 
 Пример:
 
 ```json
 {
-    "action": "getOrders",
-    "params": [{
+    "action": "cancelOrder",
+    "params": {
         "symbol": "ETH/USDT",
-        "id": 1212100295
-    }, {
-        "symbol": "ETH/USDT",
-        "id": "1212074575"
-    }]
-}
-```
-
-<details>
-<summary>Результат:</summary>
-
-```json
-{  
-    "success": true,
-    "timestampStart": 1542719586867,
-    "timestampEnd": 1542719587697,
-    "event": "action",
-    "action": "getOrders",
-    "data": [  
-        {  
-            "success": true,
-            "id": "1212100295",
-            "base": "ETH",
-            "quote": "USDT",
-            "operation": "sell",
-            "amount": 0.011,
-            "remain": 0.011,
-            "price": 220,
-            "average": 0,
-            "created": 1542719561000,
-            "status": "active"
-        },
-        {  
-            "success": true,
-            "id": "1212074575",
-            "base": "ETH",
-            "quote": "USDT",
-            "operation": "sell",
-            "amount": 0.011,
-            "remain": 0.011,
-            "price": 210,
-            "average": 0,
-            "created": 1542719077000,
-            "status": "active"
-        }
-    ]
-}
-```
-
-</details>
-
-*****
-
-#### cancelOrders
-
-**Описание ниже для всех бирж кроме okex!**
-
-Отмена нескольких ордеров по id.
-
-|Параметр|Тип|Обязательный|Описание|
- |--- |--- |--- |--- |
- |params|Array<String/Number\>|Да|Массив id ордеров.
-
-Пример:
-
-```json
-{
-    "action": "cancelOrders",
-    "params": [
-        1212100295,
-        "1212074575"
-    ]
+        "id": "1212100295"
+    }
 }
 ```
 
@@ -864,78 +772,12 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
     "timestampStart": 1542719952740,
     "timestampEnd": 1542719953566,
     "event": "action",
-    "action": "cancelOrders",
-    "data": [  
-        {  
+    "action": "cancelOrder",
+    "data": {  
             "id": 1212100295,
             "success": true
-        },
-        {  
-            "id": "1212074575",
-            "success": true
-        }
-    ]
+    }
 }
-```
-
-</details>
-
-*****
-
-#### cancelOrders - Okex
-
-**Описание только для okex!**
-
-Отмена нескольких ордеров.
-
-|Параметр|Тип|Обязательный|Описание|
- |--- |--- |--- |--- |
- |params|Array<Object\>|Да|Параметры ордеров.
-
-Где каждый объект в массвие params содержит:
- 
- |Параметр|Тип|Обязательный|Описание|
-  |--- |--- |--- |--- |
-  |symbol|String|Да|Рынок, на котором был создан ордер.
-  |id|String/Number|Да|id ордера.
-
-Пример:
-
-```json
-{
-    "action": "cancelOrders",
-    "params": [{
-        "symbol": "ETH/USDT",
-        "id": 1212100295
-    }, {
-        "symbol": "ETH/USDT",
-        "id": "1212074575"
-    }]
-}
-```
-
-<details>
-<summary>Результат:</summary>
-
-```json
-{  
-    "success": true,
-    "timestampStart": 1542719952740,
-    "timestampEnd": 1542719953566,
-    "event": "action",
-    "action": "cancelOrders",
-    "data": [  
-        {  
-            "id": 1212100295,
-            "success": true
-        },
-        {  
-            "id": "1212074575",
-            "success": true
-        }
-    ]
-}
-
 ```
 
 </details>
@@ -943,6 +785,8 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 *****
 
 #### getDepositAddress
+
+**Доступно только для Bitfinex**
 
 Метод возвращает адрес для ввода средств на биржу.
 
@@ -977,8 +821,9 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 
 *****
 
-
 #### withdraw
+
+**Доступно только для Bitfinex и Huobi**
 
 Вывод средств с баланса. В ответе возвращает id запроса на вывод средств.
 

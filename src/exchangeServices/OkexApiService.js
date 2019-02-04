@@ -408,25 +408,21 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async cancelOrders(params = []) {
-        if (params.length === 0) {
-            console.log('Exception while canceling orders, params missing');
-            throw new Error('Exception while canceling orders, params missing');
+    async cancelOrder({ symbol, id }) {
+        if (!id || !symbol) {
+            console.log('Exception while canceling order, params missing');
+            throw new Error('Exception while canceling order, params missing');
         }
 
-        const result = [];
-        /* eslint-disable no-await-in-loop */
-        for (const param of params) {
-            const { symbol, id } = param;
-            try {
-                await this.api.cancelOrder(symbol.replace('/', '-'), id, { localAddress: this.getNextIp() });
-                result.push({ id, success: true });
-            } catch (ex) {
-                console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
-                result.push({ id, success: false, error: ex.message });
-            }
+        let result;
+        try {
+            await this.api.cancelOrder(symbol.replace('/', '-'), id, { localAddress: this.getNextIp() });
+            result = { id, success: true };
+        } catch (ex) {
+            console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            result = { id, success: false, error: ex.message };
         }
-        /* eslint-enable no-await-in-loop */
+
         return result;
     }
 
@@ -474,37 +470,32 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getOrders(params = []) {
-        if (params.length === 0) {
-            console.log('Exception while getting orders, params missing');
-            throw new Error('Exception while getting orders, params missing');
+    async getOrder({ symbol, id }) {
+        if (!id || !symbol) {
+            console.log('Exception while getting order, params missing');
+            throw new Error('Exception while getting order, params missing');
         }
 
-        const result = [];
-        /* eslint-disable no-await-in-loop */
-        for (const param of params) {
-            const { symbol, id } = param;
-            try {
-                const o = await this.api.getOrder(symbol.replace('/', '-'), id, { localAddress: this.getNextIp() });
-                result.push({
-                    success: true,
-                    id: o.order_id,
-                    base: o.instrument_id.split('-')[0],
-                    quote: o.instrument_id.split('-')[1],
-                    operation: o.side,
-                    amount: +o.size,
-                    remain: +Big(o.size).minus(o.filled_size),
-                    price: +o.price,
-                    average: (!(Big(o.filled_size).eq(0))) ? +Big(o.executed_value).div(o.filled_size) : 0,
-                    created: +new Date(o.timestamp),
-                    status: convertOrderStatus(o.status)
-                });
-            } catch (ex) {
-                console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-                result.push({ id, success: false, error: ex.message });
-            }
+        let result;
+        try {
+            const o = await this.api.getOrder(symbol.replace('/', '-'), id, { localAddress: this.getNextIp() });
+            result = {
+                success: true,
+                id: o.order_id,
+                base: o.instrument_id.split('-')[0],
+                quote: o.instrument_id.split('-')[1],
+                operation: o.side,
+                amount: +o.size,
+                remain: +Big(o.size).minus(o.filled_size),
+                price: +o.price,
+                average: (!(Big(o.filled_size).eq(0))) ? +Big(o.executed_value).div(o.filled_size) : 0,
+                created: +new Date(o.timestamp),
+                status: convertOrderStatus(o.status)
+            };
+        } catch (ex) {
+            console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            result = { id, success: false, error: ex.message };
         }
-        /* eslint-enable no-await-in-loop */
         return result;
     }
 };

@@ -195,24 +195,21 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async cancelOrders(ids = []) {
-        if (ids.length === 0) {
-            console.log('Exception while canceling orders, params missing');
-            throw new Error('Exception while canceling orders, params missing');
+    async cancelOrder({ id }) {
+        if (!id) {
+            console.log('Exception while canceling order, id missing');
+            throw new Error('Exception while canceling order, id missing');
         }
 
-        const result = [];
-        /* eslint-disable no-await-in-loop */
-        for (const orderId of ids) {
-            try {
-                await this.api.cancelOrder(orderId, { localAddress: super.getNextIp() });
-                result.push({ id: orderId, success: true });
-            } catch (ex) {
-                console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-                result.push({ id: orderId, success: false, error: ex.message });
-            }
+        let result;
+        try {
+            await this.api.cancelOrder(id, { localAddress: super.getNextIp() });
+            result = { id, success: true };
+        } catch (ex) {
+            console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            result = { id, success: false, error: ex.message };
         }
-        /* eslint-enable no-await-in-loop */
+
         return result;
     }
 
@@ -225,24 +222,21 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getOrders(ids = []) {
-        if (ids.length === 0) {
-            console.log('Exception while getting orders, params missing');
-            throw new Error('Exception while getting orders, params missing');
+    async getOrder({ id }) {
+        if (!id) {
+            console.log('Exception while getting order, id missing');
+            throw new Error('Exception while getting order, id missing');
         }
 
-        const result = [];
-        /* eslint-disable no-await-in-loop */
-        for (const orderId of ids) {
+        let result;
             try {
-                const order = await this.api.getOrder(orderId, { localAddress: super.getNextIp() });
-                result.push({ ...order, success: true });
+                const order = await this.api.getOrder(id, { localAddress: super.getNextIp() });
+                result = { ...order, success: true };
             } catch (ex) {
                 console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-                result.push({ id: orderId, success: false, error: ex.message });
+                result = { id, success: false, error: ex.message };
             }
-        }
-        /* eslint-enable no-await-in-loop */
+
         return result;
     }
 };

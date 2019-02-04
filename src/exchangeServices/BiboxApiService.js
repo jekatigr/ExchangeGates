@@ -370,25 +370,22 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async cancelOrders(ids = []) {
-        if (ids.length === 0) {
-            console.log('Exception while canceling orders, params missing');
-            throw new Error('Exception while canceling orders, params missing');
+    async cancelOrder({ id }) {
+        if (!id) {
+            console.log('Exception while canceling order, id missing');
+            throw new Error('Exception while canceling order, id missing');
         }
 
-        const result = [];
-        /* eslint-disable no-await-in-loop */
-        for (const orderId of ids) {
-            try {
-                this.rotateAgent();
-                await this.api.cancelOrder(orderId);
-                result.push({ id: orderId, success: true });
-            } catch (ex) {
-                console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
-                result.push({ id: orderId, success: false, error: ex.message });
-            }
+        let result;
+        try {
+            this.rotateAgent();
+            await this.api.cancelOrder(id);
+            result = { id, success: true };
+        } catch (ex) {
+            console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            result = { id, success: false, error: ex.message };
         }
-        /* eslint-enable no-await-in-loop */
+
         return result;
     }
 
@@ -414,37 +411,34 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getOrders(ids = []) {
-        if (ids.length === 0) {
-            console.log('Exception while getting orders, params missing');
-            throw new Error('Exception while getting orders, params missing');
+    async getOrder({ id }) {
+        if (!id) {
+            console.log('Exception while getting order, id missing');
+            throw new Error('Exception while getting order, id missing');
         }
 
-        const result = [];
-        /* eslint-disable no-await-in-loop */
-        for (const orderId of ids) {
-            try {
-                this.rotateAgent();
-                const o = await this.api.fetchOrder(orderId);
-                result.push({
-                    success: true,
-                    id: o.id,
-                    base: o.symbol.split('/')[0],
-                    quote: o.symbol.split('/')[1],
-                    operation: o.side,
-                    amount: o.amount,
-                    remain: (o.remaining === undefined) ? o.amount : o.remaining,
-                    price: o.price,
-                    average: o.average,
-                    created: o.timestamp,
-                    status: (o.status === 'open') ? 'active' : o.status
-                });
-            } catch (ex) {
-                console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-                result.push({ id: orderId, success: false, error: ex.message });
-            }
+        let result;
+        try {
+            this.rotateAgent();
+            const o = await this.api.fetchOrder(id);
+            result = {
+                success: true,
+                id: o.id,
+                base: o.symbol.split('/')[0],
+                quote: o.symbol.split('/')[1],
+                operation: o.side,
+                amount: o.amount,
+                remain: (o.remaining === undefined) ? o.amount : o.remaining,
+                price: o.price,
+                average: o.average,
+                created: o.timestamp,
+                status: (o.status === 'open') ? 'active' : o.status
+            };
+        } catch (ex) {
+            console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            result = { id, success: false, error: ex.message };
         }
-        /* eslint-enable no-await-in-loop */
+
         return result;
     }
 };
