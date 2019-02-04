@@ -11,5 +11,6 @@ module.exports = {
     GET_ORDERS: 'getOrders',
     GET_ACTIVE_ORDERS: 'getActiveOrders',
     GET_DEPOSIT_ADDRESS: 'getDepositAddress',
-    WITHDRAW: 'withdraw'
+    WITHDRAW: 'withdraw',
+    SHUTDOWN: 'shutdown'
 };

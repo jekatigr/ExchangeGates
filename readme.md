@@ -145,6 +145,7 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - [cancelOrders - Okex](#cancelorders---okex)
 - [getDepositAddress](#getdepositaddress)
 - [withdraw](#withdraw)
+- [shutdown](#shutdown)
 
 ***** 
 
@@ -1016,3 +1017,18 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 ```
 
 </details>
+
+#### shutdown
+
+Отключение сервиса.
+ 
+Пример:
+
+```json
+
+{
+    "action": "shutdown"
+}
+```
+
+Для данной команды ответа не предусмотрено.

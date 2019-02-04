@@ -15,7 +15,8 @@ const {
     GET_ORDERS,
     GET_ACTIVE_ORDERS,
     GET_DEPOSIT_ADDRESS,
-    WITHDRAW
+    WITHDRAW,
+    SHUTDOWN
 } = require('./constants/Actions');
 
 const { TEST } = process.env;
@@ -94,7 +95,8 @@ module.exports = class WebSocketImpl {
             GET_ORDERS,
             GET_ACTIVE_ORDERS,
             GET_DEPOSIT_ADDRESS,
-            WITHDRAW
+            WITHDRAW,
+            SHUTDOWN
         }), AVAILABLE_ACTIONS);
     }
 
@@ -186,6 +188,10 @@ module.exports = class WebSocketImpl {
                 }
                 case WITHDRAW: {
                     result = await this.service.withdraw(params);
+                    break;
+                }
+                case SHUTDOWN: {
+                    process.exit(0);
                     break;
                 }
                 default: {
