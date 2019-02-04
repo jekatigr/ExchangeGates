@@ -1,6 +1,6 @@
 {
   "name": "ExchangeGates",
-  "version": "4.3.0",
+  "version": "5.0.0",
   "description": "Data provider for arbitrage bot.",
   "main": "index.js",
   "author": "jekatigr",
@@ -27,6 +27,7 @@
   },
   "scripts": {
     "start-bibox": "cross-env CONFIG_FILE_PATH='./config/biboxConfig.json' node index.js",
+    "start-binance": "cross-env CONFIG_FILE_PATH='./config/binanceConfig.json' node index.js",
     "start-bitfinex": "cross-env CONFIG_FILE_PATH='./config/bitfinexConfig.json' node index.js",
     "start-huobi": "cross-env CONFIG_FILE_PATH='./config/huobiConfig.json' node index.js",
     "start-tidex": "cross-env CONFIG_FILE_PATH='./config/tidexConfig.json' node index.js",
