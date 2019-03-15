@@ -162,7 +162,12 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             }
         };
 
-        init(symbols, saveLocalDepth.bind(this));
+        const num = Math.floor(symbols.length / 20) + 1;
+        for (let i = 0; i < num; i++) {
+            const start = i * 20;
+            const end = ((i + 1) * 20 < symbols.length) ? (i + 1) * 20 : symbols.length;
+            init(symbols.slice(start, end), saveLocalDepth.bind(this));
+        }
     }
 
 
