@@ -111,6 +111,10 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                 const msg = JSON.parse(data);
                 if (msg[0]) {
                     handle(msg[0], callback);
+                } else if (msg.ping) {
+                    ws.send(JSON.stringify({
+                        pong: msg.ping
+                    }));
                 } else {
                     console.error('bibox ws error ', msg);
                 }
