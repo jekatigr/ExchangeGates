@@ -188,7 +188,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 }, cancelAfter);
             }
 
-            if (order.status === 'cancelled' || o.status === 'cancelled_partially') {
+            if (order.status === 'cancelled' || order.status === 'cancelled_partially') {
                 order.status = 'canceled';
             }
 
@@ -241,7 +241,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 const order = await this.api.getOrder(id, { localAddress: super.getNextIp() });
                 result = {
                     ...order,
-                    status: (order.status === 'cancelled' || order.status === 'cancelled_partially') ? 'canceled' : o.status
+                    status: (order.status === 'cancelled' || order.status === 'cancelled_partially') ? 'canceled' : order.status
                 };
             } catch (ex) {
                 console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
