@@ -3,6 +3,7 @@ const ccxt = require('ccxt');
 const WebSocket = require('ws');
 const pako = require('pako');
 const Big = require('big.js');
+const request = require('request-promise-native');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getPrices } = require('../utils/PriceUtil');
@@ -180,11 +181,36 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             this.rotateAgent();
             const markets = await this.api.loadMarkets();
 
+            const tradeLimits = await request({
+                url: 'https://api.bibox.com/v1/orderpending?cmd=tradeLimit',
+                localAddress: this.getNextIp(),
+                json: true
+            });
+
+            const { min_trade_price: priceLimits, min_trade_amount: amountLimits, min_trade_money: costLimits } = tradeLimits.result;
+
             const res = [];
             const marketIds = Object.keys(markets);
             for (const marketId of marketIds) {
                 const market = markets[marketId];
-                const { base, quote, precision, taker, maker, limits } = market;
+                const { base, quote, precision, taker, maker } = market;
+
+                const priceLimit = (priceLimits[quote]) ? +priceLimits[quote] : +priceLimits['default'];
+                const amountLimit = (amountLimits[base]) ? +amountLimits[base] : +amountLimits['default'];
+                const costLimit = (costLimits[quote]) ? +costLimits[quote] : +Big(priceLimit).times(amountLimits);
+
+                const limits = {
+                    price: {
+                        min: priceLimit
+                    },
+                    amount: {
+                        min: amountLimit
+                    },
+                    cost: {
+                        min: costLimit
+                    }
+                };
+
                 res.push({
                     base,
                     quote,
