@@ -1,6 +1,6 @@
 {
   "name": "ExchangeGates",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "description": "Data provider for arbitrage bot.",
   "main": "index.js",
   "author": "jekatigr",
