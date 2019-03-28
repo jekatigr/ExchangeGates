@@ -312,7 +312,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
     async getBalances(currencies = []) {
         try {
             let balances = await this.api.getBalances({ localAddress: this.getNextIp() });
-            if (balances && balances.length > 0) {
+            if (balances) {
                 balances = balances.map(b => ({
                     currency: b.currency,
                     free: +b.available,
