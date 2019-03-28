@@ -3,14 +3,5 @@
     "exchange": "huobi",
     "apiKey": "",
     "apiSecret": "",
-    "mainCurrency": "USDT",
-    "ipArray": [],
-    "currencies": [
-        "BTC",
-        "USDT",
-        "ETH",
-        "LTC",
-        "RLC",
-        "REM"
-    ]
+    "ipArray": []
 }

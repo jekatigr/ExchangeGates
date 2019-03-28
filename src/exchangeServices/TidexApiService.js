@@ -1,12 +1,11 @@
 const TidexApi = require('node-tidex-api');
 const Big = require('big.js');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const { getPrices } = require('../utils/PriceUtil');
 const { timeout } = require('../utils/utils');
 
 module.exports = class TidexApiService extends ExchangeServiceAbstract {
-    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback) {
-        super({ exchange, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback);
+    constructor({ exchange, apiKey, apiSecret, ipArray }, orderbooksUpdatedCallback) {
+        super({ exchange, ipArray }, orderbooksUpdatedCallback);
 
         this.api = new TidexApi({
             apiKey,
@@ -118,33 +117,12 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         /* eslint-enable no-await-in-loop */
     }
 
-    async getPrices(currencies = []) {
-        try {
-            const tickers = await this.api.getTickers(undefined, { localAddress: super.getNextIp() }) || [];
-
-            return getPrices(tickers, currencies, this.mainCurrency);
-        } catch (ex) {
-            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching prices, ex: ${ex}`);
-        }
-    }
-
     async getBalances(currencies = []) {
         try {
             const { balances } = await this.api.getAccountInfoExtended({ localAddress: super.getNextIp() });
-            const balancesFiltered = (currencies.length > 0)
+            return ((currencies.length > 0)
                 ? balances.filter(b => currencies.includes(b.currency))
-                : balances;
-            const prices = await this.getPrices(balances.map(b => b.currency));
-
-            for (const balance of balancesFiltered) {
-                const price = prices.find(p => p.base === balance.currency);
-                if (price) {
-                    balance.mainAmount = +Big(balance.total).times(price.bid);
-                }
-            }
-
-            return balancesFiltered;
+                : balances);
         } catch (ex) {
             console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching balances, ex: ${ex}`);

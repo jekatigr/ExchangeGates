@@ -387,8 +387,7 @@ module.exports = {
                     currency: 'ETC',
                     total: 70.0173445,
                     used: 0,
-                    free: 70.0173445,
-                    mainAmount: 630.9823051651
+                    free: 70.0173445
                 }
             ]
         }

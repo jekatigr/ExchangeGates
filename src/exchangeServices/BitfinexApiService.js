@@ -3,7 +3,6 @@ const ccxt = require('ccxt');
 const Big = require('big.js');
 const BFX = require('bitfinex-api-node');
 
-const { getPrices } = require('../utils/PriceUtil');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 
 /**
@@ -44,12 +43,10 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
      * @param apiKey
      * @param apiSecret
      * @param ipArray
-     * @param mainCurrency
-     * @param currencies
      * @param orderbooksUpdatedCallback - метод, который будет вызван после обновления ордербуков
      */
-    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback) {
-        super({ exchange, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback);
+    constructor({ exchange, apiKey, apiSecret, ipArray }, orderbooksUpdatedCallback) {
+        super({ exchange, ipArray }, orderbooksUpdatedCallback);
 
         this.api1 = new ccxt.bitfinex(
             {
@@ -310,30 +307,6 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         clearInterval(this.notifireIntervalId);
     }
 
-    async getPrices(currencies = []) {
-        try {
-            this.rotateAgent2();
-            const res = await this.api2.fetchTickers();
-
-            const tickers = [];
-            for (const key of Object.keys(res)) {
-                const ticker = res[key];
-                const { ask, bid } = ticker;
-                const symbol = key.split('/');
-                tickers.push({
-                    base: symbol[0].toUpperCase(),
-                    quote: symbol[1].toUpperCase(),
-                    ask,
-                    bid
-                });
-            }
-            return getPrices(tickers, currencies, this.mainCurrency);
-        } catch (ex) {
-            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching prices, ex: ${ex}`);
-        }
-    }
-
     async getBalances(currencies = []) {
         try {
             this.rotateAgent2();
@@ -351,20 +324,9 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 });
             }
 
-            const balancesFiltered = (currencies.length > 0)
+            return ((currencies.length > 0)
                 ? balances.filter(b => currencies.includes(b.currency))
-                : balances;
-
-            const prices = await this.getPrices(balances.map(b => b.currency));
-
-            for (const balance of balancesFiltered) {
-                const price = prices.find(p => p.base === balance.currency);
-                if (price) {
-                    balance.mainAmount = +Big(balance.total).times(price.bid);
-                }
-            }
-
-            return balancesFiltered;
+                : balances);
         } catch (ex) {
             console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching balances, ex: ${ex}`);
@@ -470,7 +432,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             this.rotateAgent1();
             const o = await this.api1.fetchOrder(id);
             result = {
-                success: true,
+                success: true, // TODO: удалить, устарело
                 id: o.id,
                 base: o.symbol.split('/')[0],
                 quote: o.symbol.split('/')[1],

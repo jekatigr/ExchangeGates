@@ -25,9 +25,7 @@ exchange| String | да | - | Одно из значений: bibox, bitfinex, h
 apiKey| String |да|-|Api key аккаунта на бирже.
 apiSecret| String |да|-|Api secret аккаунта на бирже.
 passphrase| String |нет*|-|Passphrase для доступа к okex api (обязательно для okex).
-mainCurrency| String |да|-|Главная валюта, к которой будут пересчитываться цены в методе getPrices и getBalances.
 ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов, с которых будут запрашиваться api бирж.
-currencies| Array<String\> |да|-|Массив валют, из которых будут строиться треугольники в методе getTriangles.
 
 Пример конфигурационного файла:
 
@@ -36,18 +34,9 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
         "exchange": "tidex",
         "apiKey": "UFRFIREFONREIVONREIOVNREOVRENVINO",
         "apiSecret": "vgyewjnimkoxoerjnbhcxkoeijnhvbijnkmwnrjhevbjcn",
-        "mainCurrency": "USDT",
         "ipArray": [
             "192.32.32.12",
             "173.32.45.34"
-        ],
-        "currencies": [
-            "BTC",
-            "USDT",
-            "ETH",
-            "LTC",
-            "RLC",
-            "REM"
         ]
     }
 
@@ -138,7 +127,6 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - [getOrderBooks](#getorderbooks)
 - [runOrderbooksNotifier](#runorderbooksnotifier)
 - [stopOrderbooksNotifier](#stoporderbooksnotifier)
-- [getPrices](#getprices)
 - [getBalances](#getbalances)
 - [createOrder](#createorder)
 - [getActiveOrders](#getactiveorders)
@@ -418,69 +406,9 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 
 *****
 
-#### getPrices
-
-Метод возвращает валюты с ценой в главной валюте, которая указана в конфигурационном файле. 
-Если валюта не торгуется напрямую к главной, то цена будет пересчитана через другие доступные.
-
-|Параметр|Тип|Обязательный|По-умолчанию|Описание|
- |--- |--- |--- |--- |--- |
- |params|Array<String\>|Нет|Все валюты|Валюты, для которых нужно получить цены.
-
-Пример:
-
-```json
-{
-    "action": "getPrices",
-    "params": [
-        "BTC",
-        "ETH",
-        "USDT"
-    ]
-}
-```
-
-<details>
-<summary>Результат:</summary>
-
-```json
-{  
-    "success": true,
-    "timestampStart": 1542717130662,
-    "timestampEnd": 1542717130677,
-    "event": "action",
-    "action": "getPrices",
-    "data": [  
-        {  
-            "base": "BTC",
-            "quote": "USDT",
-            "ask": 4602.5013,
-            "bid": 4598.3804
-        },
-        {  
-            "base": "ETH",
-            "quote": "USDT",
-            "ask": 137.2765,
-            "bid": 137.0117
-        },
-        {  
-            "base": "USDT",
-            "quote": "USDT",
-            "ask": 1,
-            "bid": 1
-        }
-    ]
-}
-```
-
-</details>
-
-*****
-
 #### getBalances
 
-Метод возвращает балансы кошельков на бирже. В балансах 
-также указывается соответствующий размер кошелька в главной валюте (mainAmount).
+Метод возвращает балансы кошельков на бирже.
 
 |Параметр|Тип|Обязательный|По-умолчанию|Описание|
  |--- |--- |--- |--- |--- |
@@ -514,15 +442,13 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
             "currency": "ETH",
             "free": 0.03006757,
             "used": 0,
-            "total": 0.03006757,
-            "mainAmount": 4.140917767428
+            "total": 0.03006757
         },
         {  
             "currency": "USDT",
             "free": 20,
             "used": 10,
-            "total": 30,
-            "mainAmount": 30
+            "total": 30
         }
     ]
 }

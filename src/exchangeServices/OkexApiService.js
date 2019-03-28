@@ -5,7 +5,6 @@ const pako = require('pako');
 const OkexApi = require('./okex-v3');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const { getPrices } = require('../utils/PriceUtil');
 
 const WS_URL = 'wss://real.okex.com:10441/websocket?compress=true';
 
@@ -69,8 +68,8 @@ const convertOrderStatus = (status) => {
 };
 
 module.exports = class OkexApiService extends ExchangeServiceAbstract {
-    constructor({ exchange, apiKey, apiSecret, passphrase, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback) {
-        super({ exchange, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback);
+    constructor({ exchange, apiKey, apiSecret, passphrase, ipArray }, orderbooksUpdatedCallback) {
+        super({ exchange, ipArray }, orderbooksUpdatedCallback);
 
         this.api = new OkexApi(apiKey, apiSecret, passphrase);
 
@@ -297,18 +296,6 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         clearInterval(this.notifireIntervalId);
     }
 
-    getPrices(currencies = []) {
-        try {
-            const orderBooks = this.getOrderBooks({ limit: 1 });
-            const tickers = convertOrderBooksToTickers(orderBooks);
-
-            return getPrices(tickers, currencies, this.mainCurrency);
-        } catch (ex) {
-            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching prices, ex: ${ex}`);
-        }
-    }
-
     async getBalances(currencies = []) {
         try {
             let balances = await this.api.getBalances({ localAddress: this.getNextIp() });
@@ -320,19 +307,9 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     total: +b.balance,
                 }));
 
-                const balancesFiltered = (currencies.length > 0)
+                return ((currencies.length > 0)
                     ? balances.filter(b => currencies.includes(b.currency))
-                    : balances;
-                const prices = this.getPrices(balancesFiltered.map(b => b.currency)) || [];
-
-                for (const balance of balancesFiltered) {
-                    const price = prices.find(p => p.base === balance.currency);
-                    if (price) {
-                        balance.mainAmount = +Big(balance.total).times(price.bid);
-                    }
-                }
-
-                return balancesFiltered;
+                    : balances);
             }
             console.log('Exception while fetching balances, exchange doesn\'t return data.');
             throw new Error('Exception while fetching balances, exchange doesn\'t return data.');

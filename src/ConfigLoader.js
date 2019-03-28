@@ -53,20 +53,6 @@ async function loadConfig(path) {
         };
     }
 
-    if (!configObj.mainCurrency || configObj.mainCurrency === '') {
-        return {
-            success: false,
-            error: "Config file doesn't have 'mainCurrency'"
-        };
-    }
-
-    if (!configObj.currencies || configObj.currencies.length === 0) {
-        return {
-            success: false,
-            error: "Config file doesn't have 'currencies'"
-        };
-    }
-
     if (!configObj.apiKey || configObj.apiKey === '') {
         return {
             success: false,

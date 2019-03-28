@@ -7,7 +7,6 @@ const binance = require('node-binance-api')();
 const { timeout } = require('../utils/utils');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const { getPrices } = require('../utils/PriceUtil');
 
 const WS_URL = 'wss://api.huobi.pro/ws';
 
@@ -61,34 +60,9 @@ const convertToOrderbook = (rawOrderBook) => {
     return res;
 };
 
-/**
- * Конвертер ордербуков в тикеры
- * @param orderBooks
- */
-const convertOrderBooksToTickers = orderBooks => (
-    orderBooks.map((o) => {
-        const { base, quote, asks, bids } = o;
-        let ask = 0, bid = 0;
-
-        if (asks && asks.length > 0) {
-            [{ price: ask }] = asks;
-        }
-        if (bids && bids.length > 0) {
-            [{ price: bid }] = bids;
-        }
-
-        return {
-            base,
-            quote,
-            ask,
-            bid
-        };
-    })
-);
-
 module.exports = class BinanceApiService extends ExchangeServiceAbstract {
-    constructor({ exchange, apiKey, apiSecret, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback) {
-        super({ exchange, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback);
+    constructor({ exchange, apiKey, apiSecret, ipArray }, orderbooksUpdatedCallback) {
+        super({ exchange, ipArray }, orderbooksUpdatedCallback);
 
         this.api = new ccxt.binance({
             apiKey,
@@ -125,7 +99,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
                     throw new Error(`Exception while subscribe to ws, ex: ${ex}`);
                 }
 
-                console.log(`(${i}/${symbolsArr.length}) Subscribed to ${m} orderbook ws (${new Date()} )`);
+                console.log(`(${i}/${symbolsArr.length}) Subscribed to ${m} orderbook ws (${new Date()})`);
             }
         }
 
@@ -268,18 +242,6 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
         clearInterval(this.notifireIntervalId);
     }
 
-    getPrices(currencies = []) {
-        try {
-            const orderBooks = this.getOrderBooks({ limit: 1 });
-            const tickers = convertOrderBooksToTickers(orderBooks);
-
-            return getPrices(tickers, currencies, this.mainCurrency);
-        } catch (ex) {
-            console.log(`Exception while fetching prices, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching prices, ex: ${ex}`);
-        }
-    }
-
     async getBalances(currencies = []) {
         try {
             this.rotateAgent();
@@ -295,19 +257,9 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
                 total: e[1].total,
             }));
 
-            const balancesFiltered = (currencies.length > 0)
+            return ((currencies.length > 0)
                 ? balances.filter(b => currencies.includes(b.currency))
-                : balances;
-            const prices = this.getPrices(balancesFiltered.map(b => b.currency)) || [];
-
-            for (const balance of balancesFiltered) {
-                const price = prices.find(p => p.base === balance.currency);
-                if (price) {
-                    balance.mainAmount = +Big(balance.total).times(price.bid);
-                }
-            }
-
-            return balancesFiltered;
+                : balances);
         } catch (ex) {
             console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching balances, ex: ${ex}`);

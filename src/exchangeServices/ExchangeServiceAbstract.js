@@ -1,7 +1,5 @@
 /* eslint-disable no-unused-vars */
 
-const AdjacencyMatrixUtil = require('../utils/AdjacencyMatrixUtil');
-
 module.exports = class ExchangeServiceAbstract {
     /**
      * Возвращает только обновленные ордербуки.
@@ -42,11 +40,9 @@ module.exports = class ExchangeServiceAbstract {
         return result;
     }
 
-    constructor({ exchange, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback) {
+    constructor({ exchange, ipArray }, orderbooksUpdatedCallback) {
         this.exchange = exchange;
         this.ipArray = ipArray;
-        this.mainCurrency = mainCurrency;
-        this.currencies = currencies;
         this.orderbooksUpdatedCallback = orderbooksUpdatedCallback;
 
         this.currentIpIndex = -1;
@@ -90,10 +86,6 @@ module.exports = class ExchangeServiceAbstract {
 
     runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
         throw new Error(`Method runOrderBookNotifier not implemented for exchange '${this.exchange}'`);
-    }
-
-    getPrices(currencies = []) {
-        throw new Error(`Method getPrices not implemented for exchange '${this.exchange}'`);
     }
 
 

@@ -1,8 +1,7 @@
 {
     "wsPort": 2345,
-    "exchange": "okex",
+    "exchange": "binance",
     "apiKey": "",
     "apiSecret": "",
-    "passphrase": "",
     "ipArray": []
 }

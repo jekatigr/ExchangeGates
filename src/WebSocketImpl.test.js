@@ -33,9 +33,8 @@ describe('WebSocket', () => {
         await wss.processAction(undefined, GET_BALANCES, undefined);
 
         const balances = spy.mock.calls[0][3];
-        const mainAmount = +Big(balance.total).times(ETHBTC.bid).times(BTCUSDT.bid);
         expect(balances).toEqual([
-            { ...balance, mainAmount }
+            { ...balance }
         ]);
     });
 });
