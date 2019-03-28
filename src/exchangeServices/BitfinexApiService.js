@@ -4,6 +4,7 @@ const Big = require('big.js');
 const BFX = require('bitfinex-api-node');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
+const { makeChunks } = require('../utils/utils');
 
 /**
  * Конвертер ордербуков из формата массивов в формат объектов
@@ -213,8 +214,10 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             }
         };
 
-        init(symbols.slice(0, Math.floor(symbols.length / 2)), saveLocalDepth.bind(this));
-        init(symbols.slice(Math.floor(symbols.length / 2) + 1, symbols.length), saveLocalDepth.bind(this));
+        const symbolsSplitted = makeChunks(symbols, 200);
+        for (const chunk of symbolsSplitted) {
+            init(chunk, saveLocalDepth.bind(this));
+        }
     }
 
     async getMarkets() {

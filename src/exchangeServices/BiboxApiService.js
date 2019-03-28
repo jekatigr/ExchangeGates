@@ -6,6 +6,7 @@ const Big = require('big.js');
 const request = require('request-promise-native');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
+const { makeChunks } = require('../utils/utils');
 
 const WS_URL = 'wss://push.bibox.com/';
 
@@ -148,11 +149,9 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             }
         };
 
-        const num = Math.floor(symbols.length / 20) + 1;
-        for (let i = 0; i < num; i++) {
-            const start = i * 20;
-            const end = ((i + 1) * 20 < symbols.length) ? (i + 1) * 20 : symbols.length;
-            init(symbols.slice(start, end), saveLocalDepth.bind(this));
+        const symbolsSplitted = makeChunks(symbols, 20);
+        for (const chunk of symbolsSplitted) {
+            init(chunk, saveLocalDepth.bind(this));
         }
     }
 
