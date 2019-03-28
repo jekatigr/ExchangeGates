@@ -125,7 +125,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
                     throw new Error(`Exception while subscribe to ws, ex: ${ex}`);
                 }
 
-                console.log(`(${i}/${symbolsArr.length}) Subscribed to ${m} orderbook ws`);
+                console.log(`(${i}/${symbolsArr.length}) Subscribed to ${m} orderbook ws (${new Date()} )`);
             }
         }
 

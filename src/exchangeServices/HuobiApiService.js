@@ -89,7 +89,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                     id: `${symbol.symbol}`
                 }));
             }
-            console.log(`Subscribed to ${symbols.length} orderbook channels.`);
+            console.log(`Subscribed to ${symbols.length} orderbook channels. (${new Date()})`);
         }
 
         function handle(data, callback) {

@@ -78,7 +78,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                     channel: `bibox_sub_spot_${symbol.symbol}_depth`
                 }));
             }
-            console.log(`Subscribed to ${symbols.length} orderbook channels.`);
+            console.log(`Subscribed to ${symbols.length} orderbook channels. (${new Date()})`);
         }
 
         function handle(msg, callback) {

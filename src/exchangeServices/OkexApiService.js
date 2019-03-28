@@ -89,7 +89,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     channel: `ok_sub_spot_${symbol.symbol}_depth_20`
                 }));
             }
-            console.log(`Subscribed to ${symbols.length} orderbook channels.`);
+            console.log(`Subscribed to ${symbols.length} orderbook channels. (${new Date()})`);
         }
 
         function handle(msg, callback) {
