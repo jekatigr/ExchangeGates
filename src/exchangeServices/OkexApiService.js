@@ -421,7 +421,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     amount: +size,
                     remain: +Big(size).minus(filled),
                     price: +price,
-                    average: (!(Big(o.filled_size).eq(0))) ? +Big(o.executed_value).div(o.filled_size) : 0,
+                    average: (!(Big(o.filled_size).eq(0))) ? +Big(o.filled_notional).div(o.filled_size) : 0,
                     created: +new Date(timestamp),
                     status: convertOrderStatus(o.status)
                 };
@@ -454,7 +454,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                 amount: +o.size,
                 remain: +Big(o.size).minus(o.filled_size),
                 price: +o.price,
-                average: (!(Big(o.filled_size).eq(0))) ? +Big(o.executed_value).div(o.filled_size) : 0,
+                average: (!(Big(o.filled_size).eq(0))) ? +Big(o.filled_notional).div(o.filled_size) : 0,
                 created: +new Date(o.timestamp),
                 status: convertOrderStatus(o.status)
             };
