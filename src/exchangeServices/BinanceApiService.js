@@ -321,17 +321,13 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
             throw new Error('Exception while canceling order, params missing');
         }
 
-        let result;
         try {
             this.rotateAgent();
             await this.api.cancelOrder(id, symbol);
-            result = { id, success: true };
         } catch (ex) {
             console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            result = { id, success: false, error: ex.message };
+            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
-
-        return result;
     }
 
     async getActiveOrders(params) {
@@ -369,12 +365,10 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
             throw new Error('Exception while getting order, params missing');
         }
 
-        let result;
         try {
             this.rotateAgent();
             const o = await this.api.fetchOrder(id, symbol);
-            result = {
-                success: true,
+            return {
                 id: o.id,
                 base: o.symbol.split('/')[0],
                 quote: o.symbol.split('/')[1],
@@ -387,9 +381,8 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
                 status: (o.status === 'open') ? 'active' : o.status
             };
         } catch (ex) {
-            console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            result = { id, success: false, error: ex.message };
+            console.log(`Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
         }
-        return result;
     }
 };

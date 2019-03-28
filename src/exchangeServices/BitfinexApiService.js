@@ -386,17 +386,13 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             throw new Error('Exception while canceling order, id missing');
         }
 
-        let result;
         try {
             this.rotateAgent1();
             await this.api1.cancelOrder(id, { localAddress: super.getNextIp() });
-            result = { id, success: true };
         } catch (ex) {
             console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            result = { id, success: false, error: ex.message };
+            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
-
-        return result;
     }
 
     async getActiveOrders(symbol) {
@@ -427,12 +423,10 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             throw new Error('Exception while getting order, id missing');
         }
 
-        let result;
         try {
             this.rotateAgent1();
             const o = await this.api1.fetchOrder(id);
-            result = {
-                success: true, // TODO: удалить, устарело
+            return {
                 id: o.id,
                 base: o.symbol.split('/')[0],
                 quote: o.symbol.split('/')[1],
@@ -445,11 +439,9 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 status: (o.status === 'open') ? 'active' : o.status
             };
         } catch (ex) {
-            console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            result = { id, success: false, error: ex.message };
+            console.log(`Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
         }
-
-        return result;
     }
 
     async getDepositAddress(currency) {

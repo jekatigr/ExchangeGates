@@ -34,24 +34,6 @@ const convertToOrderbook = (rawOrderBook) => {
     return res;
 };
 
-/**
- * Конвертер ордербуков в тикеры
- * @param orderBooks
- */
-const convertOrderBooksToTickers = orderBooks => (
-    orderBooks.map((o) => {
-        const { base, quote, asks, bids } = o;
-        const [{ price: ask } = {}] = asks;
-        const [{ price: bid } = {}] = bids;
-        return {
-            base,
-            quote,
-            ask,
-            bid
-        };
-    })
-);
-
 const convertOrderStatus = (status) => {
     // (all, open, part_filled, canceling, filled, cancelled，ordering)
     switch (status) {
@@ -380,16 +362,12 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
             throw new Error('Exception while canceling order, params missing');
         }
 
-        let result;
         try {
             await this.api.cancelOrder(symbol.replace('/', '-'), id, { localAddress: this.getNextIp() });
-            result = { id, success: true };
         } catch (ex) {
             console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            result = { id, success: false, error: ex.message };
+            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
-
-        return result;
     }
 
     async getActiveOrders(symbol = '') {
@@ -442,11 +420,9 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
             throw new Error('Exception while getting order, params missing');
         }
 
-        let result;
         try {
             const o = await this.api.getOrder(symbol.replace('/', '-'), id, { localAddress: this.getNextIp() });
-            result = {
-                success: true,
+            return {
                 id: o.order_id,
                 base: o.instrument_id.split('-')[0],
                 quote: o.instrument_id.split('-')[1],
@@ -460,8 +436,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
             };
         } catch (ex) {
             console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            result = { id, success: false, error: ex.message };
+            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
         }
-        return result;
     }
 };

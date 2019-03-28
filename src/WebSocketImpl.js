@@ -192,8 +192,6 @@ module.exports = class WebSocketImpl {
             return;
         }
 
-        if (result) {
-            WebSocketImpl.sendMessage(ws, reqId, start, +new Date(), result, ACTION, action);
-        }
+        WebSocketImpl.sendMessage(ws, reqId, start, +new Date(), result, ACTION, action);
     }
 };

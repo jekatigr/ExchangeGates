@@ -597,7 +597,6 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
     "event": "action",
     "action": "getOrder",
     "data": {  
-            "success": true,
             "id": "1212100295",
             "base": "ETH",
             "quote": "USDT",
@@ -646,11 +645,7 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
     "timestampStart": 1542719952740,
     "timestampEnd": 1542719953566,
     "event": "action",
-    "action": "cancelOrder",
-    "data": {  
-            "id": 1212100295,
-            "success": true
-    }
+    "action": "cancelOrder"
 }
 ```
 

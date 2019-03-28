@@ -172,16 +172,12 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
             throw new Error('Exception while canceling order, id missing');
         }
 
-        let result;
         try {
             await this.api.cancelOrder(id, { localAddress: super.getNextIp() });
-            result = { id, success: true };
         } catch (ex) {
             console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            result = { id, success: false, error: ex.message };
+            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
-
-        return result;
     }
 
     async getActiveOrders(symbol) {
@@ -203,18 +199,15 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
             throw new Error('Exception while getting order, id missing');
         }
 
-        let result;
-            try {
-                const order = await this.api.getOrder(id, { localAddress: super.getNextIp() });
-                result = {
-                    ...order,
-                    status: (order.status === 'cancelled' || order.status === 'cancelled_partially') ? 'canceled' : order.status
-                };
-            } catch (ex) {
-                console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-                result = { id, success: false, error: ex.message };
-            }
-
-        return result;
+        try {
+            const order = await this.api.getOrder(id, { localAddress: super.getNextIp() });
+            return {
+                ...order,
+                status: (order.status === 'cancelled' || order.status === 'cancelled_partially') ? 'canceled' : order.status
+            };
+        } catch (ex) {
+            console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
+        }
     }
 };
