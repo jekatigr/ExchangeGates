@@ -25,30 +25,6 @@ describe('bitfinex API', () => {
         });
     });
 
-    describe('getTriangles method', () => {
-        const { getTrianglesTest } = testData;
-        it('should return correct triangles', async () => {
-            const {
-                case1: {
-                    sourceForMarkets,
-                    expected
-                }
-            } = getTrianglesTest;
-
-            await loadConfig('./config/bitfinexConfig.json');
-
-            const service = new BitfinexApiService();
-
-            service.getMarkets = jest.fn().mockReturnValue(sourceForMarkets);
-
-            const triangles = await service.getTriangles();
-
-            expect(triangles).toEqual(expected);
-
-            service.getMarkets.mockRestore();
-        });
-    });
-
     describe('getPrices method', () => {
         const { getPricesTest } = testData;
         it('should return correct array of prices', async () => {

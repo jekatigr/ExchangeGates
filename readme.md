@@ -139,7 +139,6 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
 - [runOrderbooksNotifier](#runorderbooksnotifier)
 - [stopOrderbooksNotifier](#stoporderbooksnotifier)
 - [getPrices](#getprices)
-- [getTriangles](#gettriangles)
 - [getBalances](#getbalances)
 - [createOrder](#createorder)
 - [getActiveOrders](#getactiveorders)
@@ -470,59 +469,6 @@ currencies| Array<String\> |да|-|Массив валют, из которых 
             "ask": 1,
             "bid": 1
         }
-    ]
-}
-```
-
-</details>
-
-*****  
-
-#### getTriangles
-
-Метод возвращает массив валютных треугольников. 
-Список валют берется из конфигурационного файла.
-
-Пример:
-
-```json
-{
-    "action": "getTriangles"
-}
-```
-
-<details>
-<summary>Результат:</summary>
-
-```json
-{  
-    "success": true,
-    "timestampStart": 1542718048766,
-    "timestampEnd": 1542718048773,
-    "event": "action",
-    "action": "getTriangles",
-    "data": [  
-        [  
-            "BTC",
-            "USDT",
-            "ETH"
-        ],
-        [  
-            "BTC",
-            "ETH",
-            "USDT"
-        ],
-        [  
-            "USDT",
-            "BTC",
-            "ETH"
-        ],
-        [  
-            "USDT",
-            "ETH",
-            "BTC"
-        ],
-        ...
     ]
 }
 ```

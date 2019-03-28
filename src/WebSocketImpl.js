@@ -7,7 +7,6 @@ const {
     RUN_ORDERBOOKS_NOTIFIER,
     STOP_ORDERBOOKS_NOTIFIER,
     GET_MARKETS,
-    GET_TRIANGLES,
     GET_PRICES,
     GET_BALANCES,
     CREATE_ORDER,
@@ -87,7 +86,6 @@ module.exports = class WebSocketImpl {
             RUN_ORDERBOOKS_NOTIFIER,
             STOP_ORDERBOOKS_NOTIFIER,
             GET_MARKETS,
-            GET_TRIANGLES,
             GET_PRICES,
             GET_BALANCES,
             CREATE_ORDER,
@@ -124,10 +122,6 @@ module.exports = class WebSocketImpl {
             switch (action) {
                 case GET_MARKETS: {
                     result = await this.service.getMarkets();
-                    break;
-                }
-                case GET_TRIANGLES: {
-                    result = await this.service.getTriangles();
                     break;
                 }
                 case RUN_ORDERBOOKS_NOTIFIER: {

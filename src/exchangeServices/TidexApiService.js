@@ -118,17 +118,6 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         /* eslint-enable no-await-in-loop */
     }
 
-    async getTriangles() {
-        try {
-            const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
-
-            return ExchangeServiceAbstract.calculateTriangles(this.currencies, markets);
-        } catch (ex) {
-            console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching triangles, ex: ${ex}`);
-        }
-    }
-
     async getPrices(currencies = []) {
         try {
             const tickers = await this.api.getTickers(undefined, { localAddress: super.getNextIp() }) || [];

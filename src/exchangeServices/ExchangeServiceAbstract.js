@@ -42,32 +42,6 @@ module.exports = class ExchangeServiceAbstract {
         return result;
     }
 
-    static calculateTriangles(currencies, markets) {
-        // создаем матрицу смежности
-        const matrix = AdjacencyMatrixUtil.fillAdjacencyMatrixForCurrencies(markets, currencies);
-
-        const triangles = [];
-
-        for (let a = 0; a < currencies.length; a++) {
-            for (let b = a + 1; b < currencies.length; b++) {
-                if (matrix[a][b] !== 0) {
-                    for (let c = b + 1; c < currencies.length; c++) {
-                        if (matrix[b][c] === 1 && matrix[a][c] === 1) {
-                            triangles.push([ currencies[a], currencies[b], currencies[c] ]);
-                            triangles.push([ currencies[a], currencies[c], currencies[b] ]);
-                            triangles.push([ currencies[b], currencies[a], currencies[c] ]);
-                            triangles.push([ currencies[b], currencies[c], currencies[a] ]);
-                            triangles.push([ currencies[c], currencies[a], currencies[b] ]);
-                            triangles.push([ currencies[c], currencies[b], currencies[a] ]);
-                        }
-                    }
-                }
-            }
-        }
-
-        return triangles;
-    }
-
     constructor({ exchange, ipArray, mainCurrency, currencies }, orderbooksUpdatedCallback) {
         this.exchange = exchange;
         this.ipArray = ipArray;
@@ -116,10 +90,6 @@ module.exports = class ExchangeServiceAbstract {
 
     runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
         throw new Error(`Method runOrderBookNotifier not implemented for exchange '${this.exchange}'`);
-    }
-
-    getTriangles() {
-        throw new Error(`Method getTriangles not implemented for exchange '${this.exchange}'`);
     }
 
     getPrices(currencies = []) {

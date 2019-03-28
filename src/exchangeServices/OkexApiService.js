@@ -297,17 +297,6 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         clearInterval(this.notifireIntervalId);
     }
 
-    async getTriangles() {
-        try {
-            const markets = await this.getMarkets();
-
-            return ExchangeServiceAbstract.calculateTriangles(this.currencies, markets);
-        } catch (ex) {
-            console.log(`Exception while fetching triangles, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching triangles, ex: ${ex}`);
-        }
-    }
-
     getPrices(currencies = []) {
         try {
             const orderBooks = this.getOrderBooks({ limit: 1 });
