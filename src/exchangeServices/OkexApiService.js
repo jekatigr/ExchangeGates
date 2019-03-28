@@ -61,7 +61,7 @@ const convertOrderStatus = (status) => {
             return 'active';
         case 'cancelling':
         case 'cancelled':
-            return 'cancelled';
+            return 'canceled';
         case 'filled':
             return 'closed';
         default: return undefined;
