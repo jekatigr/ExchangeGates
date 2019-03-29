@@ -4,7 +4,7 @@ const Big = require('big.js');
 const BFX = require('bitfinex-api-node');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const { makeChunks } = require('../utils/utils');
+const { makeChunks, getFormattedDate } = require('../utils/utils');
 
 /**
  * Конвертер ордербуков из формата массивов в формат объектов
@@ -107,7 +107,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                         localCallback(symbolObj.symbol, orderbook);
                     });
                 }
-                console.log(`Subscribed to ${localSymbols.length} orderbook channels. (${new Date()})`);
+                console.log(`${getFormattedDate()} | Subscribed to Bitfinex ${localSymbols.length} orderbook channels.`);
             }
 
             function reconnect(localSymbols, localCallback) {
@@ -120,54 +120,54 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             }
 
             ws.on('open', async () => {
-                console.log('bitfinex ws socket opened');
+                console.log(`${getFormattedDate()} | Bitfinex ws socket opened`);
                 subscribe(ws, symbols, callback);
             });
 
             ws.on('error', async (err) => {
-                console.log(`web socket error, err: ${JSON.stringify(err)}`);
+                console.log(`${getFormattedDate()} | Bitfinex ws error, err: ${JSON.stringify(err)}`);
                 try {
                     await ws.close();
                 } catch (ex) {
-                    console.log(`error: ws already closed, ex: ${ex}`);
+                    console.log(`${getFormattedDate()} | Error: bitfinex ws already closed, ex: ${ex}`);
                 }
 
                 await reconnect(symbols, callback).bind(this);
             });
 
             ws.onMaintenanceStart(() => {
-                console.log('info: ws maintenance period started');
+                console.log(`${getFormattedDate()} | Info: bitfinex ws maintenance period started`);
             });
 
             ws.onMaintenanceEnd(async () => {
-                console.log('info: ws maintenance period ended');
+                console.log(`${getFormattedDate()} | Info: bitfinex ws maintenance period ended`);
 
                 try {
                     await ws.close();
                 } catch (ex) {
-                    console.log(`error: ws already closed, ex: ${ex}`);
+                    console.log(`${getFormattedDate()} | Error: bitfinex ws already closed, ex: ${ex}`);
                 }
 
                 await reconnect(symbols, callback).bind(this);
             });
 
             ws.onServerRestart(async () => {
-                console.log('info: ws bitfinex server restarted');
+                console.log(`${getFormattedDate()} | Info: bitfinex ws server restarted`);
                 try {
                     await ws.close();
                 } catch (ex) {
-                    console.log(`error: ws already closed, ex: ${ex}`);
+                    console.log(`${getFormattedDate()} | Error: bitfinex ws already closed, ex: ${ex}`);
                 }
 
                 await reconnect(symbols, callback).bind(this);
             });
 
             ws.on('close', async () => {
-                console.log('info: ws bitfinex server closed');
+                console.log(`${getFormattedDate()} | Info: bitfinex ws server closed`);
                 try {
                     await ws.close();
                 } catch (ex) {
-                    console.log(`error: ws already closed, ex: ${ex}`);
+                    console.log(`${getFormattedDate()} | Error: bitfinex ws already closed, ex: ${ex}`);
                 }
                 await reconnect(symbols, callback).bind(this);
             });
@@ -230,8 +230,8 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             }
             return res;
         } catch (ex) {
-            console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching markets, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}`);
         }
     }
 
@@ -249,8 +249,8 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
             this.initWS(symbolsObj);
         } catch (ex) {
-            console.log(`Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while connecting to orderbooks ws, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}`);
         }
     }
 
@@ -269,8 +269,8 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
             return orderbooks;
         } catch (ex) {
-            console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}`);
         }
     }
 
@@ -286,8 +286,8 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             this.orderBooksCache = allOrderBooks;
             return result;
         } catch (ex) {
-            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}`);
         }
     }
 
@@ -340,14 +340,15 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 ? balances.filter(b => currencies.includes(b.currency))
                 : balances);
         } catch (ex) {
-            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching balances, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}`);
         }
     }
 
     async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
         if (!symbol || !operation || !price || !amount) {
-            throw new Error('Exception while creating order, params missing');
+            console.log(`${getFormattedDate()} | Exception while creating order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, params missing`);
         }
 
         try {
@@ -378,32 +379,32 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 setTimeout(async () => {
                     try {
                         await this.api1.cancelOrder(order.id);
-                        console.log(`Order (id: ${order.id}) cancelled.`);
+                        console.log(`${getFormattedDate()} | Order (id: ${order.id}) cancelled.`);
                     } catch (ex) {
-                        console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                        console.log(`${getFormattedDate()} | Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
                     }
                 }, cancelAfter);
             }
 
             return order;
         } catch (ex) {
-            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while creating order, ex: ${ex.stack}`);
+            console.log(`${getFormattedDate()} | Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, ex: ${ex}`);
         }
     }
 
     async cancelOrder({ id }) {
         if (!id) {
-            console.log('Exception while canceling order, id missing');
-            throw new Error('Exception while canceling order, id missing');
+            console.log(`${getFormattedDate()} | Exception while canceling order, id missing`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, id missing`);
         }
 
         try {
             this.rotateAgent1();
             await this.api1.cancelOrder(id, { localAddress: super.getNextIp() });
         } catch (ex) {
-            console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
     }
 
@@ -424,15 +425,15 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 status: 'active'
             }));
         } catch (ex) {
-            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}`);
         }
     }
 
     async getOrder({ id }) {
         if (!id) {
-            console.log('Exception while getting order, id missing');
-            throw new Error('Exception while getting order, id missing');
+            console.log(`${getFormattedDate()} | Exception while getting order, id missing`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, id missing`);
         }
 
         try {
@@ -451,15 +452,15 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                 status: (o.status === 'open') ? 'active' : o.status
             };
         } catch (ex) {
-            console.log(`Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}`);
         }
     }
 
     async getDepositAddress(currency) {
         if (!currency) {
-            console.log('Exception while getting deposit address, currency missing');
-            throw new Error('Exception while getting deposit address, currency missing');
+            console.log(`${getFormattedDate()} | Exception while getting deposit address, currency missing`);
+            throw new Error(`${getFormattedDate()} | Exception while getting deposit address, currency missing`);
         }
 
         try {
@@ -468,23 +469,23 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             const { address } = res;
             return address;
         } catch (ex) {
-            console.log(`Exception while fetching deposit address, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching deposit address, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching deposit address, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching deposit address, ex: ${ex}`);
         }
     }
 
     async withdraw({ currency, address, amount }) {
         if (!currency) {
-            console.log('Exception while making withdraw, currency missing');
-            throw new Error('Exception while making withdraw, currency missing');
+            console.log(`${getFormattedDate()} | Exception while making withdraw, currency missing`);
+            throw new Error(`${getFormattedDate()} | Exception while making withdraw, currency missing`);
         }
         if (!address) {
-            console.log('Exception while making withdraw, address missing');
-            throw new Error('Exception while making withdraw, address missing');
+            console.log(`${getFormattedDate()} | Exception while making withdraw, address missing`);
+            throw new Error(`${getFormattedDate()} | Exception while making withdraw, address missing`);
         }
         if (!amount) {
-            console.log('Exception while making withdraw, amount missing');
-            throw new Error('Exception while making withdraw, amount missing');
+            console.log(`${getFormattedDate()} | Exception while making withdraw, amount missing`);
+            throw new Error(`${getFormattedDate()} | Exception while making withdraw, amount missing`);
         }
 
         try {
@@ -493,8 +494,8 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             const { id } = res;
             return id;
         } catch (ex) {
-            console.log(`Exception while making withdraw, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while making withdraw, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while making withdraw, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while making withdraw, ex: ${ex}`);
         }
     }
 };

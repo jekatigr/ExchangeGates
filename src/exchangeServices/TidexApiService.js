@@ -1,7 +1,7 @@
 const TidexApi = require('node-tidex-api');
 const Big = require('big.js');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const { timeout } = require('../utils/utils');
+const { timeout, getFormattedDate } = require('../utils/utils');
 
 module.exports = class TidexApiService extends ExchangeServiceAbstract {
     constructor({ exchange, apiKey, apiSecret, ipArray }, orderbooksUpdatedCallback) {
@@ -43,8 +43,8 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 }
             }));
         } catch (ex) {
-            console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching markets, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}`);
         }
     }
 
@@ -67,8 +67,8 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
 
             return orderbooks;
         } catch (ex) {
-            console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}`);
         }
     }
 
@@ -84,8 +84,8 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
             this.orderBooksCache = allOrderBooks;
             return result;
         } catch (ex) {
-            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}`);
         }
     }
 
@@ -124,15 +124,15 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 ? balances.filter(b => currencies.includes(b.currency))
                 : balances);
         } catch (ex) {
-            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching balances, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}`);
         }
     }
 
     async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
         if (!symbol || !operation || !price || !amount) {
-            console.log('Exception while creating order, params missing');
-            throw new Error('Exception while creating order, params missing');
+            console.log(`${getFormattedDate()} | Exception while creating order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, params missing`);
         }
 
         try {
@@ -148,9 +148,9 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 setTimeout(async () => {
                     try {
                         await this.api.cancelOrder(order.id, { localAddress: super.getNextIp() });
-                        console.log(`Order (id: ${order.id}) cancelled.`);
+                        console.log(`${getFormattedDate()} | Order (id: ${order.id}) cancelled.`);
                     } catch (ex) {
-                        console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                        console.log(`${getFormattedDate()} | Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
                     }
                 }, cancelAfter);
             }
@@ -161,22 +161,22 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
 
             return order;
         } catch (ex) {
-            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while creating order, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, ex: ${ex}`);
         }
     }
 
     async cancelOrder({ id }) {
         if (!id) {
-            console.log('Exception while canceling order, id missing');
-            throw new Error('Exception while canceling order, id missing');
+            console.log(`${getFormattedDate()} | Exception while canceling order, id missing`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, id missing`);
         }
 
         try {
             await this.api.cancelOrder(id, { localAddress: super.getNextIp() });
         } catch (ex) {
-            console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
     }
 
@@ -188,15 +188,15 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 status: (o.status === 'cancelled' || o.status === 'cancelled_partially') ? 'canceled' : o.status
             }));
         } catch (ex) {
-            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}`);
         }
     }
 
     async getOrder({ id }) {
         if (!id) {
-            console.log('Exception while getting order, id missing');
-            throw new Error('Exception while getting order, id missing');
+            console.log(`${getFormattedDate()} | Exception while getting order, id missing`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, id missing`);
         }
 
         try {
@@ -206,8 +206,8 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 status: (order.status === 'cancelled' || order.status === 'cancelled_partially') ? 'canceled' : order.status
             };
         } catch (ex) {
-            console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}`);
         }
     }
 };

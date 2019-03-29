@@ -5,6 +5,7 @@ const pako = require('pako');
 const Big = require('big.js');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
+const { getFormattedDate } = require('../utils/utils');
 
 const WS_URL = 'wss://api.huobi.pro/ws';
 
@@ -68,7 +69,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                     id: `${symbol.symbol}`
                 }));
             }
-            console.log(`Subscribed to ${symbols.length} orderbook channels. (${new Date()})`);
+            console.log(`${getFormattedDate()} | Subscribed to Huobi ${symbols.length} orderbook channels.`);
         }
 
         function handle(data, callback) {
@@ -83,7 +84,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             const ws = new WebSocket(WS_URL);
 
             ws.on('open', () => {
-                console.log('open huobi ws');
+                console.log(`${getFormattedDate()} | Opened huobi ws`);
                 subscribe(ws, symbols);
             });
 
@@ -98,12 +99,12 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             });
 
             ws.on('close', () => {
-                console.log('close huobi ws');
+                console.log(`${getFormattedDate()} | Closed huobi ws`);
                 init(symbols, callback);
             });
 
             ws.on('error', (err) => {
-                console.log('error on huobi ws:', err);
+                console.log(`${getFormattedDate()} | Error on huobi ws: ${err}`);
                 init(symbols, callback);
             });
         }
@@ -161,8 +162,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             }
             return res;
         } catch (ex) {
-            console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching markets, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}`);
         }
     }
 
@@ -180,8 +181,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
             this.initWS(symbolsObj);
         } catch (ex) {
-            console.log(`Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while connecting to orderbooks ws, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}`);
         }
     }
 
@@ -200,8 +201,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
 
             return orderbooks;
         } catch (ex) {
-            console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}`);
         }
     }
 
@@ -224,8 +225,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             this.orderBooksCache = allOrderBooks;
             return result;
         } catch (ex) {
-            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}`);
         }
     }
 
@@ -276,15 +277,15 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 ? balances.filter(b => currencies.includes(b.currency))
                 : balances);
         } catch (ex) {
-            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching balances, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}`);
         }
     }
 
     async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
         if (!symbol || !operation || !price || !amount) {
-            console.log('Exception while creating order, params missing');
-            throw new Error('Exception while creating order, params missing');
+            console.log(`${getFormattedDate()} | Exception while creating order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, params missing`);
         }
 
         try {
@@ -316,32 +317,32 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 setTimeout(async () => {
                     try {
                         await this.api.cancelOrder(order.id);
-                        console.log(`Order (id: ${order.id}) cancelled.`);
+                        console.log(`${getFormattedDate()} | Order (id: ${order.id}) cancelled.`);
                     } catch (ex) {
-                        console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                        console.log(`${getFormattedDate()} | Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
                     }
                 }, cancelAfter);
             }
 
             return order;
         } catch (ex) {
-            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while creating order, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, ex: ${ex}`);
         }
     }
 
     async cancelOrder({ id }) {
         if (!id) {
-            console.log('Exception while canceling order, id missing');
-            throw new Error('Exception while canceling order, id missing');
+            console.log(`${getFormattedDate()} | Exception while canceling order, id missing`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, id missing`);
         }
 
         try {
             this.rotateAgent();
             await this.api.cancelOrder(id);
         } catch (ex) {
-            console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
     }
 
@@ -362,15 +363,15 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 status: 'active'
             }));
         } catch (ex) {
-            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}`);
         }
     }
 
     async getOrder({ id }) {
         if (!id) {
-            console.log('Exception while getting order, id missing');
-            throw new Error('Exception while getting order, id missing');
+            console.log(`${getFormattedDate()} | Exception while getting order, id missing`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, id missing`);
         }
 
         try {
@@ -389,23 +390,23 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 status: (o.status === 'open') ? 'active' : o.status
             };
         } catch (ex) {
-            console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}`);
         }
     }
 
     async withdraw({ currency, address, amount }) {
         if (!currency) {
-            console.log('Exception while making withdraw, currency missing');
-            throw new Error('Exception while making withdraw, currency missing');
+            console.log(`${getFormattedDate()} | Exception while making withdraw, currency missing`);
+            throw new Error(`${getFormattedDate()} | Exception while making withdraw, currency missing`);
         }
         if (!address) {
-            console.log('Exception while making withdraw, address missing');
-            throw new Error('Exception while making withdraw, address missing');
+            console.log(`${getFormattedDate()} | Exception while making withdraw, address missing`);
+            throw new Error(`${getFormattedDate()} | Exception while making withdraw, address missing`);
         }
         if (!amount) {
-            console.log('Exception while making withdraw, amount missing');
-            throw new Error('Exception while making withdraw, amount missing');
+            console.log(`${getFormattedDate()} | Exception while making withdraw, amount missing`);
+            throw new Error(`${getFormattedDate()} | Exception while making withdraw, amount missing`);
         }
 
         try {
@@ -414,8 +415,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             const { id } = res;
             return id;
         } catch (ex) {
-            console.log(`Exception while making withdraw, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while making withdraw, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while making withdraw, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while making withdraw, ex: ${ex}`);
         }
     }
 };

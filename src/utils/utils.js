@@ -23,7 +23,20 @@ const makeChunks = (arr = [], maxCount = 1) => {
     return res;
 };
 
+const getFormattedDate = (date = new Date()) => {
+    const h = (`0${date.getHours()}`).slice(-2);
+    const m = (`0${date.getMinutes()}`).slice(-2);
+    const s = (`0${date.getSeconds()}`).slice(-2);
+    const ms = (`0${date.getMilliseconds()}`).slice(-3);
+    const d = (`0${date.getDate()}`).slice(-2);
+    const mn = (`0${(date.getMonth() + 1)}`).slice(-2);
+    const y = date.getFullYear();
+
+    return `${d}.${mn}.${y} ${h}:${m}:${s}.${ms}`;
+};
+
 module.exports = {
     timeout,
-    makeChunks
+    makeChunks,
+    getFormattedDate
 };

@@ -5,6 +5,7 @@ const pako = require('pako');
 const OkexApi = require('./okex-v3');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
+const { getFormattedDate } = require('../utils/utils');
 
 const WS_URL = 'wss://real.okex.com:10441/websocket?compress=true';
 
@@ -68,7 +69,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     channel: `ok_sub_spot_${symbol.symbol}_depth_20`
                 }));
             }
-            console.log(`Subscribed to ${symbols.length} orderbook channels. (${new Date()})`);
+            console.log(`${getFormattedDate()} | Subscribed to Okex ${symbols.length} orderbook channels.`);
         }
 
         function handle(msg, callback) {
@@ -82,7 +83,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                         callback(symbol, data);
                         break;
                     default:
-                        console.error('ws invalid channel, msg: ', msg);
+                        console.error(`${getFormattedDate()} | ws invalid channel, msg: ${msg}`);
                 }
             }
         }
@@ -91,35 +92,35 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
             const ws = new WebSocket(WS_URL);
 
             ws.on('open', () => {
-                console.log('open okex ws');
+                console.log(`${getFormattedDate()} | Opened okex ws`);
                 subscribe(ws, symbols);
             });
 
             ws.on('message', (data) => {
                 let msg;
                 if (data instanceof String) {
-                    console.log(`Message from websocket: ${data}`);
+                    console.log(`${getFormattedDate()} | Message from okex websocket: ${data}`);
                 } else {
                     try {
                         msg = JSON.parse(pako.inflateRaw(data, { to: 'string' }));
                     } catch (err) {
-                        console.log(`Error while parsing ws message, err: ${err}`);
+                        console.log(`${getFormattedDate()} | Error while parsing okex ws message, err: ${err}`);
                     }
                 }
                 if (msg && msg[0]) {
                     handle(msg[0], callback);
                 } else {
-                    console.error('okex ws error ', msg);
+                    console.error(`${getFormattedDate()} | okex ws error: ${msg}`);
                 }
             });
 
             ws.on('close', () => {
-                console.log('close okex ws');
+                console.log(`${getFormattedDate()} | Closed okex ws`);
                 init(symbols, callback);
             });
 
             ws.on('error', (err) => {
-                console.log('error on okex ws:', err);
+                console.log(`${getFormattedDate()} | Error on okex ws: ${err}`);
                 init(symbols, callback);
             });
         }
@@ -189,11 +190,11 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                 });
             }
 
-            console.log(`Exception while fetching markets, okex doesn't return data, response: ${raw}`);
-            throw new Error(`Exception while fetching markets, okex doesn't return data, response: ${raw}`);
+            console.log(`${getFormattedDate()} | Exception while fetching markets, okex doesn't return data, response: ${raw}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching markets, okex doesn't return data, response: ${raw}`);
         } catch (ex) {
-            console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching markets, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}`);
         }
     }
 
@@ -210,8 +211,8 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
 
             this.initWS(symbolsObj);
         } catch (ex) {
-            console.log(`Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while connecting to orderbooks ws, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}`);
         }
     }
 
@@ -230,8 +231,8 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
 
             return orderbooks;
         } catch (ex) {
-            console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}`);
         }
     }
 
@@ -254,8 +255,8 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
             this.orderBooksCache = allOrderBooks;
             return result;
         } catch (ex) {
-            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}`);
         }
     }
 
@@ -302,18 +303,18 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     ? balances.filter(b => currencies.includes(b.currency))
                     : balances);
             }
-            console.log('Exception while fetching balances, exchange doesn\'t return data.');
-            throw new Error('Exception while fetching balances, exchange doesn\'t return data.');
+            console.log(`${getFormattedDate()} | Exception while fetching balances, exchange doesn\'t return data.`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching balances, exchange doesn\'t return data.`);
         } catch (ex) {
-            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching balances, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}`);
         }
     }
 
     async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
         if (!symbol || !operation || !price || !amount) {
-            console.log('Exception while creating order, params missing');
-            throw new Error('Exception while creating order, params missing');
+            console.log(`${getFormattedDate()} | Exception while creating order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, params missing`);
         }
 
         try {
@@ -347,9 +348,9 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     setTimeout(async () => {
                         try {
                             await this.api.cancelOrder(symbol.replace('/', '-'), order.id, { localAddress: this.getNextIp() });
-                            console.log(`Order (id: ${order.id}) cancelled.`);
+                            console.log(`${getFormattedDate()} | Order (id: ${order.id}) cancelled.`);
                         } catch (ex) {
-                            console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                            console.log(`${getFormattedDate()} | Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
                         }
                     }, cancelAfter);
                 }
@@ -357,25 +358,25 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                 return order;
             }
 
-            console.log(`Exception while creating order, exchange message: ${orderRes}`);
-            throw new Error(`Exception while creating order, exchange message: ${orderRes}`);
+            console.log(`${getFormattedDate()} | Exception while creating order, exchange message: ${orderRes}`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, exchange message: ${orderRes}`);
         } catch (ex) {
-            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while creating order, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, ex: ${ex}`);
         }
     }
 
     async cancelOrder({ symbol, id }) {
         if (!id || !symbol) {
-            console.log('Exception while canceling order, params missing');
-            throw new Error('Exception while canceling order, params missing');
+            console.log(`${getFormattedDate()} | Exception while canceling order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, params missing`);
         }
 
         try {
             await this.api.cancelOrder(symbol.replace('/', '-'), id, { localAddress: this.getNextIp() });
         } catch (ex) {
-            console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
     }
 
@@ -418,15 +419,15 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                 return [];
             }
 
-            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}`);
         }
     }
 
     async getOrder({ symbol, id }) {
         if (!id || !symbol) {
-            console.log('Exception while getting order, params missing');
-            throw new Error('Exception while getting order, params missing');
+            console.log(`${getFormattedDate()} | Exception while getting order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, params missing`);
         }
 
         try {
@@ -444,8 +445,8 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                 status: convertOrderStatus(o.status)
             };
         } catch (ex) {
-            console.log(`Exception while getting order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}`);
         }
     }
 };

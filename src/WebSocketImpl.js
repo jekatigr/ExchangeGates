@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const { getConfig } = require('./ConfigLoader');
+const { getFormattedDate } = require('./utils/utils');
 
 const { CONNECTED, AVAILABLE_ACTIONS, ACTION, ORDERBOOKS } = require('./constants/Events');
 const {
@@ -110,7 +111,7 @@ module.exports = class WebSocketImpl {
 
             await this.processAction(ws, parsed.action, parsed.params, parsed.id);
         } catch (ex) {
-            console.error(`Exception while parse client's message, received: ${message}`);
+            console.error(`${getFormattedDate()} | Exception while parse client's message, received: ${message}`);
             WebSocketImpl.sendError(ws, undefined, start, +new Date(), 'Incorrect message format.', ACTION);
         }
     }
@@ -138,7 +139,7 @@ module.exports = class WebSocketImpl {
                                 if (ws.readyState === 1) {
                                     WebSocketImpl.sendError(ws, reqId, timestampStart, timestampEnd, data, ORDERBOOKS);
                                 } else {
-                                    console.log(`Got error when ws was closed, ex: ${data}`);
+                                    console.log(`${getFormattedDate()} | Got error when ws was closed, ex: ${data}`);
                                 }
                                 return;
                             }

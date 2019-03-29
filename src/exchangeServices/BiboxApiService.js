@@ -6,7 +6,7 @@ const Big = require('big.js');
 const request = require('request-promise-native');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const { makeChunks } = require('../utils/utils');
+const { makeChunks, getFormattedDate } = require('../utils/utils');
 
 const WS_URL = 'wss://push.bibox.com/';
 
@@ -58,7 +58,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                     channel: `bibox_sub_spot_${symbol.symbol}_depth`
                 }));
             }
-            console.log(`Subscribed to ${symbols.length} orderbook channels. (${new Date()})`);
+            console.log(`${getFormattedDate()} | Subscribed to Bibox ${symbols.length} orderbook channels.`);
         }
 
         function handle(msg, callback) {
@@ -76,7 +76,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                     callback(symbol, recvMsg);
                     break;
                 default:
-                    console.error('ws invalid channel, msg: ', msg);
+                    console.error(`${getFormattedDate()} | ws invalid channel, msg: ${msg}`);
             }
         }
 
@@ -84,7 +84,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             const ws = new WebSocket(WS_URL);
 
             ws.on('open', () => {
-                console.log('open bibox ws');
+                console.log(`${getFormattedDate()} | Opened bibox ws.`);
                 subscribe(ws, symbols);
             });
 
@@ -97,17 +97,17 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                         pong: msg.ping
                     }));
                 } else {
-                    console.error('bibox ws error ', msg);
+                    console.error(`${getFormattedDate()} | Bibox ws error, msg: ${msg}`);
                 }
             });
 
-            ws.on('close', () => {
-                console.log('close bibox ws'); // TODO add time label in such messages
+            ws.on('close', (msg) => {
+                console.log(`${getFormattedDate()} | Closed bibox ws, msg: ${msg}`);
                 init(symbols, callback);
             });
 
             ws.on('error', (err) => {
-                console.log('error on bibox ws:', err);
+                console.log(`${getFormattedDate()} | Error on bibox ws: ${err}`);
                 init(symbols, callback);
             });
         }
@@ -193,8 +193,8 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             }
             return res;
         } catch (ex) {
-            console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching markets, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}`);
         }
     }
 
@@ -211,8 +211,8 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
 
             this.initWS(symbolsObj);
         } catch (ex) {
-            console.log(`Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while connecting to orderbooks ws, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}`);
         }
     }
 
@@ -231,8 +231,8 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
 
             return orderbooks;
         } catch (ex) {
-            console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}`);
         }
     }
 
@@ -255,8 +255,8 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             this.orderBooksCache = allOrderBooks;
             return result;
         } catch (ex) {
-            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}`);
         }
     }
 
@@ -307,15 +307,15 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                 ? balances.filter(b => currencies.includes(b.currency))
                 : balances);
         } catch (ex) {
-            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching balances, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}`);
         }
     }
 
     async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
         if (!symbol || !operation || !price || !amount) {
-            console.log('Exception while creating order, params missing');
-            throw new Error('Exception while creating order, params missing');
+            console.log(`${getFormattedDate()} | Exception while creating order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, params missing`);
         }
 
         try {
@@ -347,32 +347,32 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                 setTimeout(async () => {
                     try {
                         await this.api.cancelOrder(order.id);
-                        console.log(`Order (id: ${order.id}) cancelled.`);
+                        console.log(`${getFormattedDate()} | Order (id: ${order.id}) cancelled.`);
                     } catch (ex) {
-                        console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                        console.log(`${getFormattedDate()} | Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
                     }
                 }, cancelAfter);
             }
 
             return order;
         } catch (ex) {
-            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while creating order, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, ex: ${ex}`);
         }
     }
 
     async cancelOrder({ id }) {
         if (!id) {
-            console.log('Exception while canceling order, id missing');
-            throw new Error('Exception while canceling order, id missing');
+            console.log(`${getFormattedDate()} | Exception while canceling order, id missing`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, id missing`);
         }
 
         try {
             this.rotateAgent();
             await this.api.cancelOrder(id);
         } catch (ex) {
-            console.log(`Exception while canceling order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while canceling order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
     }
 
@@ -393,15 +393,15 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                 status: 'active'
             }));
         } catch (ex) {
-            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}`);
         }
     }
 
     async getOrder({ id }) {
         if (!id) {
-            console.log('Exception while getting order, id missing');
-            throw new Error('Exception while getting order, id missing');
+            console.log(`${getFormattedDate()} | Exception while getting order, id missing`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, id missing`);
         }
 
         try {
@@ -420,8 +420,8 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                 status: (o.status === 'open') ? 'active' : o.status
             };
         } catch (ex) {
-            console.log(`Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}`);
         }
     }
 };

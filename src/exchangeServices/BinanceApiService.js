@@ -4,14 +4,14 @@ const WebSocket = require('ws');
 const pako = require('pako');
 const Big = require('big.js');
 const binance = require('node-binance-api')();
-const { timeout } = require('../utils/utils');
+const { timeout, getFormattedDate } = require('../utils/utils');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 
 const WS_URL = 'wss://api.huobi.pro/ws';
 
 /**
- * Конвертер ордербуков из формата массивов в формат объектов
+ * Converts raw orderbooks from arroys to objects.
  * @param rawOrderBook
  */
 const convertToOrderbook = (rawOrderBook) => {
@@ -72,7 +72,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
         });
 
         this.orderBooks = [];
-        this.orderBooksCache = undefined; // кэш ордербуков для клиента
+        this.orderBooksCache = undefined; // client's orderbooks cache
         this.notifireIntervalId = undefined;
     }
 
@@ -93,11 +93,11 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
                     binance.websockets.depthCache([m], callback);
                     await timeout(400)
                 } catch (ex) {
-                    console.log(`Exception while subscribe to ws ${m}, ex: ${ex}, stacktrace: ${ex.stack}`);
-                    throw new Error(`Exception while subscribe to ws, ex: ${ex}`);
+                    console.log(`${getFormattedDate()} | Exception while subscribe to ws ${m}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                    throw new Error(`${getFormattedDate()} | Exception while subscribe to ws, ex: ${ex}`);
                 }
 
-                console.log(`(${i}/${symbolsArr.length}) Subscribed to ${m} orderbook ws (${new Date()})`);
+                console.log(`${getFormattedDate()} | (${i}/${symbolsArr.length}) Subscribed to Binance ${m} orderbook ws`);
             }
         }
 
@@ -154,8 +154,8 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
             }
             return res;
         } catch (ex) {
-            console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching markets, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching markets, ex: ${ex}`);
         }
     }
 
@@ -174,8 +174,8 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
 
             this.initWS(symbolsObj);
         } catch (ex) {
-            console.log(`Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while connecting to orderbooks ws, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}`);
         }
     }
 
@@ -194,8 +194,8 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
 
             return orderbooks;
         } catch (ex) {
-            console.log(`Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}`);
         }
     }
 
@@ -218,8 +218,8 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
             this.orderBooksCache = allOrderBooks;
             return result;
         } catch (ex) {
-            console.log(`Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching updated orderbooks, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching updated orderbooks, ex: ${ex}`);
         }
     }
 
@@ -270,15 +270,15 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
                 ? balances.filter(b => currencies.includes(b.currency))
                 : balances);
         } catch (ex) {
-            console.log(`Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching balances, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}`);
         }
     }
 
     async createOrder({ symbol, operation, price, amount, cancelAfter } = {}) {
         if (!symbol || !operation || !price || !amount) {
-            console.log('Exception while creating order, params missing');
-            throw new Error('Exception while creating order, params missing');
+            console.log(`${getFormattedDate()} | Exception while creating order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, params missing`);
         }
 
         try {
@@ -312,37 +312,37 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
                         await this.api.cancelOrder(order.id, symbol);
                         console.log(`Order (id: ${order.id}) cancelled.`);
                     } catch (ex) {
-                        console.log(`Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
+                        console.log(`${getFormattedDate()} | Exception while canceling order with id: ${order.id}, ex: ${ex}, stacktrace: ${ex.stack}`);
                     }
                 }, cancelAfter);
             }
 
             return order;
         } catch (ex) {
-            console.log(`Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while creating order, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while creating order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while creating order, ex: ${ex}`);
         }
     }
 
     async cancelOrder({ symbol, id }) {
         if (!id || !symbol) {
-            console.log('Exception while canceling order, params missing');
-            throw new Error('Exception while canceling order, params missing');
+            console.log(`${getFormattedDate()} | Exception while canceling order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, params missing`);
         }
 
         try {
             this.rotateAgent();
             await this.api.cancelOrder(id, symbol);
         } catch (ex) {
-            console.log(`Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while canceling order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while canceling order, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while canceling order, orderId: '${id}', ex: ${ex}`);
         }
     }
 
     async getActiveOrders(params) {
         if (!params || params.length === 0) {
-            console.log('Exception while getting active orders, symbol missing');
-            throw new Error('Exception while getting active orders, symbol missing');
+            console.log(`${getFormattedDate()} | Exception while getting active orders, symbol missing`);
+            throw new Error(`${getFormattedDate()} | Exception while getting active orders, symbol missing`);
         }
 
         const [ symbol ] = params;
@@ -363,15 +363,15 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
                 status: 'active'
             }));
         } catch (ex) {
-            console.log(`Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while fetching active orders, ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching active orders, ex: ${ex}`);
         }
     }
 
     async getOrder({ symbol, id }) {
         if (!id || !symbol) {
-            console.log('Exception while getting order, params missing');
-            throw new Error('Exception while getting order, params missing');
+            console.log(`${getFormattedDate()} | Exception while getting order, params missing`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, params missing`);
         }
 
         try {
@@ -390,8 +390,8 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
                 status: (o.status === 'open') ? 'active' : o.status
             };
         } catch (ex) {
-            console.log(`Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`Exception while getting order, orderId: '${id}', ex: ${ex}`);
+            console.log(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}`);
         }
     }
 };
