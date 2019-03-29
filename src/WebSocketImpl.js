@@ -155,7 +155,7 @@ module.exports = class WebSocketImpl {
                     break;
                 }
                 case GET_ORDERBOOKS: {
-                    result = await this.service.getOrderBooks(params);
+                    result = await this.service.getOrderbooks(params);
                     break;
                 }
                 case GET_BALANCES: {

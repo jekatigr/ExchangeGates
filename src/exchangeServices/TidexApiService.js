@@ -48,7 +48,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getOrderBooks({ symbols = [], limit = 1 } = {}) {
+    async getOrderbooks({ symbols = [], limit = 1 } = {}) {
         try {
             let symbolsArr = symbols;
             if (symbolsArr.length === 0) {
@@ -72,12 +72,12 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getUpdatedOrderBooks(all = false, { symbols = [], limit = 1 }) {
+    async getUpdatedOrderbooks(all = false, { symbols = [], limit = 1 }) {
         try {
             let result = [];
-            const allOrderBooks = await this.getOrderBooks({ symbols, limit });
+            const allOrderBooks = await this.getOrderbooks({ symbols, limit });
             if (!all && this.orderBooksCache) {
-                result = ExchangeServiceAbstract.filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
+                result = ExchangeServiceAbstract.filterChangedOrderbooks(allOrderBooks, this.orderBooksCache);
             } else {
                 result = allOrderBooks;
             }
@@ -96,7 +96,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         while (this.notifierRunning) {
             const start = +new Date();
             try {
-                const updatedOrderBooks = await this.getUpdatedOrderBooks(firstFetch, { symbols, limit });
+                const updatedOrderBooks = await this.getUpdatedOrderbooks(firstFetch, { symbols, limit });
                 firstFetch = false;
                 if (this.notifierRunning && updatedOrderBooks && updatedOrderBooks.length > 0) {
                     callback(undefined, {

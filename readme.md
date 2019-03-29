@@ -125,7 +125,7 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
 
 - [getMarkets](#getmarkets)
 - [connectToExchange](#connecttoexchange)
-- [getOrderBooks](#getorderbooks)
+- [getOrderbooks](#getorderbooks)
 - [runOrderbooksNotifier](#runorderbooksnotifier)
 - [stopOrderbooksNotifier](#stoporderbooksnotifier)
 - [getBalances](#getbalances)
@@ -210,7 +210,7 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
 
 Метод предназначен для запуска подключения к биржам через websocket для получения ордербуков.
 
-Метод необходимо вызвать перед использованием методов **getOrderBooks** и **runOrderbooksNotifier**.
+Метод необходимо вызвать перед использованием методов **getOrderbooks** и **runOrderbooksNotifier**.
 
 _Для Tidex метод вызывать не требуется._
 
@@ -247,7 +247,7 @@ _Для Tidex метод вызывать не требуется._
 
 *****
 
-#### getOrderBooks
+#### getOrderbooks
 
 Метод возвращает массив ордербуков.
 
@@ -266,7 +266,7 @@ _Для Tidex метод вызывать не требуется._
 
 ```json
 {
-    "action": "getOrderBooks",
+    "action": "getOrderbooks",
     "params": {
         "symbols": [
             "BTC/USDT",
@@ -286,7 +286,7 @@ _Для Tidex метод вызывать не требуется._
     "timestampStart": 1542712136234,
     "timestampEnd": 1542712136235,
     "event": "action",
-    "action": "getOrderBooks",
+    "action": "getOrderbooks",
     "data": [  
         {  
             "base": "BTC",

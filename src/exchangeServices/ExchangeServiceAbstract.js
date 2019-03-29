@@ -6,7 +6,7 @@ module.exports = class ExchangeServiceAbstract {
      * @param allOrderBooks новые ордербуки
      * @param orderBooksCache существующие ордербуки в кэше
      */
-    static filterChangedOrderBooks(allOrderBooks, orderBooksCache) {
+    static filterChangedOrderbooks(allOrderBooks, orderBooksCache) {
         const result = [];
         allOrderBooks.forEach((orderBook) => {
             const [cached] = orderBooksCache.filter(c => c.base === orderBook.base && c.quote === orderBook.quote);
@@ -85,12 +85,12 @@ module.exports = class ExchangeServiceAbstract {
         throw new Error(`Method connectToExchange not implemented for exchange '${this.exchange}'`);
     }
 
-    getOrderBooks({ symbols = [], limit = 1 } = {}) {
-        throw new Error(`Method getOrderBooks not implemented for exchange '${this.exchange}'`);
+    getOrderbooks({ symbols = [], limit = 1 } = {}) {
+        throw new Error(`Method getOrderbooks not implemented for exchange '${this.exchange}'`);
     }
 
-    getUpdatedOrderBooks(all = false, { symbols = [], limit = 1 }) {
-        throw new Error(`Method getUpdatedOrderBooks not implemented for exchange '${this.exchange}'`);
+    getUpdatedOrderbooks(all = false, { symbols = [], limit = 1 }) {
+        throw new Error(`Method getUpdatedOrderbooks not implemented for exchange '${this.exchange}'`);
     }
 
     runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {

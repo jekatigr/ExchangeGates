@@ -216,7 +216,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
         }
     }
 
-    getOrderBooks({ symbols = [], limit = 1 } = {}) {
+    getOrderbooks({ symbols = [], limit = 1 } = {}) {
         try {
             let orderbooks = this.orderBooks; // должен быть заполнен из вебсокета
             if (symbols && symbols.length > 0) {
@@ -243,12 +243,12 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
      * @param limit
      * @returns {Array}
      */
-    getUpdatedOrderBooks(all = false, { symbols = [], limit = 1 }) {
+    getUpdatedOrderbooks(all = false, { symbols = [], limit = 1 }) {
         try {
             let result = [];
-            const allOrderBooks = this.getOrderBooks({ symbols, limit });
+            const allOrderBooks = this.getOrderbooks({ symbols, limit });
             if (!all && this.orderBooksCache) {
-                result = ExchangeServiceAbstract.filterChangedOrderBooks(allOrderBooks, this.orderBooksCache);
+                result = ExchangeServiceAbstract.filterChangedOrderbooks(allOrderBooks, this.orderBooksCache);
             } else {
                 result = allOrderBooks;
             }
@@ -266,7 +266,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
 
             this.notifireIntervalId = setInterval(() => {
                 const start = +new Date();
-                const updatedOrderBooks = this.getUpdatedOrderBooks(false, {
+                const updatedOrderBooks = this.getUpdatedOrderbooks(false, {
                     symbols,
                     limit
                 }) || [];
