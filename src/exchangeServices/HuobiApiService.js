@@ -52,8 +52,6 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         this.orderBooks = [];
         this.orderBooksCache = undefined; // кэш ордербуков для клиента
         this.notifireIntervalId = undefined;
-
-        this.initWS();
     }
 
     rotateAgent() {
@@ -62,7 +60,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         });
     }
 
-    async initWS() {
+    async initWS(symbolsObj) {
         function subscribe(ws, symbols) {
             for (const symbol of symbols) {
                 ws.send(JSON.stringify({
@@ -110,15 +108,8 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             });
         }
 
-        const markets = await this.getMarkets();
-        const symbols = markets.map(m => ({
-            symbol: `${m.base.toLowerCase()}${m.quote.toLowerCase()}`,
-            base: m.base,
-            quote: m.quote
-        }));
-
         const saveLocalDepth = (symbol, orderbook) => {
-            const symbolObj = symbols.find(s => s.symbol === symbol);
+            const symbolObj = symbolsObj.find(s => s.symbol === symbol);
             const { base, quote } = symbolObj;
             const orderbookIndex = this.orderBooks.findIndex(e => e.base === base && e.quote === quote);
             const { asks, bids } = convertToOrderbook(orderbook);
@@ -145,7 +136,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
             }
         };
 
-        init(symbols, saveLocalDepth.bind(this));
+        init(symbolsObj, saveLocalDepth.bind(this));
     }
 
 
@@ -172,6 +163,25 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
+        }
+    }
+
+    async connectToExchange(symbols = []) {
+        try {
+            const markets = await this.getMarkets();
+
+            const symbolsObj = markets.map(m => ({
+                symbol: `${m.base.toLowerCase()}${m.quote.toLowerCase()}`,
+                base: m.base,
+                quote: m.quote
+            })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
+
+            this.wsInitialized = true;
+
+            this.initWS(symbolsObj);
+        } catch (ex) {
+            console.log(`Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while connecting to orderbooks ws, ex: ${ex}`);
         }
     }
 

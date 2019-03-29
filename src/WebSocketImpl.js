@@ -3,6 +3,7 @@ const { getConfig } = require('./ConfigLoader');
 
 const { CONNECTED, AVAILABLE_ACTIONS, ACTION, ORDERBOOKS } = require('./constants/Events');
 const {
+    CONNECT_TO_EXCHANGE,
     GET_ORDERBOOKS,
     RUN_ORDERBOOKS_NOTIFIER,
     STOP_ORDERBOOKS_NOTIFIER,
@@ -81,6 +82,7 @@ module.exports = class WebSocketImpl {
 
         WebSocketImpl.sendMessage(ws, undefined, +new Date(), +new Date(), undefined, CONNECTED);
         WebSocketImpl.sendMessage(ws, undefined, +new Date(), +new Date(), Object.values({
+            CONNECT_TO_EXCHANGE,
             GET_ORDERBOOKS,
             RUN_ORDERBOOKS_NOTIFIER,
             STOP_ORDERBOOKS_NOTIFIER,
@@ -120,6 +122,12 @@ module.exports = class WebSocketImpl {
             switch (action) {
                 case GET_MARKETS: {
                     result = await this.service.getMarkets();
+                    break;
+                }
+                case CONNECT_TO_EXCHANGE: {
+                    if (!this.service.isWsInitialized()) {
+                        result = await this.service.connectToExchange(params);
+                    }
                     break;
                 }
                 case RUN_ORDERBOOKS_NOTIFIER: {

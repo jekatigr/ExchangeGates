@@ -1,5 +1,6 @@
 module.exports = {
-    GET_ORDERBOOKS: 'getOrderBooks',
+    CONNECT_TO_EXCHANGE: 'connectToExchange',
+    GET_ORDERBOOKS: 'getOrderBooks', // TODO change to lowercase
     RUN_ORDERBOOKS_NOTIFIER: 'runOrderbooksNotifier',
     STOP_ORDERBOOKS_NOTIFIER: 'stopOrderbooksNotifier',
     GET_BALANCES: 'getBalances',

@@ -74,8 +74,6 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
         this.orderBooks = [];
         this.orderBooksCache = undefined; // кэш ордербуков для клиента
         this.notifireIntervalId = undefined;
-
-        this.initWS();
     }
 
     rotateAgent() {
@@ -84,7 +82,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
         });
     }
 
-    async initWS() {
+    async initWS(symbolsObj) {
         async function init(symbols, callback) {
             const symbolsArr = symbols.map(s => s.symbol);
             let i = 0;
@@ -93,7 +91,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
 
                 try {
                     binance.websockets.depthCache([m], callback);
-                    await timeout(300)
+                    await timeout(400)
                 } catch (ex) {
                     console.log(`Exception while subscribe to ws ${m}, ex: ${ex}, stacktrace: ${ex.stack}`);
                     throw new Error(`Exception while subscribe to ws, ex: ${ex}`);
@@ -103,17 +101,8 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
             }
         }
 
-        const markets = await this.getMarkets();
-        const symbols = markets.map(m => ({
-            symbol: `${m.base
-                .replace('YOYOW', 'YOYO')
-                .replace('XRB', 'NANO')}${m.quote}`,
-            base: m.base,
-            quote: m.quote
-        })).filter(s => s.base !== 'BCH');
-
         const saveLocalDepth = (symbol, orderbook) => {
-            const symbolObj = symbols.find(s => s.symbol === symbol);
+            const symbolObj = symbolsObj.find(s => s.symbol === symbol);
             const { base, quote } = symbolObj;
             const orderbookIndex = this.orderBooks.findIndex(e => e.base === base && e.quote === quote);
             const { asks, bids } = convertToOrderbook(orderbook);
@@ -140,7 +129,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
             }
         };
 
-        init(symbols, saveLocalDepth.bind(this));
+        init(symbolsObj, saveLocalDepth.bind(this));
     }
 
 
@@ -167,6 +156,26 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
+        }
+    }
+
+    async connectToExchange(symbols = []) {
+        try {
+            const markets = await this.getMarkets();
+            const symbolsObj = markets.map(m => ({
+                symbol: `${m.base
+                    .replace('YOYOW', 'YOYO')
+                    .replace('XRB', 'NANO')}${m.quote}`,
+                base: m.base,
+                quote: m.quote
+            })).filter(s => s.base !== 'BCH' && ((symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`)));
+
+            this.wsInitialized = true;
+
+            this.initWS(symbolsObj);
+        } catch (ex) {
+            console.log(`Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while connecting to orderbooks ws, ex: ${ex}`);
         }
     }
 

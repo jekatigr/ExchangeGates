@@ -70,8 +70,6 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         this.orderBooks = [];
         this.orderBooksCache = undefined; // кэш ордербуков для клиента
         this.notifireIntervalId = undefined;
-
-        this.initWS();
     }
 
     rotateAgent1() {
@@ -86,7 +84,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         });
     }
 
-    async initWS() {
+    async initWS(symbolsObj) {
         async function init(symbols, callback) {
             let isWSReconnecting = false;
             const bfx = new BFX({
@@ -178,16 +176,8 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             isWSReconnecting = false;
         }
 
-        this.rotateAgent2();
-        const markets = await this.api2.loadMarkets();
-        const symbols = Object.values(markets).map(m => ({
-            symbol: m.id,
-            base: m.base,
-            quote: m.quote
-        }));
-
         const saveLocalDepth = (symbol, orderbook) => {
-            const symbolObj = symbols.find(s => s.symbol === symbol);
+            const symbolObj = symbolsObj.find(s => s.symbol === symbol);
             const { base, quote } = symbolObj;
             const orderbookIndex = this.orderBooks.findIndex(e => e.base === base && e.quote === quote);
             const { asks, bids } = convertToOrderbook(orderbook);
@@ -214,7 +204,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             }
         };
 
-        const symbolsSplitted = makeChunks(symbols, 200);
+        const symbolsSplitted = makeChunks(symbolsObj, 200);
         for (const chunk of symbolsSplitted) {
             init(chunk, saveLocalDepth.bind(this));
         }
@@ -242,6 +232,25 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         } catch (ex) {
             console.log(`Exception while fetching markets, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`Exception while fetching markets, ex: ${ex}`);
+        }
+    }
+
+    async connectToExchange(symbols = []) {
+        try {
+            this.rotateAgent2();
+            const markets = await this.api2.loadMarkets();
+            const symbolsObj = Object.values(markets).map(m => ({
+                symbol: m.id,
+                base: m.base,
+                quote: m.quote
+            })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
+
+            this.wsInitialized = true;
+
+            this.initWS(symbolsObj);
+        } catch (ex) {
+            console.log(`Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+            throw new Error(`Exception while connecting to orderbooks ws, ex: ${ex}`);
         }
     }
 

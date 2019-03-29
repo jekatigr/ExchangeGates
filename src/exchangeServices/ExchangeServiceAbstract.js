@@ -47,6 +47,7 @@ module.exports = class ExchangeServiceAbstract {
 
         this.currentIpIndex = -1;
 
+        this.wsInitialized = false;
         this.notifierRunning = false;
     }
 
@@ -63,6 +64,10 @@ module.exports = class ExchangeServiceAbstract {
         return undefined;
     }
 
+    isWsInitialized() {
+        return this.wsInitialized;
+    }
+
     isNotifierRunning() {
         return this.notifierRunning;
     }
@@ -74,6 +79,10 @@ module.exports = class ExchangeServiceAbstract {
 
     getMarkets() {
         throw new Error(`Method getMarkets not implemented for exchange '${this.exchange}'`);
+    }
+
+    connectToExchange(symbols = []) {
+        throw new Error(`Method connectToExchange not implemented for exchange '${this.exchange}'`);
     }
 
     getOrderBooks({ symbols = [], limit = 1 } = {}) {
