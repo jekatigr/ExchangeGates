@@ -1,6 +1,6 @@
-# CryptoExchanges Data Provider
+# Exchanges Gates
 
-> Единый websocket-интерфейс к криптобиржам.
+> Единый javascript и websocket-интерфейс к криптобиржам.
 
 
 ### Поддерживаемые биржи

@@ -1,4 +1,4 @@
-# CryptoExchanges Data Provider
+# Exchange Gates
 
 > Unified JavaScript and WebSocket interface for cryptoexchanges.
 

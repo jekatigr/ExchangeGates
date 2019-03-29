@@ -1,39 +1,65 @@
 {
-  "name": "exchange-gates",
-  "version": "6.0.0",
-  "description": "Unified JS and WS interface for cryptoexchanges.",
-  "main": "index.js",
-  "author": "jekatigr",
-  "license": "UNLICENSED",
-  "dependencies": {
-    "big.js": "^5.2.1",
-    "bitfinex-api-node": "^2.0.1",
-    "ccxt": "^1.17.405",
-    "cross-env": "^5.2.0",
-    "crypto-js": "^3.1.9-1",
-    "node-binance-api": "^0.9.0",
-    "node-tidex-api": "^1.1.0",
-    "pako": "^1.0.6",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.5",
-    "ws": "^6.1.0"
-  },
-  "devDependencies": {
-    "eslint": "^5.7.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jest": "^21.25.1",
-    "jest": "^23.6.0"
-  },
-  "scripts": {
-    "start-bibox": "cross-env CONFIG_FILE_PATH='./config/biboxConfig.json' node index.js",
-    "start-binance": "cross-env CONFIG_FILE_PATH='./config/binanceConfig.json' node index.js",
-    "start-bitfinex": "cross-env CONFIG_FILE_PATH='./config/bitfinexConfig.json' node index.js",
-    "start-huobi": "cross-env CONFIG_FILE_PATH='./config/huobiConfig.json' node index.js",
-    "start-tidex": "cross-env CONFIG_FILE_PATH='./config/tidexConfig.json' node index.js",
-    "start-okex": "cross-env CONFIG_FILE_PATH='./config/okexConfig.json' node index.js",
-    "lint": "./node_modules/.bin/eslint ./",
-    "test": "cross-env TEST=true jest",
-    "coverage": "jest --collectCoverageFrom=./**.js --coverage ./"
-  }
+    "name": "exchange-gates",
+    "version": "6.0.0",
+    "description": "Unified JS and WS interface for cryptoexchanges.",
+    "main": "index.js",
+    "dependencies": {
+        "big.js": "^5.2.1",
+        "bitfinex-api-node": "^2.0.1",
+        "ccxt": "^1.17.405",
+        "cross-env": "^5.2.0",
+        "crypto-js": "^3.1.9-1",
+        "node-binance-api": "^0.9.0",
+        "node-tidex-api": "^1.1.0",
+        "pako": "^1.0.6",
+        "request": "^2.88.0",
+        "request-promise-native": "^1.0.5",
+        "ws": "^6.1.0"
+    },
+    "devDependencies": {
+        "eslint": "^5.7.0",
+        "eslint-config-airbnb-base": "^13.1.0",
+        "eslint-plugin-import": "^2.14.0",
+        "eslint-plugin-jest": "^21.25.1",
+        "jest": "^23.6.0"
+    },
+    "scripts": {
+        "start-bibox": "cross-env CONFIG_FILE_PATH='./config/biboxConfig.json' node index.js",
+        "start-binance": "cross-env CONFIG_FILE_PATH='./config/binanceConfig.json' node index.js",
+        "start-bitfinex": "cross-env CONFIG_FILE_PATH='./config/bitfinexConfig.json' node index.js",
+        "start-huobi": "cross-env CONFIG_FILE_PATH='./config/huobiConfig.json' node index.js",
+        "start-tidex": "cross-env CONFIG_FILE_PATH='./config/tidexConfig.json' node index.js",
+        "start-okex": "cross-env CONFIG_FILE_PATH='./config/okexConfig.json' node index.js",
+        "lint": "./node_modules/.bin/eslint ./",
+        "test": "cross-env TEST=true jest",
+        "coverage": "jest --collectCoverageFrom=./**.js --coverage ./"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:jekatigr/ExchangeGates.git"
+    },
+    "keywords": [
+        "websocket",
+        "api",
+        "integration",
+        "cryptoexchange",
+        "bibox",
+        "bitfinex",
+        "binance",
+        "okex",
+        "tidex",
+        "huobi"
+    ],
+    "contributors": [
+        {
+            "name": "jekatigr",
+            "email": "jekatigr@yandex.ru"
+        },
+        {
+            "name": "maconidolma",
+            "email": "linkova93@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/jekatigr/ExchangeGates"
 }
