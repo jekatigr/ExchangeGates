@@ -159,7 +159,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async connectToExchange(symbols = []) {
+    async connectToExchange(symbols = []) { // TODO make notification only after connections
         if (!this.wsInitialized) {
             try {
                 const markets = await this.getMarkets();

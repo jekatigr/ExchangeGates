@@ -1,9 +1,10 @@
 # CryptoExchanges Data Provider
 
-> Единый websocket-интерфейс к криптобиржам.
+> Unified JavaScript and WebSocket interface for cryptoexchanges.
 
+Russian documentation is [here](./README_RU.md).
 
-### Поддерживаемые биржи
+### Supported exchanges
 
 - Bibox ([bibox.com](https://bibox.com))
 - Binance ([binance.com](https://binance.com))
@@ -14,20 +15,20 @@
 
 *****
 
-### Конфигурация
+### Configuration
 
-Для запуска ws-сервера необходимо создать конфигурационный файл. Описание параметров:
+To run ws server you need to create a config file with params:
 
-Параметр | Тип | Обязательный | По-умолчанию | Описание
+Name | Type | Required | Default | Description
 -------- |--- | ------------ | -------- | --------
-wsPort | Number | нет | 2345 | Порт, на котором будет работать ws-сервер.
-exchange| String | да | - | Одно из значений: bibox, binance, bitfinex, huobi, tidex, okex.
-apiKey| String |да|-|Api key аккаунта на бирже.
-apiSecret| String |да|-|Api secret аккаунта на бирже.
-passphrase| String |нет*|-|Passphrase для доступа к okex api (обязательно для okex).
-ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов, с которых будут запрашиваться api бирж.
+wsPort | Number | no | 2345 | Port for ws server.
+exchange| String | yes | - | One of: bibox, binance, bitfinex, huobi, tidex, okex.
+apiKey| String |yes|-|Api key.
+apiSecret| String |yes|-|Api secret.
+passphrase| String |no*|-|Passphrase for okex api (required for okex).
+ipArray| Array<String\> |no|External ip|Array of ip addresses, from which all requests will be sent.
 
-Пример конфигурационного файла:
+Example of config file::
 
     {
         "wsPort": 2345,
@@ -42,17 +43,17 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
 
 ***** 
 
-### Установка и запуск
+### Install and run
 
-Для установки:
+Installation:
 
     yarn --prod
     
-Для запуска:
+Run:
 
-    cross-env CONFIG_FILE_PATH='<путь_к_файлу_конфигурации>' node index.js
+    cross-env CONFIG_FILE_PATH='<config_file_path>' node index.js
 
-Либо один из следующих вариантов:
+Or:
 
     yarn run start-bibox
     yarn run start-binance
@@ -63,51 +64,50 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
 
 *****
 
-### Формат взаимодействия
+### Interaction format
 
-Все запросы в вебсокет должны приходить в 
-формате объекта json: 
+All requests to the ws should have json format:
 
     { 
         "action": "<метод>", 
         "params": <параметры> 
     }
 
-Все сообщения от ws-сервера также приходят в json-объекте.
-
-Формат ответа:
+Responses also will be in json:
 
     {
-        "success": true или false
-        "event": строка, содержащая имя события.
-        "action": строка с названием метода. Action возвращается в ответе только в случае, когда был запрошен метод с клиента
-        "data": объект с данными, либо строка содержащая описание ошибки (когда success = false)
-        "timestampStart": время начала работы над событием,
-        "timestampEnd": время окончания работы над событием
+        "success": true or false
+        "event": string with event name
+        "action": string with method name. Will be in response only after client's actions.
+        "data": data object
+        "timestampStart": timestamp of event excecution start
+        "timestampEnd": timestamp of event execution end
     }
 
-Возможные варианты event'ов:
+Possible events:
 
 - action
 - orderbooks
 - connected
 - availableActions
 
-При открытии соединения с сокетом сервер сразу присылает два сообщения: connected и availableActions. После этого сокет ожидает команды от клиента.
+After opening a connection with ws server will send two 
+messages: connected и availableActions. After that server will wait command from client.
 
-#### Идентификатор запроса
+#### Request id
 
-В каждую команду к веб-сокету можно добавить поле id с пользовательским идентификатором.
-Этот id вернется в ответе на запрос, например:
+Client-defined _id_ can be added in any command. This _id_ will 
+be returned in response to this command. For example:
 
-Запрос:
+
+Request:
 
     { 
         "action": "getMarkets", 
         "id": "myUniqueId" 
     }
     
-Ответ:
+Response:
     
     {
         "success": true
@@ -121,7 +121,7 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
 
 ***** 
 
-### Доступные методы
+### Available methods
 
 - [getMarkets](#getmarkets)
 - [connectToExchange](#connecttoexchange)
@@ -141,9 +141,9 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
 
 #### getMarkets
 
-Метод возвращает массив рынков с указанием точности, комиссий и ограничений при выставлении ордеров.
+Method returns an array with market info: precision, fees and order limits.
 
-Пример:
+Example:
 
 ```json
 {
@@ -152,7 +152,7 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -208,17 +208,17 @@ ipArray| Array<String\> |нет|Внешний ip|Массив ip-адресов
 
 #### connectToExchange
 
-Метод предназначен для запуска подключения к биржам через websocket для получения ордербуков.
+Method for initialization of websocket-connections to exchange for receiving orderbooks.
 
-Метод необходимо вызвать перед использованием методов **getOrderbooks** и **runOrderbooksNotifier**.
+It should be called before using methods **getOrderbooks** and **runOrderbooksNotifier**.
 
-_Для Tidex метод вызывать не требуется._
+_Not required for Tidex._
 
-|Параметр|Тип|Обязательный|По-умолчанию|Описание|
+|Name|Type|Required|Default|Description|
 |--- |--- |--- |--- |--- |
-|params|Array<String\>|Нет|Все рынки|Рынки, для которых требуется подключение к ws.
+|params|Array<String\>|No|All markets|Markets list.
 
-Пример:
+Example:
 
 ```json
 {
@@ -231,7 +231,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -249,20 +249,19 @@ _Для Tidex метод вызывать не требуется._
 
 #### getOrderbooks
 
-Метод возвращает массив ордербуков.
+Method returns an array of orderbooks.
 
-Перед использованием необходимо вызвать метод **connectToExchange** для 
-инициализации соединений с биржей (в случае, если соединения не были установлены ранее).
+Before using **connectToExchange** method should be called (only one time during process run).
 
-Рынки, указанные в параметре _symbols_, должны быть включены в параметры 
-запуска метода **connectToExchange**, иначе сервер вернет данные только для подключенных ордербуков.
+Markets in _symbols_ parameter should be included in 
+parameters of **connectToExchange** call, otherwise server will return only data from initialized markets.
 
-|Параметр|Тип|Обязательный|По-умолчанию|Описание|
+|Name|Type|Required|Default|Description|
 |--- |--- |--- |--- |--- |
-|symbols|Array<String\>|Нет|Все подключенные рынки|Рынки, для которых требуется получить ордербуки.
-|limit|Number|Нет|1|Размер массивов asks и bids в результирующих ордербуках.
+|symbols|Array<String\>|No|All initialized markets|Markets list.
+|limit|Number|No|1|Size of asks and bids arrays.
 
-Пример:
+Example:
 
 ```json
 {
@@ -278,7 +277,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -346,24 +345,23 @@ _Для Tidex метод вызывать не требуется._
 
 #### runOrderbooksNotifier
 
-Запуск оповещений. После отправки этой команды в ответ 
-начинают отправляться ордербуки. При этом:
+Launch of notifications with updated orderbooks.
 
-- в первом сообщении будут отправлены все доступные ордербуки
-- в последующих сообщениях будут присылаться только обновленные ордербуки
- 
- Перед использованием необходимо вызвать метод **connectToExchange** для 
- инициализации соединений с биржей (в случае, если соединения не были установлены ранее).
- 
- Рынки, указанные в параметре _symbols_, должны быть включены в параметры 
- запуска метода **connectToExchange**, иначе сервер вернет данные только для подключенных ордербуков.
- 
- |Параметр|Тип|Обязательный|По-умолчанию|Описание|
- |--- |--- |--- |--- |--- |
- |symbols|Array<String\>|Нет|Все подключенные рынки|Рынки, для которых требуется получать ордербуки.
- |limit|Number|Нет|1|Максимальный размер массивов asks и bids в результирующих ордербуках.
+After call server will send first message with all orderbooks (for markets in _symbols_ parameter). 
+Second and following messages will include only updated orderbooks.
 
-Пример:
+Before using **connectToExchange** method should be called (only one time during process run).
+
+Markets in _symbols_ parameter should be included in 
+parameters of **connectToExchange** call, otherwise server will return only data from initialized markets.
+
+ 
+|Name|Type|Required|Default|Description|
+|--- |--- |--- |--- |--- |
+|symbols|Array<String\>|No|All initialized markets|Markets list.
+|limit|Number|No|1|Size of asks and bids arrays.
+
+Example:
 
 ```json
 {
@@ -379,7 +377,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -446,9 +444,9 @@ _Для Tidex метод вызывать не требуется._
 
 #### stopOrderbooksNotifier
 
-Остановка оповещений об обновленных ордербуках.
+Stop notifications with updated orderbooks.
 
-Пример:
+Example:
 
 ```json
 {
@@ -457,7 +455,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -475,13 +473,13 @@ _Для Tidex метод вызывать не требуется._
 
 #### getBalances
 
-Метод возвращает балансы кошельков на бирже.
+Method returns wallets balance.
 
-|Параметр|Тип|Обязательный|По-умолчанию|Описание|
+|Name|Type|Required|Default|Description|
  |--- |--- |--- |--- |--- |
- |params|Array<String\>|Нет|Все кошельки|Валюты, для которых нужно получить балансы кошельков.
+ |params|Array<String\>|No|All wallets|Currencies list.
 
-Пример:
+Example:
 
 ```json
 {
@@ -495,7 +493,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -527,17 +525,17 @@ _Для Tidex метод вызывать не требуется._
 
 #### createOrder
 
-Создание лимитного ордера на бирже.
+Create limit order.
 
-|Параметр|Тип|Обязательный|Описание|
+|Name|Type|Required|Description|
  |--- |--- |--- |--- |
- |symbol|String|Да|Рынок.
- |operation|String|Да|Операция - "buy" или "sell".
- |price|Number|Да|Цена.
- |amount|Number|Да|Количество.
- |cancelAfter|Number|Нет|Время в миллисекундах, после которого ордер будет отменен.
+ |symbol|String|Yes|Market.
+ |operation|String|Yes|"buy" or "sell".
+ |price|Number|Yes|Price.
+ |amount|Number|Yes|Amount.
+ |cancelAfter|Number|No|Time in ms. Server will try to cancel the order after delay.
 
-Пример:
+Example:
 
 ```json
 
@@ -554,7 +552,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -584,15 +582,15 @@ _Для Tidex метод вызывать не требуется._
 
 #### getActiveOrders
 
-Метод возвращает массив активных ордеров.
+Method returns an array of active orders.
 
-|Параметр|Тип|Обязательный|По-умолчанию|Описание|
+|Name|Type|Required|Default|Description|
  |--- |--- |--- |--- |--- |
- |params|String|Нет*|Все рынки|Рынок, для которого нужно получить активные ордера.
+ |params|String|No*|All markets|Market.
 
-* для Binance указание рынка обязательно!
+_\* required for Binance_
 
-Пример:
+Example:
 
 ```json
 {
@@ -602,7 +600,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -634,14 +632,14 @@ _Для Tidex метод вызывать не требуется._
 
 #### getOrder
 
-Метод возвращает ордер.
+Method return order details.
 
-|Параметр|Тип|Обязательный|Описание|
+|Name|Type|Required|Description|
  |--- |--- |--- |--- |
- |symbol|String|Да|Рынок.
- |id|String/Number|Да|id ордера.
+ |symbol|String|Yes|Market.
+ |id|String/Number|Yes|Order id.
 
-Пример:
+Example:
 
 ```json
 {
@@ -654,7 +652,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -684,14 +682,14 @@ _Для Tidex метод вызывать не требуется._
 
 #### cancelOrder
 
-Отмена ордера.
+Order cancellation.
 
-|Параметр|Тип|Обязательный|Описание|
+|Name|Type|Required|Description|
  |--- |--- |--- |--- |
- |symbol|String|Да|Рынок.
- |id|String/Number|Да|id ордера.
+ |symbol|String|Yes|Market.
+ |id|String/Number|Yes|Order id.
 
-Пример:
+Example:
 
 ```json
 {
@@ -704,7 +702,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -722,15 +720,15 @@ _Для Tidex метод вызывать не требуется._
 
 #### getDepositAddress
 
-**Доступно только для Bitfinex**
+**Available only for Bitfinex**
 
-Метод возвращает адрес для ввода средств на биржу.
+Method returns an address for asset deposit.
 
-|Параметр|Тип|Обязательный|Описание|
+|Name|Type|Required|Description|
  |--- |--- |--- |--- |
- |params|String|Да|Валюта, для которой нужно получить адрес ввода.
+ |params|String|Yes|Currency.
 
-Пример:
+Example:
 
 ```json
 {
@@ -740,7 +738,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -749,7 +747,7 @@ _Для Tidex метод вызывать не требуется._
     "timestampEnd": 1542718517159,
     "event": "action",
     "action": "getDepositAddress",
-    "data": "1adaa63de25ad445dae763a5d65dae7a6da45ae7a36"
+    "data": "1KVrU6ZAVCU8sd5benEemmng967pgsDiat"
 }
 ```
 
@@ -759,24 +757,24 @@ _Для Tidex метод вызывать не требуется._
 
 #### withdraw
 
-**Доступно только для Bitfinex и Huobi**
+**Available only for Bitfinex and Huobi**
 
-Вывод средств с баланса. В ответе возвращает id запроса на вывод средств.
+Withdraw assets. Returns request id.
 
-|Параметр|Тип|Обязательный|Описание|
+|Name|Type|Required|Description|
  |--- |--- |--- |--- |
- |currency|String|Да|Валюта
- |address|String|Да|Адрес кошелька
- |amount|Number|Да|Количество
+ |currency|String|Yes|Currency.
+ |address|String|Yes|Address.
+ |amount|Number|Yes|Amount.
  
-Пример:
+Example:
 
 ```json
 
 {
     "action": "withdraw", 
     "params": {
-        "address": "15sTTAbJF00000JV3qme0000004S6iSTzG",
+        "address": "1KVrU6ZAVCU8sd5benEemmng967pgsDiat",
         "currency": "BTC",
         "amount": 0.071
     }
@@ -784,7 +782,7 @@ _Для Tidex метод вызывать не требуется._
 ```
 
 <details>
-<summary>Результат:</summary>
+<summary>Output:</summary>
 
 ```json
 {  
@@ -803,9 +801,9 @@ _Для Tidex метод вызывать не требуется._
 
 #### shutdown
 
-Отключение сервиса.
+Service shutdown.
  
-Пример:
+Example:
 
 ```json
 
@@ -814,4 +812,4 @@ _Для Tidex метод вызывать не требуется._
 }
 ```
 
-Для данной команды ответа не предусмотрено.
+There is no response for this method.
