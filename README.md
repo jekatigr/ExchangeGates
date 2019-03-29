@@ -69,8 +69,8 @@ Or:
 All requests to the ws should have json format:
 
     { 
-        "action": "<метод>", 
-        "params": <параметры> 
+        "action": "<method name>", 
+        "params": <parameters>
     }
 
 Responses also will be in json:

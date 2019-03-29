@@ -57,7 +57,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
         this.api = new OkexApi(apiKey, apiSecret, passphrase);
 
         this.orderBooks = [];
-        this.orderBooksCache = undefined; // кэш ордербуков для клиента
+        this.orderBooksCache = undefined; // client's orderbooks cache
         this.notifireIntervalId = undefined;
     }
 
@@ -220,7 +220,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
 
     getOrderbooks({ symbols = [], limit = 1 } = {}) {
         try {
-            let orderbooks = this.orderBooks; // должен быть заполнен из вебсокета
+            let orderbooks = this.orderBooks; // should be filled from ws
             if (symbols && symbols.length > 0) {
                 orderbooks = orderbooks.filter(o => symbols.includes(`${o.base}/${o.quote}`));
             }
@@ -239,7 +239,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
     }
 
     /**
-     * Возвращает обновленные ордербуки для клиента. Сохраняет кэш ордербуков, которые уже были отправлены клиенту.
+     * Returns updated orderbooks for client. Also saves cache.
      * @param all
      * @param symbols
      * @param limit
@@ -417,7 +417,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                 };
             });
         } catch (ex) {
-            if (ex.message.indexOf('30036') !== -1) { // okex возвращает 400 ошибку, когда ордеров нет
+            if (ex.message.indexOf('30036') !== -1) { // okex returns error 400 in case there is no orders
                 return [];
             }
 

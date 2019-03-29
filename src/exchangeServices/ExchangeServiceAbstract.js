@@ -2,9 +2,9 @@
 
 module.exports = class ExchangeServiceAbstract {
     /**
-     * Возвращает только обновленные ордербуки.
-     * @param allOrderBooks новые ордербуки
-     * @param orderBooksCache существующие ордербуки в кэше
+     * Returns only updated orderbooks for client.
+     * @param allOrderBooks all orderbooks
+     * @param orderBooksCache orderbooks in cache
      */
     static filterChangedOrderbooks(allOrderBooks, orderBooksCache) {
         const result = [];
@@ -17,7 +17,7 @@ module.exports = class ExchangeServiceAbstract {
                 const { asks, bids } = orderBook;
                 if (asks.length !== cachedAsks.length || bids.length !== cachedBids.length) {
                     result.push(orderBook);
-                } else { // длина массиво асков и бидов одинакова
+                } else { // length of asks and bids arrays equal
                     let changed = false;
                     for (let i = 0; i < asks.length && !changed; i++) {
                         if (asks[i].price !== cachedAsks[i].price || asks[i].amount !== cachedAsks[i].amount) {

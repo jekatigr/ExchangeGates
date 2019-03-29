@@ -11,7 +11,7 @@ const { makeChunks, getFormattedDate } = require('../utils/utils');
 const WS_URL = 'wss://push.bibox.com/';
 
 /**
- * Конвертер ордербуков в общий формат объектов
+ * Converts raw orderbooks from arroys to objects.
  * @param rawOrderBook
  */
 const convertToOrderbook = (rawOrderBook) => {
@@ -40,7 +40,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
         });
 
         this.orderBooks = [];
-        this.orderBooksCache = undefined; // кэш ордербуков для клиента
+        this.orderBooksCache = undefined; // client's orderbooks cache
         this.notifireIntervalId = undefined;
     }
 
@@ -220,7 +220,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
 
     getOrderbooks({ symbols = [], limit = 1 } = {}) {
         try {
-            let orderbooks = this.orderBooks; // должен быть заполнен из вебсокета
+            let orderbooks = this.orderBooks; // should be filled from ws
             if (symbols && symbols.length > 0) {
                 orderbooks = orderbooks.filter(o => symbols.includes(`${o.base}/${o.quote}`));
             }
@@ -239,7 +239,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
     }
 
     /**
-     * Возвращает обновленные ордербуки для клиента. Сохраняет кэш ордербуков, которые уже были отправлены клиенту.
+     * Returns updated orderbooks for client. Also saves cache.
      * @param all
      * @param symbols
      * @param limit

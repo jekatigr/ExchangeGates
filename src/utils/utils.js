@@ -5,7 +5,7 @@ const timeout = delay => (
 );
 
 /**
- * Делит массив на части с количеством элементов не более maxCount
+ * Makes array of arrays with length not exceeding maxCount
  * @param arr
  * @param maxCount
  */

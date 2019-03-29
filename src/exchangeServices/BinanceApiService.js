@@ -183,7 +183,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
 
     getOrderbooks({ symbols = [], limit = 1 } = {}) {
         try {
-            let orderbooks = this.orderBooks; // должен быть заполнен из вебсокета
+            let orderbooks = this.orderBooks; // should be filled from ws
             if (symbols && symbols.length > 0) {
                 orderbooks = orderbooks.filter(o => symbols.includes(`${o.base}/${o.quote}`));
             }
@@ -202,7 +202,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
     }
 
     /**
-     * Возвращает обновленные ордербуки для клиента. Сохраняет кэш ордербуков, которые уже были отправлены клиенту.
+     * Returns updated orderbooks for client. Also saves cache.
      * @param all
      * @param symbols
      * @param limit

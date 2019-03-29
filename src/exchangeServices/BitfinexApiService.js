@@ -7,7 +7,7 @@ const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { makeChunks, getFormattedDate } = require('../utils/utils');
 
 /**
- * Конвертер ордербуков из формата массивов в формат объектов
+ * Converts raw orderbooks from arroys to objects.
  * @param rawOrderBook
  */
 const convertToOrderbook = (rawOrderBook) => {
@@ -44,7 +44,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
      * @param apiKey
      * @param apiSecret
      * @param ipArray
-     * @param orderbooksUpdatedCallback - метод, который будет вызван после обновления ордербуков
+     * @param orderbooksUpdatedCallback - method which will be called after orderbooks update.
      */
     constructor({ exchange, apiKey, apiSecret, ipArray }, orderbooksUpdatedCallback) {
         super({ exchange, ipArray }, orderbooksUpdatedCallback);
@@ -68,7 +68,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
         );
 
         this.orderBooks = [];
-        this.orderBooksCache = undefined; // кэш ордербуков для клиента
+        this.orderBooksCache = undefined; // client's orderbooks cache
         this.notifireIntervalId = undefined;
     }
 
@@ -258,7 +258,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
 
     getOrderbooks({ symbols = [], limit = 1 } = {}) {
         try {
-            let orderbooks = this.orderBooks; // должен быть заполнен из вебсокета
+            let orderbooks = this.orderBooks; // should be filled from ws
             if (symbols && symbols.length > 0) {
                 orderbooks = orderbooks.filter(o => symbols.includes(`${o.base}/${o.quote}`));
             }
