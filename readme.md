@@ -21,7 +21,7 @@
 Параметр | Тип | Обязательный | По-умолчанию | Описание
 -------- |--- | ------------ | -------- | --------
 wsPort | Number | нет | 2345 | Порт, на котором будет работать ws-сервер.
-exchange| String | да | - | Одно из значений: bibox, bitfinex, huobi, tidex.
+exchange| String | да | - | Одно из значений: bibox, binance, bitfinex, huobi, tidex, okex.
 apiKey| String |да|-|Api key аккаунта на бирже.
 apiSecret| String |да|-|Api secret аккаунта на бирже.
 passphrase| String |нет*|-|Passphrase для доступа к okex api (обязательно для okex).
