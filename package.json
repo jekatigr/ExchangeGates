@@ -1,7 +1,7 @@
 {
-  "name": "ExchangeGates",
-  "version": "5.0.6",
-  "description": "Data provider for arbitrage bot.",
+  "name": "exchange-gates",
+  "version": "5.0.7",
+  "description": "Unified JS and WS interface for cryptoexchanges.",
   "main": "index.js",
   "author": "jekatigr",
   "license": "UNLICENSED",
