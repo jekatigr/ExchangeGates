@@ -199,20 +199,22 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
     }
 
     async connectToExchange(symbols = []) {
-        try {
-            const markets = await this.getMarkets();
-            const symbolsObj = markets.map(m => ({
-                symbol: `${m.base.replace('Bihu', 'KEY').replace('PCHAIN', 'PAI')}_${m.quote.replace('Bihu', 'KEY').replace('PCHAIN', 'PAI')}`,
-                base: m.base,
-                quote: m.quote
-            })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
+        if (!this.wsInitialized) {
+            try {
+                const markets = await this.getMarkets();
+                const symbolsObj = markets.map(m => ({
+                    symbol: `${m.base.replace('Bihu', 'KEY').replace('PCHAIN', 'PAI')}_${m.quote.replace('Bihu', 'KEY').replace('PCHAIN', 'PAI')}`,
+                    base: m.base,
+                    quote: m.quote
+                })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
 
-            this.wsInitialized = true;
+                this.wsInitialized = true;
 
-            this.initWS(symbolsObj);
-        } catch (ex) {
-            console.log(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}`);
+                this.initWS(symbolsObj);
+            } catch (ex) {
+                console.log(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+                throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}`);
+            }
         }
     }
 

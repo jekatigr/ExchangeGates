@@ -236,21 +236,23 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
     }
 
     async connectToExchange(symbols = []) {
-        try {
-            this.rotateAgent2();
-            const markets = await this.api2.loadMarkets();
-            const symbolsObj = Object.values(markets).map(m => ({
-                symbol: m.id,
-                base: m.base,
-                quote: m.quote
-            })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
+        if (!this.wsInitialized) {
+            try {
+                this.rotateAgent2();
+                const markets = await this.api2.loadMarkets();
+                const symbolsObj = Object.values(markets).map(m => ({
+                    symbol: m.id,
+                    base: m.base,
+                    quote: m.quote
+                })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
 
-            this.wsInitialized = true;
+                this.wsInitialized = true;
 
-            this.initWS(symbolsObj);
-        } catch (ex) {
-            console.log(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
-            throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}`);
+                this.initWS(symbolsObj);
+            } catch (ex) {
+                console.log(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}, stacktrace: ${ex.stack}`);
+                throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks ws, ex: ${ex}`);
+            }
         }
     }
 
