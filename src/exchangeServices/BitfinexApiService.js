@@ -1,13 +1,12 @@
 const https = require('https');
 const ccxt = require('ccxt');
-const Big = require('big.js');
 const BFX = require('bitfinex-api-node');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { makeChunks, getFormattedDate } = require('../utils/utils');
 
 /**
- * Converts raw orderbooks from arroys to objects.
+ * Converts raw orderbooks from arrays to objects.
  * @param rawOrderBook
  */
 const convertToOrderbook = (rawOrderBook) => {
@@ -244,7 +243,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
                     symbol: m.id,
                     base: m.base,
                     quote: m.quote
-                })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
+                })).filter(s => ((symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`)));
 
                 this.wsInitialized = true;
 

@@ -206,7 +206,7 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     symbol: `${m.base.toLowerCase()}_${m.quote.toLowerCase()}`,
                     base: m.base,
                     quote: m.quote
-                })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
+                })).filter(s => ((symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`)));
 
                 this.wsInitialized = true;
 
@@ -305,8 +305,8 @@ module.exports = class OkexApiService extends ExchangeServiceAbstract {
                     ? balances.filter(b => currencies.includes(b.currency))
                     : balances);
             }
-            console.log(`${getFormattedDate()} | Exception while fetching balances, exchange doesn\'t return data.`);
-            throw new Error(`${getFormattedDate()} | Exception while fetching balances, exchange doesn\'t return data.`);
+            console.log(`${getFormattedDate()} | Exception while fetching balances, exchange doesn't return data.`);
+            throw new Error(`${getFormattedDate()} | Exception while fetching balances, exchange doesn't return data.`);
         } catch (ex) {
             console.log(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}, stacktrace: ${ex.stack}`);
             throw new Error(`${getFormattedDate()} | Exception while fetching balances, ex: ${ex}`);

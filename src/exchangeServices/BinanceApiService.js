@@ -1,28 +1,23 @@
 const https = require('https');
 const ccxt = require('ccxt');
-const WebSocket = require('ws');
-const pako = require('pako');
-const Big = require('big.js');
 const binance = require('node-binance-api')();
 const { timeout, getFormattedDate } = require('../utils/utils');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 
-const WS_URL = 'wss://api.huobi.pro/ws';
-
 /**
- * Converts raw orderbooks from arroys to objects.
+ * Converts raw orderbooks from arrays to objects.
  * @param rawOrderBook
  */
 const convertToOrderbook = (rawOrderBook) => {
     const { asks, bids } = rawOrderBook;
 
     const asksArr = [];
-    for (let key of Object.keys(asks)) {
+    for (const key of Object.keys(asks)) {
         asksArr.push([ +key, asks[key] ]);
     }
     const bidsArr = [];
-    for (let key of Object.keys(bids)) {
+    for (const key of Object.keys(bids)) {
         bidsArr.push([ +key, bids[key] ]);
     }
     asksArr.sort((a1, a2) => {
@@ -91,7 +86,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
 
                 try {
                     binance.websockets.depthCache([m], callback);
-                    await timeout(400)
+                    await timeout(400); // eslint-disable-line no-await-in-loop
                 } catch (ex) {
                     console.log(`${getFormattedDate()} | Exception while subscribe to ws ${m}, ex: ${ex}, stacktrace: ${ex.stack}`);
                     throw new Error(`${getFormattedDate()} | Exception while subscribe to ws, ex: ${ex}`);
@@ -347,7 +342,7 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
             throw new Error(`${getFormattedDate()} | Exception while getting active orders, symbol missing`);
         }
 
-        const [ symbol ] = params;
+        const [symbol] = params;
 
         try {
             this.rotateAgent();

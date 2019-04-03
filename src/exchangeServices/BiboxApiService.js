@@ -11,7 +11,7 @@ const { makeChunks, getFormattedDate } = require('../utils/utils');
 const WS_URL = 'wss://push.bibox.com/';
 
 /**
- * Converts raw orderbooks from arroys to objects.
+ * Converts raw orderbooks from arrays to objects.
  * @param rawOrderBook
  */
 const convertToOrderbook = (rawOrderBook) => {
@@ -158,7 +158,11 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                 json: true
             });
 
-            const { min_trade_price: priceLimits, min_trade_amount: amountLimits, min_trade_money: costLimits } = tradeLimits.result;
+            const {
+                min_trade_price: priceLimits,
+                min_trade_amount: amountLimits,
+                min_trade_money: costLimits
+            } = tradeLimits.result;
 
             const res = [];
             const marketIds = Object.keys(markets);
@@ -166,8 +170,8 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                 const market = markets[marketId];
                 const { base, quote, precision, taker, maker } = market;
 
-                const priceLimit = (priceLimits[quote]) ? +priceLimits[quote] : +priceLimits['default'];
-                const amountLimit = (amountLimits[base]) ? +amountLimits[base] : +amountLimits['default'];
+                const priceLimit = (priceLimits[quote]) ? +priceLimits[quote] : +priceLimits.default;
+                const amountLimit = (amountLimits[base]) ? +amountLimits[base] : +amountLimits.default;
                 const costLimit = (costLimits[quote]) ? +costLimits[quote] : +Big(priceLimit).times(amountLimits);
 
                 const limits = {
@@ -206,7 +210,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                     symbol: `${m.base.replace('Bihu', 'KEY').replace('PCHAIN', 'PAI')}_${m.quote.replace('Bihu', 'KEY').replace('PCHAIN', 'PAI')}`,
                     base: m.base,
                     quote: m.quote
-                })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
+                })).filter(s => ((symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`)));
 
                 this.wsInitialized = true;
 

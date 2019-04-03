@@ -1,6 +1,5 @@
 const TidexApi = require('node-tidex-api');
 const Ticker = require('node-tidex-api/models/Ticker');
-const Big = require('big.js');
 
 const WebSocketImpl = require('./WebSocketImpl');
 

@@ -2,7 +2,6 @@ const https = require('https');
 const ccxt = require('ccxt');
 const WebSocket = require('ws');
 const pako = require('pako');
-const Big = require('big.js');
 
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
 const { getFormattedDate } = require('../utils/utils');
@@ -10,7 +9,7 @@ const { getFormattedDate } = require('../utils/utils');
 const WS_URL = 'wss://api.huobi.pro/ws';
 
 /**
- * Converts raw orderbooks from arroys to objects.
+ * Converts raw orderbooks from arrays to objects.
  * @param rawOrderBook
  */
 const convertToOrderbook = (rawOrderBook) => {
@@ -176,7 +175,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                     symbol: `${m.base.toLowerCase()}${m.quote.toLowerCase()}`,
                     base: m.base,
                     quote: m.quote
-                })).filter(s => (symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`));
+                })).filter(s => ((symbols.length === 0) ? true : symbols.includes(`${s.base}/${s.quote}`)));
 
                 this.wsInitialized = true;
 

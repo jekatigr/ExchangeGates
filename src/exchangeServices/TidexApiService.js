@@ -55,11 +55,14 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
                 const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
                 symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
             }
-            const orderbooks = this.api.getOrderBooks({ limit, symbols: symbolsArr }, { localAddress: super.getNextIp() });
+            const orderbooks = this.api.getOrderBooks(
+                { limit, symbols: symbolsArr },
+                { localAddress: super.getNextIp() }
+            );
 
             if (orderbooks && orderbooks.length > 0) {
                 if (this.orderbooksUpdatedCallback) {
-                    for(const updatedOrderbook of orderbooks) {
+                    for (const updatedOrderbook of orderbooks) {
                         this.orderbooksUpdatedCallback(updatedOrderbook);
                     }
                 }

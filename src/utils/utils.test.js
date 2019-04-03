@@ -5,8 +5,8 @@ describe('makeChunks', () => {
         const arr = [ 1, 2, 3, 4, 5, 6 ];
         const max = 3;
         const expected = [
-            [1, 2, 3],
-            [4, 5, 6]
+            [ 1, 2, 3 ],
+            [ 4, 5, 6 ]
         ];
         const result = makeChunks(arr, max);
         expect(result).toEqual(expected);
@@ -16,8 +16,8 @@ describe('makeChunks', () => {
         const arr = [ 1, 2, 3, 4, 5, 6, 7 ];
         const max = 3;
         const expected = [
-            [1, 2, 3],
-            [4, 5, 6],
+            [ 1, 2, 3 ],
+            [ 4, 5, 6 ],
             [7]
         ];
         const result = makeChunks(arr, max);
@@ -36,8 +36,8 @@ describe('makeChunks', () => {
         const arr = [ 1, 2, 3, 4, 5, 6, 7 ];
         const max = 4;
         const expected = [
-            [1, 2, 3, 4],
-            [5, 6, 7]
+            [ 1, 2, 3, 4 ],
+            [ 5, 6, 7 ]
         ];
         const result = makeChunks(arr, max);
         expect(result).toEqual(expected);
