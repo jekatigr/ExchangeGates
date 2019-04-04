@@ -12,7 +12,9 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
             apiSecret
         });
 
-        this.orderBooksCache = undefined;
+        this.orderBooks = [];
+        this.orderBooksCache = undefined; // client's orderbooks cache
+        this.notifireIntervalId = undefined;
     }
 
     async getMarkets() {
@@ -48,25 +50,56 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getOrderbooks({ symbols = [], limit = 1 } = {}) {
-        try {
-            let symbolsArr = symbols;
-            if (symbolsArr.length === 0) {
-                const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
-                symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
-            }
-            const orderbooks = this.api.getOrderBooks(
-                { limit, symbols: symbolsArr },
-                { localAddress: super.getNextIp() }
-            );
+    async connectToExchange(symbols = []) {
+        if (!this.wsInitialized) {
+            try {
+                this.wsInitialized = true;
+                /* eslint-disable no-await-in-loop */
+                setInterval(async () => {
+                    try {
+                        let symbolsArr = symbols;
+                        if (symbolsArr.length === 0) {
+                            const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
+                            symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
+                        }
+                        const orderbooks = await this.api.getOrderBooks(
+                            { limit: 100, symbols: symbolsArr },
+                            { localAddress: super.getNextIp() }
+                        );
 
-            if (orderbooks && orderbooks.length > 0) {
-                if (this.orderbooksUpdatedCallback) {
-                    for (const updatedOrderbook of orderbooks) {
-                        this.orderbooksUpdatedCallback(updatedOrderbook);
+                        this.orderBooks = orderbooks;
+
+                        if (orderbooks && orderbooks.length > 0) {
+                            if (this.orderbooksUpdatedCallback) {
+                                for (const updatedOrderbook of orderbooks) {
+                                    this.orderbooksUpdatedCallback(updatedOrderbook);
+                                }
+                            }
+                        }
+                    } catch (ex) {
+                        console.log(`${getFormattedDate()} | Exception while fetching orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
                     }
-                }
+                }, 200);
+                /* eslint-enable no-await-in-loop */
+            } catch (ex) {
+                console.log(`${getFormattedDate()} | Exception while connecting to orderbooks, ex: ${ex}, stacktrace: ${ex.stack}`);
+                throw new Error(`${getFormattedDate()} | Exception while connecting to orderbooks, ex: ${ex}`);
             }
+        }
+    }
+
+    getOrderbooks({ symbols = [], limit = 1 } = {}) {
+        try {
+            let orderbooks = this.orderBooks; // should be filled from connectToExchangeMethod
+            if (symbols && symbols.length > 0) {
+                orderbooks = orderbooks.filter(o => symbols.includes(`${o.base}/${o.quote}`));
+            }
+
+            orderbooks = orderbooks.map(o => ({
+                ...o,
+                bids: o.bids.slice(0, limit),
+                asks: o.asks.slice(0, limit),
+            }));
 
             return orderbooks;
         } catch (ex) {
@@ -93,31 +126,31 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
     }
 
     async runOrderBookNotifier({ symbols = [], limit = 1 } = {}, callback) {
-        this.notifierRunning = true;
-        let firstFetch = true;
-        /* eslint-disable no-await-in-loop */
-        while (this.notifierRunning) {
-            const start = +new Date();
-            try {
-                const updatedOrderBooks = await this.getUpdatedOrderbooks(firstFetch, { symbols, limit });
-                firstFetch = false;
-                if (this.notifierRunning && updatedOrderBooks && updatedOrderBooks.length > 0) {
+        if (!this.notifierRunning) {
+            this.notifierRunning = true;
+
+            this.notifireIntervalId = setInterval(async () => {
+                const start = +new Date();
+                const updatedOrderBooks = await this.getUpdatedOrderbooks(false, {
+                    symbols,
+                    limit
+                }) || [];
+
+                if (this.notifierRunning && updatedOrderBooks.length > 0) {
                     callback(undefined, {
                         timestampStart: start,
                         timestampEnd: +new Date(),
                         data: updatedOrderBooks
                     });
                 }
-            } catch (ex) {
-                callback({
-                    timestampStart: start,
-                    timestampEnd: +new Date(),
-                    data: ex.message
-                });
-            }
-            await timeout(100);
+            }, 10);
         }
-        /* eslint-enable no-await-in-loop */
+    }
+
+    stopOrderBookNotifier() {
+        this.notifierRunning = false;
+        this.orderBooksCache = undefined;
+        clearInterval(this.notifireIntervalId);
     }
 
     async getBalances(currencies = []) {

@@ -212,8 +212,6 @@ Method for initialization of websocket-connections to exchange for receiving ord
 
 It should be called before using methods **getOrderbooks** and **runOrderbooksNotifier**.
 
-_Not required for Tidex._
-
 |Name|Type|Required|Default|Description|
 |--- |--- |--- |--- |--- |
 |params|Array<String\>|No|All markets|Markets list.
