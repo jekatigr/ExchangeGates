@@ -54,14 +54,16 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
         if (!this.wsInitialized) {
             try {
                 this.wsInitialized = true;
+
+                let symbolsArr = symbols;
+                if (symbolsArr.length === 0) {
+                    const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
+                    symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
+                }
+
                 /* eslint-disable no-await-in-loop */
                 setInterval(async () => {
                     try {
-                        let symbolsArr = symbols;
-                        if (symbolsArr.length === 0) {
-                            const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
-                            symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
-                        }
                         const orderbooks = await this.api.getOrderBooks(
                             { limit: 100, symbols: symbolsArr },
                             { localAddress: super.getNextIp() }
