@@ -412,7 +412,21 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
 
         try {
             this.rotateAgent();
-            const o = await this.api.fetchOrder(id);
+
+            await this.api.loadMarkets();
+            let response = await this.api.privatePostOrderpending ({
+                'cmd': 'orderpending/order',
+                'body': this.api.extend ({
+                    'id': id,
+                    'account_type': 0
+                }, {}),
+            });
+            let order = this.api.safeValue(response, 'result');
+            if (this.api.isEmpty(order)) {
+                throw new OrderNotFound(this.api.id + ' order ' + id + ' not found');
+            }
+
+            const o = this.api.parseOrder(order);
             return {
                 id: o.id,
                 base: o.symbol.split('/')[0],
