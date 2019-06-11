@@ -203,7 +203,7 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             }
         };
 
-        const symbolsSplitted = makeChunks(symbolsObj, 200);
+        const symbolsSplitted = makeChunks(symbolsObj, 30);
         for (const chunk of symbolsSplitted) {
             init(chunk, saveLocalDepth.bind(this));
         }

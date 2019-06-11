@@ -1,6 +1,6 @@
 {
     "name": "exchange-gates",
-    "version": "6.1.1",
+    "version": "6.1.2",
     "description": "Unified JS and WS interface for cryptoexchanges.",
     "main": "index.js",
     "dependencies": {
