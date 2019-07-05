@@ -1,7 +1,7 @@
 const TidexApi = require('node-tidex-api');
 const Big = require('big.js');
 const ExchangeServiceAbstract = require('./ExchangeServiceAbstract');
-const { timeout, getFormattedDate } = require('../utils/utils');
+const { getFormattedDate } = require('../utils/utils');
 
 module.exports = class TidexApiService extends ExchangeServiceAbstract {
     constructor({ exchange, apiKey, apiSecret, ipArray }, orderbooksUpdatedCallback) {
