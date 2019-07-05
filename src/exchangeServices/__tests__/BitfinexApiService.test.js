@@ -17,31 +17,11 @@ describe('bitfinex API', () => {
 
             await loadConfig('./config/bitfinexConfig.json');
 
-            const service = new BitfinexApiService();
+            const service = new BitfinexApiService({});
             ccxt.setMarkets(source);
             const markets = await service.getMarkets();
 
             expect(markets).toEqual(expected);
-        });
-    });
-
-    describe('getPrices method', () => {
-        const { getPricesTest } = testData;
-        it('should return correct array of prices', async () => {
-            const {
-                case1: {
-                    source,
-                    expected
-                }
-            } = getPricesTest;
-
-            await loadConfig('./config/bitfinexConfig.json');
-
-            const service = new BitfinexApiService();
-            ccxt.setTickers(source);
-            const prices = await service.getPrices();
-
-            expect(prices).toEqual(expected);
         });
     });
 
@@ -58,7 +38,7 @@ describe('bitfinex API', () => {
 
             await loadConfig('./config/bitfinexConfig.json');
 
-            const service = new BitfinexApiService();
+            const service = new BitfinexApiService({});
             ccxt.setBalance(sourceFetchBalance);
             service.getPrices = jest.fn().mockReturnValue(sourceForPrices);
 
@@ -80,7 +60,7 @@ describe('bitfinex API', () => {
             } = createOrderTest;
             await loadConfig('./config/bitfinexConfig.json');
 
-            const server = new BitfinexApiService();
+            const server = new BitfinexApiService({});
             ccxt.setCreateOrder(source);
 
             const order = await server.createOrder({
@@ -98,17 +78,16 @@ describe('bitfinex API', () => {
         it('should return correct cancel order', async () => {
             const {
                 case1: {
-                    source,
-                    expected
+                    source
                 }
             } = cancelOrderTest;
             await loadConfig('./config/bitfinexConfig.json');
 
-            const server = new BitfinexApiService();
+            const server = new BitfinexApiService({});
             ccxt.setCancelOrder(source);
 
             const res = await server.cancelOrder({ id: 18613034229 });
-            expect(res).toEqual(expected);
+            expect(res).toEqual(undefined);
         });
     });
 
@@ -124,7 +103,7 @@ describe('bitfinex API', () => {
 
             await loadConfig('./config/bitfinexConfig.json');
 
-            const server = new BitfinexApiService();
+            const server = new BitfinexApiService({});
             ccxt.setOpenOrders(source);
 
             let orders = await server.getActiveOrders();

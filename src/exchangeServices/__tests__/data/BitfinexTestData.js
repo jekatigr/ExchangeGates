@@ -469,13 +469,7 @@ module.exports = {
                 remaining_amount: 0.002,
                 executed_amount: 0.0,
                 src: 'api'
-            },
-            expected: [
-                {
-                    id: 18613034229,
-                    success: true
-                }
-            ]
+            }
         }
     },
     getActiveOrdersTest: {

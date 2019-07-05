@@ -1,4 +1,3 @@
-jest.dontMock('ccxt');
 const ccxt = require('ccxt');
 const HuobiApiService = require('../HuobiApiService');
 const { loadConfig } = require('../../ConfigLoader');
@@ -10,7 +9,7 @@ describe('huobi API', () => {
 
     beforeAll(async () => {
         await loadConfig('./config/huobiConfig.json');
-        service = new HuobiApiService();
+        service = new HuobiApiService({});
     });
 
     describe('getMarkets method', () => {
