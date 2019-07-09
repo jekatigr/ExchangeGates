@@ -19,7 +19,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
 
     async getMarkets() {
         try {
-            const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
+            const markets = await this.api.getMarkets(true, { localAddress: super.getNextIp() });
 
             return markets.map(m => ({
                 base: m.base,
@@ -57,7 +57,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
 
                 let symbolsArr = symbols;
                 if (symbolsArr.length === 0) {
-                    const markets = await this.api.getMarkets({ localAddress: super.getNextIp() });
+                    const markets = await this.api.getMarkets(true, { localAddress: super.getNextIp() });
                     symbolsArr = markets.map(m => `${m.base}/${m.quote}`);
                 }
 
