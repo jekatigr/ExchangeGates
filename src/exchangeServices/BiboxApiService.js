@@ -437,7 +437,7 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
                 price: o.price,
                 average: o.average,
                 created: o.timestamp,
-                status: (o.status === 'open') ? 'active' : o.status
+                status: (o.status === 'open') ? 'active' : (o.status === '-1') ? 'canceled' : o.status
             };
         } catch (ex) {
             console.log(`${getFormattedDate()} | Exception while getting order, orderId: '${id}', ex: ${ex}, stacktrace: ${ex.stack}`);
