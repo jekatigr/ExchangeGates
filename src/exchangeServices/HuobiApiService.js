@@ -309,7 +309,7 @@ module.exports = class HuobiApiService extends ExchangeServiceAbstract {
                 amount: orderRaw.amount,
                 remain: (orderRaw.remaining === undefined) ? orderRaw.amount : orderRaw.remaining,
                 price: orderRaw.price,
-                average: orderRaw.average,
+                average: (orderRaw.average) ? orderRaw.average : 0,
                 created: orderRaw.timestamp,
                 status: 'active'
             };
