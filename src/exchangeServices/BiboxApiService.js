@@ -168,32 +168,34 @@ module.exports = class BiboxApiService extends ExchangeServiceAbstract {
             const marketIds = Object.keys(markets);
             for (const marketId of marketIds) {
                 const market = markets[marketId];
-                const { base, quote, precision, taker, maker } = market;
+                const { base, quote, precision, taker, maker, active } = market;
 
-                const priceLimit = (priceLimits[quote]) ? +priceLimits[quote] : +priceLimits.default;
-                const amountLimit = (amountLimits[base]) ? +amountLimits[base] : +amountLimits.default;
-                const costLimit = (costLimits[quote]) ? +costLimits[quote] : +Big(priceLimit).times(amountLimits);
+                if (active) {
+                    const priceLimit = (priceLimits[quote]) ? +priceLimits[quote] : +priceLimits.default;
+                    const amountLimit = (amountLimits[base]) ? +amountLimits[base] : +amountLimits.default;
+                    const costLimit = (costLimits[quote]) ? +costLimits[quote] : +Big(priceLimit).times(amountLimits);
 
-                const limits = {
-                    price: {
-                        min: priceLimit
-                    },
-                    amount: {
-                        min: amountLimit
-                    },
-                    cost: {
-                        min: costLimit
-                    }
-                };
+                    const limits = {
+                        price: {
+                            min: priceLimit
+                        },
+                        amount: {
+                            min: amountLimit
+                        },
+                        cost: {
+                            min: costLimit
+                        }
+                    };
 
-                res.push({
-                    base,
-                    quote,
-                    precision,
-                    taker,
-                    maker,
-                    limits
-                });
+                    res.push({
+                        base,
+                        quote,
+                        precision,
+                        taker,
+                        maker,
+                        limits
+                    });
+                }
             }
             return res;
         } catch (ex) {

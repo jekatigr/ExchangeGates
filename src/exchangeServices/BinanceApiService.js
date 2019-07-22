@@ -137,15 +137,17 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
             const marketIds = Object.keys(markets);
             for (const marketId of marketIds) {
                 const market = markets[marketId];
-                const { base, quote, precision, taker, maker, limits } = market;
-                res.push({
-                    base,
-                    quote,
-                    precision,
-                    taker,
-                    maker,
-                    limits
-                });
+                const { base, quote, precision, taker, maker, limits, active } = market;
+                if (active) {
+                    res.push({
+                        base,
+                        quote,
+                        precision,
+                        taker,
+                        maker,
+                        limits
+                    });
+                }
             }
             return res;
         } catch (ex) {

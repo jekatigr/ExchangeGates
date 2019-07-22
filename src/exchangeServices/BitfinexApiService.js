@@ -217,15 +217,17 @@ module.exports = class BitfinexApiService extends ExchangeServiceAbstract {
             const res = [];
             for (const marketId of Object.keys(markets)) {
                 const market = markets[marketId];
-                const { base, quote, precision, taker, maker, limits } = market;
-                res.push({
-                    base,
-                    quote,
-                    precision,
-                    taker,
-                    maker,
-                    limits
-                });
+                const { base, quote, precision, taker, maker, limits, active } = market;
+                if (active) {
+                    res.push({
+                        base,
+                        quote,
+                        precision,
+                        taker,
+                        maker,
+                        limits
+                    });
+                }
             }
             return res;
         } catch (ex) {

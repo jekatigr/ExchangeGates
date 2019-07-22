@@ -92,7 +92,7 @@ module.exports = class TidexApiService extends ExchangeServiceAbstract {
 
     getOrderbooks({ symbols = [], limit = 1 } = {}) {
         try {
-            let orderbooks = this.orderBooks; // should be filled from connectToExchangeMethod
+            let orderbooks = this.orderBooks; // should be filled from connectToExchange method
             if (symbols && symbols.length > 0) {
                 orderbooks = orderbooks.filter(o => symbols.includes(`${o.base}/${o.quote}`));
             }
