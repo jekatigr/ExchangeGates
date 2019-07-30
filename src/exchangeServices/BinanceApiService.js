@@ -338,13 +338,11 @@ module.exports = class BinanceApiService extends ExchangeServiceAbstract {
         }
     }
 
-    async getActiveOrders(params) {
-        if (!params || params.length === 0) {
+    async getActiveOrders(symbol) {
+        if (!symbol || symbol === '') {
             console.log(`${getFormattedDate()} | Exception while getting active orders, symbol missing`);
             throw new Error(`${getFormattedDate()} | Exception while getting active orders, symbol missing`);
         }
-
-        const [symbol] = params;
 
         try {
             this.rotateAgent();
