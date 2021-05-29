@@ -14,7 +14,7 @@
         "pako": "^1.0.6",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5",
-        "ws": "^6.1.0"
+        "ws": "^7.4.6"
     },
     "devDependencies": {
         "eslint": "^6.0.1",
